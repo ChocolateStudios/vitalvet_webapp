@@ -1,0 +1,22 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Layout from './Layout.astro';
+---
+
+<Layout>
+  <!-- El componente ClientRouter activa la magia de la navegación del lado del cliente -->
+  <ClientRouter />
+  <div class="flex h-screen bg-gray-100">
+    <!-- Esta barra lateral persistirá entre las navegaciones de la página -->
+    <aside class="w-64 bg-white shadow-md">
+      <div class="p-4 text-2xl font-bold">Mi App</div>
+      <nav class="mt-4">
+        <a href="/app" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Home</a>
+        <a href="/app/login" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Login</a>
+        <a href="/" class="block px-4 py-2 text-gray-700 hover:bg-gray-200 mt-8">← Volver a Landing</a>
+      </nav>
+    </aside>
+
+    <main class="flex-1"><slot /></main>
+  </div>
+</Layout>

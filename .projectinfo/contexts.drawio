@@ -1,0 +1,46 @@
+<mxfile host="65bd71144e">
+    <diagram id="8FZAr5AUJVTO7_EuGBcq" name="Page-1">
+        <mxGraphModel dx="914" dy="635" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="3" value="Auth" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="270" y="40" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Loguearse" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="405" y="40" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Registrarse" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="405" y="80" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="Ver todas las mascotas" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="165" y="170" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Registrar/modificar/eliminar/ver &lt;br&gt;mascota" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="145" y="210" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="Mascotas" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="25" y="170" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Ver historial clínico de una mascota" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="534" y="180" width="210" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="Historias clínicas" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="414" y="180" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Registrar/modificar/eliminar/ver &lt;br&gt;historia clínica de una mascota" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="534" y="210" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Calendario" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="330" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Ver todos los eventos" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="225" y="330" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Registrar/modificar/eliminar/ver evento" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="225" y="355" width="230" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
