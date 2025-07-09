@@ -1,0 +1,12 @@
+---
+import AppLayout from '../../../layouts/AppLayout.astro';
+import PetPage from '../../../contexts/pets/presentation/pages/pet.astro';
+
+export const prerender = false;
+const { petId } = Astro.params;
+
+---
+
+<AppLayout>
+  <PetPage {petId} />
+</AppLayout>

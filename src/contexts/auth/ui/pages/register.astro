@@ -1,0 +1,65 @@
+---
+import AuthBaseTextInput from "../components/auth-base-text-input.astro"
+
+const inputFields = [
+    {
+        asRow: true,
+        children: [
+        {
+            id: "name",
+            name: "name",
+            type: "text",
+            autocomplete: "name",
+            placeholder: "Juan",
+            label: "Nombres"
+        },
+        {
+            id: "lastname",
+            name: "lastname",
+            type: "text",
+            autocomplete: "lastname",
+            placeholder: "Pérez",
+            label: "Apellidos"
+        },
+        ]
+    },
+    {
+        id: "email",
+        name: "email",
+        type: "email",
+        autocomplete: "email",
+        placeholder: "ejemplo@correo.com",
+        label: "Correo"
+    },
+    {
+        id: "password",
+        name: "password",
+        type: "password",
+        autocomplete: "password",
+        placeholder: "*****",
+        label: "Contraseña"
+    }
+]
+---
+
+<div class="flex flex-col m-12 gap-4">
+    <h1 class="font-bold text-2xl">Registro</h1>
+    <p class="text-base">¿Ya tienes cuenta? <a href="/app/login" class="text-blue-800 font-bold">Inicia sesión</a></p>
+    <form class="flex flex-col gap-5">
+        {
+            inputFields.map((inputField) => 
+            inputField.asRow ? 
+                <div class="flex flex-row gap-5">
+                    {
+                        inputField.children.map((child) => 
+                            <AuthBaseTextInput {...child} class="w-full flex-1" />
+                        )
+                    }
+                </div> 
+                : 
+                <AuthBaseTextInput {...inputField} />
+            )
+        }
+        <button type="submit" class="w-fit rounded-full bg-blue-900 px-7 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Registrarse</button>
+    </form>
+</div>

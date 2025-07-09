@@ -1,0 +1,9 @@
+import { AuditableModel } from "../../_shared/models/auditable.model";
+
+export class Pet extends AuditableModel {
+    public name: string = "";
+    public age: number = 0;
+    public weight: number = 0.0;
+    public species: string = "";
+    public imgUrl: string = "";
+}

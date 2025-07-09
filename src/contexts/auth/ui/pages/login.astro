@@ -1,23 +1,101 @@
 ---
+import AuthBaseTextInput from "../components/auth-base-text-input.astro"
+
+const inputFields = [
+    {
+        id: "email",
+        name: "email",
+        type: "email",
+        autocomplete: "email",
+        placeholder: "ejemplo@correo.com",
+        label: "Correo"
+    },
+    {
+        id: "password",
+        name: "password",
+        type: "password",
+        autocomplete: "password",
+        placeholder: "*****",
+        label: "Contraseña"
+    }
+]
 
 ---
 
 <div class="flex flex-col m-12 gap-4">
     <h1 class="font-bold text-2xl">Iniciar sesión</h1>
     <p class="text-base">¿No tienes cuenta? <a href="/app/register" class="text-blue-800 font-bold">Regístrate</a></p>
-    <form class="flex flex-col gap-5 [&>div]:flex [&>div]:flex-col">
-        <div>
-            <label for="email" class="text-sm/6 font-medium text-gray-900">Correo</label>
-            <div class="mt-2">
-                <input id="email" name="email" type="email" autocomplete="email" placeholder="ejemplo@correo.com" class="rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-800 sm:text-sm/6" />
-            </div>
-        </div>
-        <div>
-            <label for="password" class="text-sm/6 font-medium text-gray-900">Contraseña</label>
-            <div class="mt-2">
-                <input id="password" name="password" type="password" autocomplete="password" placeholder="*****" class="rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-800 sm:text-sm/6" />
-            </div>
-        </div>
+    <form id="login-form" class="flex flex-col gap-5" novalidate>
+        {
+            inputFields.map((inputField) => 
+                <AuthBaseTextInput {...inputField} />
+            )
+        }
         <button type="submit" class="w-fit rounded-full bg-blue-900 px-7 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Iniciar sesión</button>
     </form>
 </div>
+
+<script>
+    const form = document.getElementById('login-form') as HTMLFormElement | null;
+
+    if (form) {
+        const emailInput = document.getElementById('email') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+
+        const showError = (input: HTMLInputElement, message: string) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = message;
+            }
+            // Cambia el color del borde del input a rojo
+            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+            input.classList.add('outline-red-500', 'focus:outline-red-500');
+        }
+
+        const clearError = (input: HTMLInputElement) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = '';
+            }
+            // Restaura el color del borde del input
+            input.classList.remove('outline-red-500', 'focus:outline-red-500');
+            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+        }
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            // Limpia errores previos
+            clearError(emailInput);
+            clearError(passwordInput);
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            let isValid = true;
+
+            // Validaciones
+            if (!email) {
+                showError(emailInput, 'El correo es obligatorio');
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError(emailInput, 'Por favor, introduce un correo válido');
+                isValid = false;
+            }
+            
+            if (!password) {
+                showError(passwordInput, 'La contraseña es obligatoria');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+                isValid = false;
+            }   
+
+            if (isValid) {
+                // En una aplicación real, aquí harías una llamada a tu API
+                // para verificar las credenciales usando tu http-client.
+                console.log('Formulario válido. Redirigiendo a /app/home...');
+                window.location.href = '/app/home';
+            }
+        });
+    }
+</script>
