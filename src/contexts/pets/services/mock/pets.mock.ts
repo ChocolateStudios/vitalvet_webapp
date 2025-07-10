@@ -3,8 +3,8 @@
  */
 
 import type { Pet } from "../../models/pet.model";
-import { PetResource } from "../../resources/pet.resource";
-import type { SavePetResource } from "../../resources/save-pet.resource";
+import { PetResource } from "../resources/pet.resource";
+import type { SavePetResource } from "../resources/save-pet.resource";
 
 const pets: Pet[] = [
     {
@@ -13,6 +13,7 @@ const pets: Pet[] = [
         age: 6,
         species: "Perro",
         imgUrl: "",
+        weight: 5.5,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
     },
@@ -22,6 +23,7 @@ const pets: Pet[] = [
         age: 4,
         species: "Jaguar",
         imgUrl: "",
+        weight: 5.5,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
     },
@@ -31,6 +33,7 @@ const pets: Pet[] = [
         age: 8,
         species: "Pájaro",
         imgUrl: "",
+        weight: 5.5,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
     },
@@ -40,6 +43,7 @@ const pets: Pet[] = [
         age: 6,
         species: "Águila",
         imgUrl: "",
+        weight: 5.5,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
     },
@@ -66,6 +70,7 @@ export class PetsApiMock {
         existingPet.age = data.age;
         existingPet.species = data.species;
         existingPet.imgUrl = data.imgUrl;
+        existingPet.weight = data.weight;
 
         return PetResource.fromModel(existingPet);
     }

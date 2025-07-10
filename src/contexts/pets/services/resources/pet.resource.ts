@@ -1,11 +1,12 @@
-import { AuditableModel } from "../../_shared/models/auditable.model";
-import type { Pet } from "../models/pet.model";
+import { AuditableModel } from "../../../_shared/models/auditable.model";
+import type { Pet } from "../../models/pet.model";
 
 export class PetResource extends AuditableModel {
     public name: string = "";
     public age: number = 0;
     public species: string = "";
     public imgUrl: string = "";
+    public weight: number = 0;
 
     public constructor() {
         super();

@@ -1,10 +1,9 @@
 ---
 import PetBaseTextInput from "../components/pet-base-text-input.astro";
 
-
 const { petId } = Astro.props;
 
-const rightInputFields = [
+const inputFields = [
     {
         id: "name",
         name: "name",
@@ -58,23 +57,23 @@ const rightInputFields = [
 ---
 
 <div class="p-4 sm:p-6 lg:p-8 h-full">
-    <h2 class="text-2xl font-bold">Pepito</h2>
+    <h2 class="text-2xl font-bold">Datos de la mascota</h2>
     <form class="flex items-center gap-8 h-full">
         <div class="flex flex-col flex-3 items-center rounded-md outline-3 outline-blue-800 px-7 py-15">
             <div class="w-fit">
-                <img src="/src/assets/petProfilePhoto.png" alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" />
+                <img src="/src/assets/petProfilePhoto.png" alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" transition:persist />
             </div>
-            <PetBaseTextInput {...rightInputFields[0]} class="w-full" />
+            <PetBaseTextInput {...inputFields[0]} class="w-full" />
         </div>
         <div class="flex flex-col flex-4 rounded-md outline-3 outline-blue-950 px-7 py-8">
             {
-                rightInputFields.map((input, index) => 
+                inputFields.map((input, index) => 
                     index > 0 ? <PetBaseTextInput {...input} /> : ""
                 )
             }
             <div class="flex flex-col gap-1">
                 <a href="#" class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Ver galería</a>
-                <a href="#" class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Ver citas médicas</a>
+                <a href={`/app/pets/${petId}/medical-history`} class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Ver citas médicas</a>
                 <button type="submit" class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Guardar</button>
             </div>
         </div>

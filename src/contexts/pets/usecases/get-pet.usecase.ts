@@ -1,5 +1,5 @@
 import type { Pet } from "../models/pet.model";
-import type { PetResource } from "../resources/pet.resource";
+import type { PetResource } from "../services/resources/pet.resource";
 import { PetsApiMock } from "../services/mock/pets.mock";
 
 interface PetInfo extends Pet {

@@ -1,0 +1,66 @@
+---
+import PetBaseTextInput from "../../../pets/presentation/components/pet-base-text-input.astro";
+import { getMedicalAppointment } from "../../usecases/get-medicalappointment.usecase";
+import { getAllMedicalAppointmentsByPetId } from "../../usecases/getall-medicalappointments-by-petid.usecase";
+
+const { petId, medicalAppointmentId } = Astro.props;
+const medicalAppointment = getMedicalAppointment(medicalAppointmentId);
+
+const inputFields = [
+    {
+        id: "name",
+        name: "name",
+        type: "text",
+        autocomplete: "name",
+        placeholder: "Pepito",
+        label: "Nombre",
+    },
+];
+
+const medicalAppointmentSections = [
+    {
+        title: "Datos de la cita",
+        content: medicalAppointment.details,
+    },
+    {
+        title: "Observaciones",
+        content: medicalAppointment.observations,
+    },
+    {
+        title: "Receta",
+        content: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Porro distinctio dolor perferendis, aliquid delectus aperiam laudantium unde voluptatem, laborum mollitia tempora reiciendis accusamus nemo aspernatur. Laboriosam nulla quod harum molestiae.",
+    },
+];
+
+---
+
+<div class="p-4 sm:p-6 lg:p-8 h-full">
+    <h2 class="text-2xl font-bold">Cita médica N° {medicalAppointment.appointmentNumber}</h2>
+    <form class="flex items-center gap-8 h-full">
+        <div class="flex flex-col flex-3 items-center rounded-md outline-3 outline-blue-800 px-7 py-15">
+            <div class="w-fit">
+                <img src="/src/assets/petProfilePhoto.png" alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" />
+            </div>
+            <PetBaseTextInput {...inputFields[0]} class="w-full" />
+        </div>
+        <div class="flex flex-col flex-4 gap-4 overflow-y-auto">
+            {
+                medicalAppointmentSections.map(section => 
+                    <details class="group border border-gray-200 rounded-lg overflow-hidden">
+                        <summary class="flex items-center justify-between p-4 cursor-pointer list-none bg-gray-50 hover:bg-gray-100 transition">
+                            <h3 class="font-semibold text-gray-800">{section.title}</h3>
+                            <div class="transition-transform duration-300 group-open:rotate-180">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                        </summary>
+                        <div class="p-4 border-t border-gray-200 bg-white text-gray-700">
+                            {section.content}
+                        </div>
+                    </details>
+                )
+            }
+        </div>
+    </form>
+</div>

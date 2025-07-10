@@ -1,0 +1,13 @@
+---
+import AppLayout from '../../../../../layouts/AppLayout.astro';
+import PetMedicalAppointmentPage from '../../../../../contexts/medical_histories/presentation/pages/pet-medical-appointment.astro';
+// import PetMedicalHistoryPage from '../../../../contexts/medical_histories/presentation/pages/pet-medical-history.astro';
+
+export const prerender = false;
+const { petId, medicalAppointmentId} = Astro.params;
+
+---
+
+<AppLayout>
+  <PetMedicalAppointmentPage {petId} {medicalAppointmentId} />
+</AppLayout>
