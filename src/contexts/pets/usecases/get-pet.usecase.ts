@@ -3,6 +3,7 @@ import type { PetResource } from "../services/resources/pet.resource";
 import { PetsApiMock } from "../services/mock/pets.mock";
 
 interface PetInfo extends Pet {
+    ownerName: string;
 }
 
 export function getPet(petId: number): PetInfo {
@@ -12,5 +13,8 @@ export function getPet(petId: number): PetInfo {
         // TODO: return error message
     }
 
-    return existingPet;
+    return {
+        ...existingPet,
+        ownerName: "Dueño de ejemplo"
+    };
 }

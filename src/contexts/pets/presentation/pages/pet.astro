@@ -1,7 +1,16 @@
 ---
+import petProfilePhoto from "../../../../assets/petProfilePhoto.png";
+import { getPet } from "../../usecases/get-pet.usecase";
 import PetBaseTextInput from "../components/pet-base-text-input.astro";
 
-const { petId } = Astro.props;
+const { petId: petIdString } = Astro.props;
+
+// Los parámetros de la URL siempre son strings.
+// Los convertimos a número para usarlos en la lógica de la aplicación.
+const petId = Number(petIdString);
+
+// Es una buena práctica manejar el caso en que el ID no sea un número válido.
+const pet = !isNaN(petId) ? getPet(petId) : null;
 
 const inputFields = [
     {
@@ -10,7 +19,8 @@ const inputFields = [
         type: "text",
         autocomplete: "name",
         placeholder: "Pepito",
-        label: "Nombre"
+        label: "Nombre",
+        value: pet?.name,
     },
     {
         id: "owner",
@@ -18,7 +28,8 @@ const inputFields = [
         type: "text",
         autocomplete: "owner",
         placeholder: "Manuel Quispe",
-        label: "Propietario"
+        label: "Propietario",
+        value: pet?.ownerName,
     },
     {
         id: "birthday",
@@ -26,7 +37,8 @@ const inputFields = [
         type: "date",
         autocomplete: "birthday",
         placeholder: "17 / 03 / 2021",
-        label: "Fecha de nacimiento"
+        label: "Fecha de nacimiento",
+        value: pet?.birthday,
     },
     {
         id: "age",
@@ -34,7 +46,8 @@ const inputFields = [
         type: "number",
         autocomplete: "age",
         placeholder: "40",
-        label: "Edad"
+        label: "Edad",
+        value: pet?.age,
     },
     {
         id: "species",
@@ -42,7 +55,8 @@ const inputFields = [
         type: "text",
         autocomplete: "species",
         placeholder: "Perro",
-        label: "Especie"
+        label: "Especie",
+        value: pet?.species,
     },
     {
         id: "subspecies",
@@ -50,18 +64,24 @@ const inputFields = [
         type: "text",
         autocomplete: "subspecies",
         placeholder: "Subespecie",
-        label: "Subespecie"
+        label: "Subespecie",
+        value: pet?.subspecies,
     }
 ]
 
 ---
-
+<!-- Mostramos un mensaje de error si la mascota no se encuentra o el ID es inválido -->
+{ !pet && (
+    <div class="p-8 text-center text-red-500 font-semibold">Mascota no encontrada o ID inválido.</div>
+) }
+<!-- Solo renderizamos el formulario si encontramos la mascota -->
+{ pet && (
 <div class="p-4 sm:p-6 lg:p-8 h-full">
     <h2 class="text-2xl font-bold">Datos de la mascota</h2>
     <form class="flex items-center gap-8 h-full">
         <div class="flex flex-col flex-3 items-center rounded-md outline-3 outline-blue-800 px-7 py-15">
             <div class="w-fit">
-                <img src="/src/assets/petProfilePhoto.png" alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" transition:persist />
+                <img src={petProfilePhoto.src} alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" transition:persist />
             </div>
             <PetBaseTextInput {...inputFields[0]} class="w-full" />
         </div>
@@ -79,3 +99,4 @@ const inputFields = [
         </div>
     </form>
 </div>
+) }

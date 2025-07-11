@@ -1,9 +1,16 @@
 ---
+import petProfilePhoto from "../../../../assets/petProfilePhoto.png";
 import PetBaseTextInput from "../../../pets/presentation/components/pet-base-text-input.astro";
 import { getMedicalAppointment } from "../../usecases/get-medicalappointment.usecase";
-import { getAllMedicalAppointmentsByPetId } from "../../usecases/getall-medicalappointments-by-petid.usecase";
+import { getPet } from "../../../pets/usecases/get-pet.usecase";
 
-const { petId, medicalAppointmentId } = Astro.props;
+const { petId: petIdString, medicalAppointmentId: medicalAppointmentIdString } = Astro.props;
+
+const petId = Number(petIdString);
+const medicalAppointmentId = Number(medicalAppointmentIdString);
+
+const pet = getPet(petId);
+
 const medicalAppointment = getMedicalAppointment(medicalAppointmentId);
 
 const inputFields = [
@@ -14,6 +21,7 @@ const inputFields = [
         autocomplete: "name",
         placeholder: "Pepito",
         label: "Nombre",
+        value: pet.name,
     },
 ];
 
@@ -39,7 +47,7 @@ const medicalAppointmentSections = [
     <form class="flex items-center gap-8 h-full">
         <div class="flex flex-col flex-3 items-center rounded-md outline-3 outline-blue-800 px-7 py-15">
             <div class="w-fit">
-                <img src="/src/assets/petProfilePhoto.png" alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" />
+                <img src={petProfilePhoto.src} alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" />
             </div>
             <PetBaseTextInput {...inputFields[0]} class="w-full" />
         </div>
