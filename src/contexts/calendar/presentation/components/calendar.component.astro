@@ -1,0 +1,119 @@
+---
+import ChevronLeftIcon from "../components/icons/ChevronLeftIcon.astro";
+import ChevronRightIcon from "../components/icons/ChevronRightIcon.astro";
+import type { EventListItemInfo } from "../../usecases/getall-events.usecase";
+
+const { data } = Astro.props;
+
+interface CalendarDay {
+    day: number,
+    isCurrentMonth: boolean,
+    isToday?: boolean,
+    event?: EventListItemInfo
+};
+
+const { selectedDate, events } = data;
+
+// --- Lógica del Calendario ---
+const today = new Date();
+
+// --- Configuración del Calendario ---
+// Puedes cambiar el primer día de la semana. 0 = Domingo, 1 = Lunes, etc.
+const weekStartDay = 1; // Empezar la semana en Lunes
+
+const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const daysOfWeekNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+// Reordenamos los días de la semana para que empiecen en el día configurado
+const daysOfWeek = [...daysOfWeekNames.slice(weekStartDay), ...daysOfWeekNames.slice(0, weekStartDay)]
+
+const year = selectedDate.getFullYear();
+const month = selectedDate.getMonth(); // 0-indexed (6 = Julio)
+
+const firstDayOfMonth = new Date(year, month, 1);
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+const startDayOfWeek = (firstDayOfMonth.getDay() - weekStartDay + 7) % 7; // 0=Domingo, 1=Lunes...
+
+// Creamos un array con todos los días que se mostrarán en la cuadrícula
+const calendarDays: CalendarDay[] = [];
+
+// 1. Días del mes anterior para rellenar
+const daysInPrevMonth = new Date(year, month, 0).getDate();
+for (let i = startDayOfWeek; i > 0; i--) {
+    calendarDays.push({
+        day: daysInPrevMonth - i + 1,
+        isCurrentMonth: false
+    });
+}
+
+// 2. Días del mes actual
+for (let i = 1; i <= daysInMonth; i++) {
+    const currentDate = new Date(year, month, i);
+    const isToday = currentDate.toDateString() === today.toDateString();
+    const dateString = currentDate.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const eventOnDay = events.find((e: EventListItemInfo) => e.startDateTime.toISOString().split('T')[0] === dateString);
+
+    calendarDays.push({
+        day: i,
+        isCurrentMonth: true,
+        isToday: isToday,
+        event: eventOnDay
+    });
+}
+
+// 3. Días del mes siguiente para rellenar
+const gridCells = 42; // 6 filas * 7 columnas para cubrir todos los casos
+const remainingCells = gridCells - calendarDays.length;
+for (let i = 1; i <= remainingCells; i++) {
+    calendarDays.push({
+        day: i,
+        isCurrentMonth: false
+    });
+}
+
+---
+
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <!-- Encabezado del Calendario -->
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-800">
+            {monthNames[selectedDate.getMonth()]} {selectedDate.getFullYear()}
+        </h2>
+        <div class="flex space-x-2">
+            <button class="p-2 rounded-full hover:bg-gray-100" title="Mes anterior">
+                <ChevronLeftIcon />
+            </button>
+            <button class="p-2 rounded-full hover:bg-gray-100" title="Mes siguiente">
+                <ChevronRightIcon />
+            </button>
+        </div>
+    </div>
+
+    <!-- Días de la semana -->
+    <div class="grid grid-cols-7 gap-2 text-center text-sm text-gray-500 font-semibold mb-2">
+        {daysOfWeek.map(day => <div>{day}</div>)}
+    </div>
+
+    <!-- Cuadrícula de Días -->
+    <div class="grid grid-cols-7 gap-2">
+        {calendarDays.map((dayInfo: CalendarDay) => (
+            <div class:list={[
+                "p-2 h-24 flex flex-col rounded-md transition-colors duration-200",
+                dayInfo.isCurrentMonth ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 text-gray-400',
+                dayInfo.isCurrentMonth && 'border border-gray-200'
+            ]}>
+                <div class:list={[
+                    "w-8 h-8 flex items-center justify-center rounded-full font-medium",
+                    dayInfo.isToday && 'bg-blue-600 text-white'
+                ]}>
+                    {dayInfo.day}
+                </div>
+                {dayInfo.event && (
+                    <div class="mt-1 text-xs bg-blue-100 text-blue-800 rounded px-1 py-0.5 truncate cursor-pointer" title={dayInfo.event.title}>
+                        {dayInfo.event.title}
+                    </div>
+                )}
+            </div>
+        ))}
+    </div>
+</div>

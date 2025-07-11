@@ -1,0 +1,17 @@
+---
+import { getAllEvents } from "../../usecases/getall-events.usecase"
+import CalendarComponent from "../components/calendar.component.astro";
+
+const events = getAllEvents();
+const today = new Date();
+
+const data = {
+    selectedDate: today,
+    events: events,
+};
+---
+
+<div class="p-4 sm:p-6 lg:p-8 h-full">
+    <h2 class="text-2xl font-bold mb-5">Calendario</h2>
+    <CalendarComponent {data} />
+</div>
