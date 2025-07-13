@@ -47,7 +47,7 @@ const options = [
                     optionsGroup.map(option => {
                         const Icon = icons[option.icon];
                         return (
-                            <a href={option.href} class={optionClass}>
+                            <a href={option.href} class={optionClass} title={option.displayName}>
                                 <Icon class="w-6 h-6 flex-shrink-0" />
                                 <span class="nav-text whitespace-nowrap transition-all duration-200">{option.displayName}</span>
                             </a>
@@ -83,14 +83,53 @@ const options = [
 </style>
 
 <script>
+    const storageKey = 'sidebar-collapsed';
+
+    // Función para aplicar el estado desde localStorage.
+    // Se llamará tanto en la carga inicial como en cada navegación.
+    function applyState() {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+
+        const isCollapsed = localStorage.getItem(storageKey) === 'true';
+        if (isCollapsed) {
+            sidebar.classList.add('is-collapsed');
+        } else {
+            sidebar.classList.remove('is-collapsed');
+        }
+    }
+
+    // Se ejecuta DESPUÉS de que el nuevo contenido se ha añadido, pero ANTES de que se muestre.
+    // Esto es clave para evitar el flash en las navegaciones del lado del cliente.
+    document.addEventListener('astro:after-swap', applyState);
+
+    // Se ejecuta cuando la página está completamente cargada.
+    // Es el mejor lugar para añadir listeners de eventos.
     document.addEventListener('astro:page-load', () => {
         const sidebar = document.getElementById('sidebar');
         const toggleButton = document.getElementById('toggle-button');
 
         if (sidebar && toggleButton) {
+
             toggleButton.addEventListener('click', () => {
-                sidebar.classList.toggle('is-collapsed');
+                // toggle devuelve true si la clase se añadió, false si se quitó
+                const currentlyCollapsed = sidebar.classList.toggle('is-collapsed');
+                localStorage.setItem(storageKey, String(currentlyCollapsed));
             });
         }
     });
+</script>
+
+<script is:inline>
+    // Este script se ejecuta inmediatamente para evitar el "flash" de la animación en la PRIMERA carga de página.
+    // Establece el estado inicial de la barra lateral ANTES de que la página se renderice por completo.
+    try {
+        const storageKey = 'sidebar-collapsed';
+        const isCollapsed = localStorage.getItem(storageKey) === 'true';
+        if (isCollapsed) {
+            document.getElementById('sidebar').classList.add('is-collapsed');
+        }
+    } catch (e) {
+        // En caso de que localStorage no esté disponible (ej. en modo incógnito estricto)
+    }
 </script>
