@@ -1,4 +1,4 @@
-import { http } from "../../_shared/api/http-common.api";
+import { http } from "../../_shared/services/api/http-common.api";
 
 export class UsersApi {
     private static baseUrl = "users";

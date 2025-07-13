@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import SideBar from '../contexts/_shared/presentation/components/side-bar.component.astro';
 import Layout from './Layout.astro';
 ---
 
@@ -8,18 +9,7 @@ import Layout from './Layout.astro';
   <ClientRouter />
   <div class="flex h-screen bg-gray-100">
     <!-- Esta barra lateral persistirá entre las navegaciones de la página -->
-    <aside class="w-64 bg-white shadow-md flex flex-col">
-      <div class="p-4 text-2xl font-bold">VitalVet</div>
-      <nav class="mt-4 mb-6 flex flex-col justify-between flex-1">
-        <div>
-          <a href="/app/home" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Pacientes</a>
-          <a href="/app/calendar" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Calendario</a>
-        </div>
-        <div>
-          <a href="/app/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-200">Perfil</a>
-        </div>
-      </nav>
-    </aside>
+    <SideBar />
 
     <main class="flex-1"><slot /></main>
   </div>

@@ -1,0 +1,57 @@
+---
+import CalendarBaseTextInput from "../components/calendar-base-text-input.component.astro"
+
+const { eventId = -1 } = Astro.props;
+
+const inputFields = [
+    {
+        id: "title",
+        name: "title",
+        type: "text",
+        autocomplete: "title",
+        placeholder: "Cita de revisión",
+        label: "Título",
+    },
+    {
+        id: "start",
+        name: "start",
+        type: "datetime-local",
+        autocomplete: "start",
+        placeholder: "17 / 03 / 2021",
+        label: "Inicio",
+    },
+    {
+        id: "end",
+        name: "end",
+        type: "datetime-local",
+        autocomplete: "end",
+        placeholder: "17 / 03 / 2021",
+        label: "Fin",
+    },
+    {
+        id: "description",
+        name: "description",
+        type: "text",
+        autocomplete: "description",
+        placeholder: "Descripción del evento",
+        label: "Descripción",
+    }
+]
+---
+
+<div class="p-8 flex flex-col gap-8">
+    <h2 class="text-2xl font-bold">Nuevo evento</h2>
+    <form class="flex flex-row gap-10 w-[80%]">
+        <div class="flex-3">
+            {
+                inputFields.map(fields => 
+                    <CalendarBaseTextInput {...fields} />
+                )
+            }
+        </div>
+        <div class="flex-1">
+            <h3>Notificaciones</h3>
+            <button>Añadir notificación</button>
+        </div>
+    </form>
+</div>

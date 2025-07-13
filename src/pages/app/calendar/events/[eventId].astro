@@ -1,0 +1,11 @@
+---
+import AppLayout from "../../../../layouts/AppLayout.astro"
+import EventPage from "../../../../contexts/calendar/presentation/pages/event.page.astro"
+
+export const prerender = false;
+const { eventId } = Astro.params;
+---
+
+<AppLayout>
+    <EventPage {eventId} />
+</AppLayout>

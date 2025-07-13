@@ -1,0 +1,33 @@
+---
+
+const optionClass = "block px-4 py-2 text-gray-700 hover:bg-gray-200";
+
+const options = [
+    [
+        { displayName: "Pacientes", href: "/app/home" },
+        { displayName: "Calendario", href: "/app/calendar" },
+    ],
+    [
+        { displayName: "Perfil", href: "/app/profile" },
+        { displayName: "Cerrar sesión", href: "/app/login" },
+    ]
+]
+
+---
+
+<aside class="w-64 bg-white shadow-md flex flex-col">
+    <div class="p-4 text-2xl font-bold">VitalVet</div>
+    <nav class="mt-4 mb-6 flex flex-col justify-between flex-1">
+        {
+            options.map(group => 
+                <div>
+                { 
+                    group.map(option => 
+                        <a href={option.href} class={optionClass}>{option.displayName}</a>
+                    )
+                }
+                </div>
+            )
+        }
+    </nav>
+</aside>
