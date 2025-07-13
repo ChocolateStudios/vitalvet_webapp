@@ -13,6 +13,7 @@
       "astro-build.astro-vscode"
       "google.geminicodeassist"
       "hediet.vscode-drawio"
+      "jock.svg"
     ];
     workspace = {
       # Runs when a workspace is first created with this `dev.nix` file

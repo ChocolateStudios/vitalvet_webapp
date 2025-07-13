@@ -1,33 +1,96 @@
 ---
+import VitalvetIcon from './icons/VitalvetIcon.astro';
+import PatientIcon from './icons/PatientIcon.astro';
+import CalendarIcon from './icons/CalendarIcon.astro';
+import ProfileIcon from './icons/ProfileIcon.astro';
+import LogoutIcon from './icons/LogoutIcon.astro';
+import DoubleChevronRightIcon from './icons/DoubleChevronRightIcon.astro';
 
-const optionClass = "block px-4 py-2 text-gray-700 hover:bg-gray-200";
+// Mapeamos los nombres de los iconos a sus componentes importados
+const icons: any = {
+    patient: PatientIcon,
+    calendar: CalendarIcon,
+    profile: ProfileIcon,
+    logout: LogoutIcon,
+};
+
+const optionClass = "flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors overflow-hidden";
 
 const options = [
     [
-        { displayName: "Pacientes", href: "/app/home" },
-        { displayName: "Calendario", href: "/app/calendar" },
+        { displayName: "Pacientes", href: "/app/home", icon: "patient" },
+        { displayName: "Calendario", href: "/app/calendar", icon: "calendar" },
     ],
     [
-        { displayName: "Perfil", href: "/app/profile" },
-        { displayName: "Cerrar sesión", href: "/app/login" },
+        { displayName: "Perfil", href: "/app/profile", icon: "profile" },
+        { displayName: "Cerrar sesión", href: "/app/login", icon: "logout" },
     ]
 ]
 
 ---
 
-<aside class="w-64 bg-white shadow-md flex flex-col">
-    <div class="p-4 text-2xl font-bold">VitalVet</div>
-    <nav class="mt-4 mb-6 flex flex-col justify-between flex-1">
+<aside id="sidebar" class="group my-14 mx-6 rounded-xl w-50 bg-white shadow-md flex flex-col transition-all duration-300 ease-in-out">
+    <div class="relative p-4 flex justify-center items-center">
+        <div class="flex justify-center items-center gap-2 text-xl font-bold transition-opacity duration-400 group-hover:opacity-0">
+            <VitalvetIcon class="w-6.5 h-6.5" />
+            <span class="sidebar-logo-text whitespace-nowrap transition-all duration-200">VitalVet</span>
+        </div>
+        <button id="toggle-button" class="absolute flex items-center justify-center px-4 py-2 w-[87%] opacity-0 group-hover:opacity-100 transition-opacity duration-400 hover:bg-gray-100 rounded-xl cursor-pointer" title="Contraer/Expandir barra lateral">
+            <DoubleChevronRightIcon id="toggle-icon" class="text-gray-600 transition-transform duration-300 ease-in-out rotate-180" />
+        </button>
+    </div>
+    <nav class="mt-2 mb-2 flex flex-col justify-between flex-1 p-3">
         {
-            options.map(group => 
-                <div>
+            options.map(optionsGroup => 
+                <div class="space-y-1">
                 { 
-                    group.map(option => 
-                        <a href={option.href} class={optionClass}>{option.displayName}</a>
-                    )
+                    optionsGroup.map(option => {
+                        const Icon = icons[option.icon];
+                        return (
+                            <a href={option.href} class={optionClass}>
+                                <Icon class="w-6 h-6 flex-shrink-0" />
+                                <span class="nav-text whitespace-nowrap transition-all duration-200">{option.displayName}</span>
+                            </a>
+                        );
+                    })
                 }
                 </div>
             )
         }
     </nav>
 </aside>
+
+<style>
+    @reference "tailwindcss";
+
+    #sidebar.is-collapsed {
+        @apply w-20;
+    }
+    #sidebar.is-collapsed .sidebar-logo-text,
+    #sidebar.is-collapsed .nav-text {
+        @apply opacity-0 w-0 pointer-events-none;
+    }
+    #sidebar.is-collapsed #toggle-icon {
+        @apply rotate-0;
+    }
+    #sidebar.is-collapsed #toggle-button {
+        @apply w-fit;
+    }
+
+    #sidebar.is-collapsed .gap-2 {
+        @apply gap-0;
+    }
+</style>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const sidebar = document.getElementById('sidebar');
+        const toggleButton = document.getElementById('toggle-button');
+
+        if (sidebar && toggleButton) {
+            toggleButton.addEventListener('click', () => {
+                sidebar.classList.toggle('is-collapsed');
+            });
+        }
+    });
+</script>
