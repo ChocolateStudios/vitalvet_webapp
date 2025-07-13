@@ -1,16 +1,18 @@
 ---
 import AuthLayout from '../../layouts/AuthLayout.astro';
+import VitalvetIcon from '../../contexts/_shared/presentation/components/icons/VitalvetIcon.astro';
 ---
 
 <AuthLayout>
-  <div class="p-8 flex flex-col gap-4">
-    <div>
-      <h1 class="text-2xl font-bold">VitalVet</h1>
-      <h2>Servicios veterinarios</h2>
+  <div class="relative p-8 flex flex-col justify-center items-center gap-10 h-full overflow-hidden">
+    <VitalvetIcon class="absolute w-90 h-90 mt-[-160px] z-0 opacity-50 [mask-image:linear-gradient(to_bottom,white_50%,transparent)]" />
+    <div class="text-center z-10 mt-18">
+      <h1 class="text-7xl font-extrabold">VitalVet</h1>
+      <h2 class="text-xl font-bold">Servicios veterinarios</h2>
     </div>
-    <div class="flex flex-col gap-2">
-      <a href="/app/login" class=" w-50 p-2 rounded-lg outline-2 bg-red-700 font-semibold hover:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Iniciar sesión</a>
-      <a href="/app/register" class=" w-50 p-2 rounded-lg outline-2 bg-red-700 font-semibold hover:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Registrarse</a>
+    <div class="flex flex-col gap-2 z-10">
+      <a href="/app/login" class="text-center w-50 p-2 rounded-lg outline-2 outline-[#6faab5] bg-[#6faab5]/50 font-semibold hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200">Iniciar sesión</a>
+      <a href="/app/register" class="text-center w-50 p-2 rounded-lg outline-2 outline-gray-400 bg-white font-semibold hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200">Registrarse</a>
     </div>
   </div>
 </AuthLayout>

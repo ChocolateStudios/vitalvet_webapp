@@ -1,0 +1,50 @@
+---
+import PetBaseTextInput from "../../../pets/presentation/components/pet-base-text-input.astro"
+
+const inputFields = [
+    {
+        id: "name",
+        name: "name",
+        type: "text",
+        autocomplete: "name",
+        placeholder: "Pepito",
+        label: "Nombres",
+    },
+    {
+        id: "lastname",
+        name: "lastname",
+        type: "text",
+        autocomplete: "lastname",
+        placeholder: "Quispe",
+        label: "Apellidos",
+    },
+    {
+        id: "birthday",
+        name: "birthday",
+        type: "date",
+        autocomplete: "birthday",
+        placeholder: "17 / 03 / 2021",
+        label: "Fecha de nacimiento",
+    },
+    {
+        id: "email",
+        name: "email",
+        type: "email",
+        autocomplete: "email",
+        placeholder: "john.catron@example-pet-store.com",
+        label: "Correo electrónico",
+    },
+]
+---
+
+<div class="p-4">
+    <h1 class="text-2xl font-bold">Perfil</h1>
+    <form>
+        <img />
+        {
+            inputFields.map(input => 
+                <PetBaseTextInput {...input} />
+            )
+        }
+    </form>
+</div>
