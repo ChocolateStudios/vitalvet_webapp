@@ -1,0 +1,13 @@
+---
+
+const { left, right } = Astro.props;
+
+---
+
+<div class:list={[
+    "relative min-h-screen w-full bg-white flex items-center overflow-hidden",
+    { 'justify-end': right },
+    { 'justify-start': left },
+]}>
+    <slot />
+</div>

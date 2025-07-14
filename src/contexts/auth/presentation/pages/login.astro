@@ -1,4 +1,5 @@
 ---
+import AuthContainer from "../components/auth-container.component.astro"
 import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro"
 import DogCat from "../../../../assets/dogcat.png"
 
@@ -23,14 +24,14 @@ const inputFields = [
 
 ---
 
-<div class="relative min-h-screen w-full bg-white flex justify-end items-center">
+<AuthContainer right>
     <!-- Background Image with reduced opacity -->
      <div class="absolute inset-0 z-0 bg-cover bg-center opacity-40 ml-[-200px]" style={`background-image: url(${DogCat.src})`}></div>
     <!-- White gradient overlay -->
      <div class="absolute inset-0 z-0 [background-image:linear-gradient(100deg,transparent,white_50%)]"></div>
 
     <!-- Form Content -->
-    <div class="flex flex-col items-end z-20 m-12 gap-6 p-8 sm:p-12 w-full max-w-md">
+    <div class="flex flex-col items-end z-20 m-12 gap-6 p-8 sm:p-12 w-full max-w-lg">
         <h1 class="font-bold text-3xl">Iniciar sesión</h1>
         <p class="text-base text-slate-600">¿No tienes cuenta? <a href="/app/register" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Regístrate</a></p>
         <form id="login-form" class="flex flex-col w-full items-end gap-5" novalidate>
@@ -43,7 +44,7 @@ const inputFields = [
             <button id="submit-button" type="submit" class="w-fit rounded-full bg-[#6faab5] px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6faab5]/30 transition-colors hover:bg-[#5f9ea8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] disabled:bg-slate-400 disabled:cursor-not-allowed">Iniciar sesión</button>
         </form>
     </div>
-</div>
+</AuthContainer>
 
 <script>
     import { SaveUserResource } from "../../services/resources/save-user.resource";

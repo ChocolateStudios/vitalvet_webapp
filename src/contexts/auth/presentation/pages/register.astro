@@ -1,5 +1,7 @@
 ---
-import AuthBaseTextInput from "../components/auth-base-text-input.astro"
+import AuthContainer from "../components/auth-container.component.astro"
+import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro"
+import DogCat from "../../../../assets/dogcat.png"
 
 const inputFields = [
     {
@@ -42,24 +44,132 @@ const inputFields = [
 ]
 ---
 
-<div class="flex flex-col m-12 gap-4">
-    <h1 class="font-bold text-2xl">Registro</h1>
-    <p class="text-base">¿Ya tienes cuenta? <a href="/app/login" class="text-blue-800 font-bold">Inicia sesión</a></p>
-    <form class="flex flex-col gap-5">
-        {
-            inputFields.map((inputField) => 
-            inputField.asRow ? 
-                <div class="flex flex-row gap-5">
-                    {
-                        inputField.children.map((child) => 
-                            <AuthBaseTextInput {...child} class="w-full flex-1" />
-                        )
-                    }
-                </div> 
-                : 
-                <AuthBaseTextInput {...inputField} />
-            )
+<AuthContainer left>
+    <!-- Background Image with reduced opacity -->
+    <div class="absolute inset-0 z-0 bg-cover bg-center opacity-40 ml-[300px]" style={`background-image: url(${DogCat.src})`}></div>
+    <!-- White gradient overlay -->
+     <div class="absolute inset-0 z-0 [background-image:linear-gradient(100deg,white_50%,transparent)]"></div>
+
+    <div class="flex flex-col z-20 m-12 gap-6 p-8 sm:p-12 w-full max-w-lg">
+        <h1 class="font-bold text-3xl">Registro</h1>
+        <p class="text-base text-slate-600">¿Ya tienes cuenta? <a href="/app/login" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Inicia sesión</a></p>
+        <form id="register-form" class="flex flex-col w-full gap-5">
+            {
+                inputFields.map((inputField) => 
+                inputField.asRow ? 
+                    <div class="flex flex-row gap-5">
+                        {
+                            inputField.children.map((child) => 
+                                <BaseTextInput {...child} class="w-full flex-1" />
+                            )
+                        }
+                    </div> 
+                    : 
+                    <BaseTextInput {...inputField} class="w-full" />
+                )
+            }
+            <div id="form-error" class="text-red-600 text-sm font-semibold"></div>
+            <button id="submit-button" type="submit" class="w-fit rounded-full bg-[#6faab5] px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6faab5]/30 transition-colors hover:bg-[#5f9ea8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] disabled:bg-slate-400 disabled:cursor-not-allowedlg">Registrarse</button>
+        </form>
+    </div>
+</AuthContainer>
+
+<script>
+    import { SaveUserResource } from "../../services/resources/save-user.resource";
+    import { registerUser } from "../../usecases/register-user.usecase";
+
+    const form = document.getElementById('register-form') as HTMLFormElement | null;
+
+    if (form) {
+        const nameInput = document.getElementById('name') as HTMLInputElement;
+        const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
+        const emailInput = document.getElementById('email') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        const formError = document.getElementById('form-error') as HTMLDivElement;
+
+        const showError = (input: HTMLInputElement, message: string) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = message;
+            }
+            // Cambia el color del borde del input a rojo
+            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+            input.classList.add('outline-red-500', 'focus:outline-red-500');
         }
-        <button type="submit" class="w-fit rounded-full bg-blue-900 px-7 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Registrarse</button>
-    </form>
-</div>
+
+        const clearError = (input: HTMLInputElement) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = '';
+            }
+            // Restaura el color del borde del input
+            input.classList.remove('outline-red-500', 'focus:outline-red-500');
+            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+        }
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            // Limpia errores previos
+            clearError(emailInput);
+            clearError(passwordInput);
+            if (formError) {
+                formError.textContent = '';
+            }
+
+            const name = nameInput.value;
+            const lastname = lastnameInput.value;
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            let isValid = true;
+
+            // Validaciones
+            if (!name) {
+                showError(nameInput, 'El nombre es obligatorio');
+                isValid = false;
+            }
+
+            if (!lastname) {
+                showError(lastnameInput, 'El apellido es obligatorio');
+                isValid = false;
+            }
+
+            if (!email) {
+                showError(emailInput, 'El correo es obligatorio');
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError(emailInput, 'Por favor, introduce un correo válido');
+                isValid = false;
+            }
+            
+            if (!password) {
+                showError(passwordInput, 'La contraseña es obligatoria');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+                isValid = false;
+            }   
+
+            if (isValid) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Registrando...';
+
+                try {
+                    const response = registerUser(new SaveUserResource(email, password));
+                    if (response.success) {
+                        window.location.href = '/app/home';
+                    } else {
+                        formError.textContent = response.message ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                    }
+                } catch (error) {
+                    console.error('Error al registrar usuario:', error);
+                    formError.textContent = 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Registrarse';
+                }
+            }
+        });
+    }
+</script>
