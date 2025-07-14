@@ -59,7 +59,7 @@ const pets: Pet[] = [
 
 export class PetsApiMock {
     static registerPet(data: SavePetResource): PetResource {
-        const newPet: Pet = data.toPet();
+        const newPet: Pet = data.toModel();
         newPet.id = pets.length + 1;
 
         pets.push(newPet);

@@ -19,7 +19,7 @@ export class SavePetResource {
         this.birthday = birthday;
     }
 
-    public toPet(): Pet {
+    public toModel(): Pet {
         return {
             id: 0,
             name: this.name,

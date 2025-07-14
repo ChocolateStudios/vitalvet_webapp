@@ -1,0 +1,54 @@
+---
+
+const { id, name, type, autocomplete, label, class: className = "" } = Astro.props;
+
+const hasIconLeft = Astro.slots.has('icon-left');
+const hasIconRight = Astro.slots.has('icon-right');
+---
+
+<div class:list={["relative w-full", className]}>
+    <!-- Slot para el ícono izquierdo -->
+    {hasIconLeft && (
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">
+            <slot name="icon-left" />
+        </div>
+    )}
+
+    <!-- Slot para el ícono derecho -->
+    {hasIconRight && (
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500">
+            <slot name="icon-right" />
+        </div>
+    )}
+
+    <input 
+        {id} 
+        {name} 
+        {type} 
+        {autocomplete} 
+        placeholder=""
+        class:list={[
+            "peer block w-full rounded-md border border-gray-300 bg-white px-3.5 pb-2.5 pt-5 text-base text-gray-900",
+            "focus:outline-none focus:ring-0 focus:border-2 focus:border-[#6faab5]",
+            { 'pl-10': hasIconLeft },  // Padding extra si hay ícono a la izquierda
+            { 'pr-10': hasIconRight }, // Padding extra si hay ícono a la derecha
+        ]} 
+    />
+
+    <label 
+        for={id} 
+        class:list={[
+            "pointer-events-none absolute top-4 z-10 origin-[0] transform text-base text-gray-500 duration-300",
+            "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100",
+            "peer-focus:-translate-y-3 peer-not-placeholder-shown:scale-75",
+            "peer-not-placeholder-shown:-translate-y-3 peer-not-placeholder-shown:scale-75",
+            "peer-autofill:scale-75 peer-autofill:-translate-y-3",
+            "peer-focus:text-[#6faab5]",
+            hasIconLeft ? "left-10" : "left-3.5"
+        ]}
+    >
+        {label}
+    </label>
+
+    <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4"></div>
+</div>

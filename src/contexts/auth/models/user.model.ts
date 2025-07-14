@@ -1,7 +1,6 @@
-import type { BaseModel } from "../../_shared/models/base.model";
-import type { AuditableModel } from "../../_shared/models/auditable.model";
+import { BaseModel } from "../../_shared/models/base.model";
 
-export interface User extends BaseModel, AuditableModel {
-    username: string;
-    password: string;
+export class User extends BaseModel {
+    public username: string = "";
+    public password: string = "";
 }
