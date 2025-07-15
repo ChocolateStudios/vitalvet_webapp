@@ -1,6 +1,6 @@
 ---
 
-const { id, name, type, autocomplete, label, class: className = "" } = Astro.props;
+const { id, name, type, autocomplete, label, value = "",  class: className = "" } = Astro.props;
 
 const hasIconLeft = Astro.slots.has('icon-left');
 const hasIconRight = Astro.slots.has('icon-right');
@@ -25,7 +25,8 @@ const hasIconRight = Astro.slots.has('icon-right');
         {id} 
         {name} 
         {type} 
-        {autocomplete} 
+        {autocomplete}
+        {value}
         placeholder=""
         class:list={[
             "peer block w-full rounded-md border border-gray-300 bg-white px-3.5 pb-2.5 pt-5 text-base text-gray-900",

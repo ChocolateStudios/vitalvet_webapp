@@ -1,5 +1,6 @@
 ---
-import PetBaseTextInput from "../../../pets/presentation/components/pet-base-text-input.astro"
+import ContentContainer from "../../../_shared/presentation/components/content-container.component.astro"
+import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro"
 
 const inputFields = [
     {
@@ -37,14 +38,14 @@ const inputFields = [
 ]
 ---
 
-<div class="p-4">
+<ContentContainer>
     <h1 class="text-2xl font-bold">Perfil</h1>
     <form>
         <img />
         {
             inputFields.map(input => 
-                <PetBaseTextInput {...input} />
+                <BaseTextInput {...input} />
             )
         }
     </form>
-</div>
+</ContentContainer>
