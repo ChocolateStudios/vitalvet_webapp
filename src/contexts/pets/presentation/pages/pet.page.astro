@@ -1,35 +1,44 @@
 ---
-import petProfilePhoto from "../../../../assets/petProfilePhoto.png";
-import { getPet } from "../../usecases/get-pet.usecase";
-import ContentContainer from "../../../_shared/presentation/components/content-container.component.astro";
-import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro";
+import petProfilePhoto from "@/assets/petProfilePhoto.png";
+import { getPet } from "@/contexts/pets/usecases/get-pet.usecase";
+import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro";
+import BaseTextInput from "@/contexts/_shared/presentation/components/base-text-input.component.astro";
+import DeletePetDialog from "@/contexts/pets/presentation/components/delete-pet-dialog.component.astro";
+import EditIcon from "@/contexts/_shared/presentation/components/icons/EditIcon.astro";
 
-const { petId: petIdString } = Astro.props;
+// const { petId: petIdString } = Astro.props;
+const { petId } = Astro.props;
 
 // Los parámetros de la URL siempre son strings.
 // Los convertimos a número para usarlos en la lógica de la aplicación.
-const petId = Number(petIdString);
+// const petId = Number(petIdString);
 
 // Es una buena práctica manejar el caso en que el ID no sea un número válido.
-const pet = !isNaN(petId) ? getPet(petId) : null;
+let pet = null;
+const getPetResult = await getPet(petId);
 
-const inputFields = [
-    {
-        id: "name",
-        name: "name",
-        type: "text",
-        autocomplete: "name",
-        placeholder: "Pepito",
-        label: "Nombre",
-        value: pet?.name,
-    },
+if (getPetResult.success) {
+    pet = getPetResult.data;
+}
+
+const profileInput = {
+    id: "name",
+    name: "name",
+    type: "text",
+    autocomplete: "name",
+    placeholder: "Pepito",
+    label: "Nombre",
+    value: pet?.name,
+};
+
+const detailInputs = [
     {
         id: "owner",
         name: "owner",
         type: "text",
         autocomplete: "owner",
         placeholder: "Manuel Quispe",
-        label: "Propietario",
+        label: "Propietario", // TODO: Cambiar por select de propietarios
         value: pet?.ownerName,
     },
     {
@@ -39,7 +48,7 @@ const inputFields = [
         autocomplete: "birthday",
         placeholder: "17 / 03 / 2021",
         label: "Fecha de nacimiento",
-        value: pet?.birthday,
+        value: pet?.birthday ? pet.birthday.toISOString().split('T')[0] : "",
     },
     {
         id: "age",
@@ -71,35 +80,221 @@ const inputFields = [
 ]
 
 ---
-<!-- Mostramos un mensaje de error si la mascota no se encuentra o el ID es inválido -->
-{ !pet && (
-    <ContentContainer>
-        <div class="p-8 text-center text-red-500 font-semibold">Mascota no encontrada o ID inválido.</div>
-    </ContentContainer>
-) }
-<!-- Solo renderizamos el formulario si encontramos la mascota -->
-{ pet && (
-    <ContentContainer class="h-full">
-        <h2 class="text-2xl font-bold">Datos de la mascota</h2>
-        <form class="flex items-center gap-8 h-full">
-            <div class="flex flex-col flex-3 items-center rounded-md outline-3 outline-blue-800 px-7 py-15">
-                <div class="w-fit">
-                    <img src={petProfilePhoto.src} alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" transition:persist />
-                </div>
-                <BaseTextInput {...inputFields[0]} class="w-full" />
+<!-- TODO: Reconocer si se han hecho cambios en cada input y según eso habilitar o deshabilitar el botón "Guardar cambios" 
+ y si es que se navega a otra página, mostrar una alerta indicando que se van a perder los datos -->
+<!-- Si existe pet mostrar datos y opciones para editar o eliminar -->
+<!-- Si no existe pet entonces mostrar vacio como para crear un pet -->
+<ContentContainer class="h-full">
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold leading-tight text-gray-900">
+            { pet ? "Datos de la mascota" : "Nueva mascota" }
+        </h2>
+        { pet && <p class="mt-1 text-md text-gray-600">Revisa y actualiza la información de {pet.name}.</p> }
+    </div>
+    <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate>
+        <!-- Card de Perfil (Izquierda) -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center">
+            <div class="relative w-40 h-40 mb-6">
+                <img 
+                    src={petProfilePhoto.src} 
+                    alt={`Foto de ${pet?.name || 'mascota'}`} 
+                    class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md" 
+                    transition:name={pet ? `pet-photo-${pet.id}`: 'new-pet-photo'}
+                />
+                <button type="button" aria-label="Cambiar foto" class="absolute bottom-0 right-0 bg-[#6faab5] text-white rounded-full p-2 hover:bg-[#5f9ea8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]">
+                    <EditIcon />
+                </button>
             </div>
-            <div class="flex flex-col flex-4 rounded-md outline-3 outline-blue-950 px-7 py-8">
-                {
-                    inputFields.map((input, index) => 
-                        index > 0 ? <BaseTextInput {...input} /> : ""
-                    )
+            <BaseTextInput {...profileInput} class="w-full" />
+        </div>
+
+        <!-- Card de Detalles (Derecha) -->
+        <div class="lg:col-span-3 bg-white rounded-xl shadow-lg p-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Información detallada</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            {
+                detailInputs.map(input => 
+                    <BaseTextInput {...input} />
+                )
+            }
+            </div>
+            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
+                { pet &&
+                    <>
+                        {/* <a href="#" class="rounded-md bg-gray-200 px-4 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400">
+                            Ver galería
+                        </a> */}
+                        <a href={`/app/pets/${petId}/medical-history`} class="rounded-md bg-gray-200 px-4 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400">
+                            Historial médico
+                        </a>
+                    </>
                 }
-                <div class="flex flex-col gap-1">
-                    <a href="#" class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Ver galería</a>
-                    <a href={`/app/pets/${petId}/medical-history`} class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Ver citas médicas</a>
-                    <button type="submit" class="rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">Guardar</button>
-                </div>
+                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                    { pet ? "Guardar cambios" : "Crear mascota" }
+                </button>
+                { pet &&
+                    <>
+                        <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                            Eliminar
+                        </button>
+                        <DeletePetDialog petName={pet?.name} />
+                    </>
+                }
             </div>
-        </form>
-    </ContentContainer>
-) }
+        </div>
+    </form>
+</ContentContainer>
+
+<script>
+    import { SavePetResource } from "@/contexts/pets/services/resources/save-pet.resource";
+    import { createPet } from "@/contexts/pets/usecases/create-pet.usecase";
+    import { updatePet } from "@/contexts/pets/usecases/update-pet.usecase";
+
+    const form = document.getElementById('pet-form') as HTMLFormElement | null;
+
+    if (form) {
+        const petNameInput = document.getElementById('name') as HTMLInputElement;
+        const petOwnerInput = document.getElementById('owner') as HTMLInputElement;
+        const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
+        const petAgeInput = document.getElementById('age') as HTMLInputElement;
+        const petSpeciesInput = document.getElementById('species') as HTMLInputElement;
+        const petSubspeciesInput = document.getElementById('subspecies') as HTMLInputElement;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        const formError = document.getElementById('form-error') as HTMLDivElement;
+        
+        const isNewPet = !form.dataset.petId;
+
+        const showError = (input: HTMLInputElement, message: string) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = message;
+            }
+            // Cambia el color del borde del input a rojo
+            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+            input.classList.add('outline-red-500', 'focus:outline-red-500');
+        }
+
+        const clearError = (input: HTMLInputElement) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = '';
+            }
+            // Restaura el color del borde del input
+            input.classList.remove('outline-red-500', 'focus:outline-red-500');
+            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Limpia errores previos
+            clearError(petNameInput);
+            clearError(petOwnerInput);
+            clearError(birthdayInput);
+            clearError(petAgeInput);
+            clearError(petSpeciesInput);
+            clearError(petSubspeciesInput);
+            if (formError) {
+                formError.textContent = '';
+            }
+
+            const petName = petNameInput.value;
+            const petOwner = petOwnerInput.value;
+            const birthday = birthdayInput.value;
+            const petAge = petAgeInput.value;
+            const petSpecies = petSpeciesInput.value;
+            const petSubspecies = petSubspeciesInput.value;
+
+            let isValid = true;
+
+            // Validaciones
+            if (!petName) {
+                showError(petNameInput, 'El nombre es obligatorio');
+                isValid = false;
+            } else if (petName.length < 3) {
+                showError(petNameInput, 'El nombre debe tener al menos 3 caracteres');
+                isValid = false;
+            }
+
+            if (!petOwner) {
+                showError(petOwnerInput, 'El nombre del dueño es obligatorio');
+                isValid = false;
+            }
+
+            if (!birthday) {
+                showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
+                isValid = false;
+            }
+
+            if (!petAge) {
+                showError(petAgeInput, 'La edad es obligatoria');
+                isValid = false;
+            } else if (isNaN(Number(petAge))) {
+                showError(petAgeInput, 'La edad debe ser un número válido');
+                isValid = false;
+            }
+
+            if (!petSpecies) {
+                showError(petSpeciesInput, 'La especie es obligatoria');
+                isValid = false;
+            }
+
+            if (!petSubspecies) {
+                showError(petSubspeciesInput, 'La subespecie es obligatoria');
+                isValid = false;
+            } 
+
+            if (isValid) {
+                submitButton.disabled = true;
+
+                const resource = new SavePetResource(petName, Number(petAge), petSpecies, petSubspecies, "", 0, new Date(birthday));
+
+                if (isNewPet) {
+                    submitButton.textContent = 'Creando mascota...';
+
+                    try {
+                        const response = await createPet(resource);
+                        if (response.success) {
+                            window.location.href = '/app/home';
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al crear mascota. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al crear mascota:', error);
+                        formError.textContent = 'Error al crear mascota. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Crear mascota';
+                    }
+                } else {
+                    submitButton.textContent = 'Actualizando mascota...';
+
+                    try {
+                        const response = await updatePet(form.dataset.petId!, resource);
+                        if (response.success) {
+                            window.location.reload();
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al crear mascota:', error);
+                        formError.textContent = 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Guardar cambios';
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Lógica para el botón de eliminar ---
+    const openDialogButton = document.getElementById('open-delete-dialog-button');
+    // Dialog in delete-pet-dialog.component.astro
+    const dialog = document.getElementById('delete-dialog');
+    const toggleDialog = (show: boolean) => {
+        dialog?.classList.toggle('hidden', !show);
+    }
+
+    openDialogButton?.addEventListener('click', () => toggleDialog(true));
+</script>

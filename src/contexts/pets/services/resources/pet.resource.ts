@@ -17,6 +17,7 @@ export class PetResource extends AuditableModel {
     public static fromModel(model: Pet): PetResource {
         const resource = new PetResource();
         resource.id = model.id;
+        resource.stringId = model.stringId;
         resource.name = model.name;
         resource.age = model.age;
         resource.species = model.species;

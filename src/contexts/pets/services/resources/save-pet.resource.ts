@@ -22,6 +22,7 @@ export class SavePetResource {
     public toModel(): Pet {
         return {
             id: 0,
+            stringId: "",
             name: this.name,
             age: this.age,
             species: this.species,

@@ -1,12 +1,12 @@
 ---
 
-const { id, name, type, autocomplete, label, value = "",  class: className = "" } = Astro.props;
+const { id, name, type, autocomplete, label, value = "",  class: className = "", visible = true } = Astro.props;
 
 const hasIconLeft = Astro.slots.has('icon-left');
 const hasIconRight = Astro.slots.has('icon-right');
 ---
 
-<div class:list={["relative w-full", className]}>
+<div class:list={["relative w-full", className, visible ? "visible" : "hidden"]}>
     <!-- Slot para el ícono izquierdo -->
     {hasIconLeft && (
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">

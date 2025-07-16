@@ -1,6 +1,6 @@
-import type { Pet } from "../models/pet.model";
-import { PetsApiMock } from "../services/mock/pets.mock";
-import { PetsRepository } from "../services/repositories/pets.repository";
+import type { Pet } from "@/contexts/pets/models/pet.model";
+import { PetsApiMock } from "@/contexts/pets/services/mock/pets.mock";
+import { PetsRepository } from "@/contexts/pets/services/repositories/pets.repository";
 
 interface PetListItemInfo extends Pet {
     lastVisit: Date,
