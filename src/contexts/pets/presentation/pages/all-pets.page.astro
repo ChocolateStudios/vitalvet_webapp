@@ -4,7 +4,7 @@ import SearchBar from "../components/search-bar.component.astro";
 import { getAllPets } from "../../usecases/getall-pets.usecase";
 import { formatRelativeTime } from "../../../_shared/utils/date-formatter";
 
-const pets = getAllPets();
+const pets = await getAllPets();
 
 const tableHeaders = [
     "Nombre (edad)",
