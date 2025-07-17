@@ -17,4 +17,8 @@ export class MedicalAppointmentResource extends AuditableModel {
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
     }
+
+    static fromModel(model: MedicalAppointment) {
+        return new MedicalAppointmentResource(model);
+    }
 }

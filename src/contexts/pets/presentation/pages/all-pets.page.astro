@@ -1,8 +1,8 @@
 ---
-import ContentContainer from "../../../_shared/presentation/components/content-container.component.astro";
-import SearchBar from "../components/search-bar.component.astro";
-import { getAllPets } from "../../usecases/getall-pets.usecase";
-import { formatRelativeTime } from "../../../_shared/utils/date-formatter";
+import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro";
+import SearchBar from "@/contexts/pets/presentation/components/search-bar.component.astro";
+import { getAllPets } from "@/contexts/pets/usecases/getall-pets.usecase";
+import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter";
 
 const pets = await getAllPets();
 
@@ -20,7 +20,7 @@ const tableHeaders = [
         <h2 class="text-2xl font-bold leading-6 text-gray-900">Pacientes</h2>
         <div class="flex gap-4">
             <SearchBar id="pet-search" name="pet-search" placeholder="Buscar por nombre..." />
-            <a href="/app/pets/newPet" class="block rounded-md bg-blue-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">
+            <a href="/app/pets/newPet" class="block rounded-md bg-[#6faab5] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5]">
                 Añadir Mascota
             </a>
         </div>
@@ -33,7 +33,7 @@ const tableHeaders = [
                         <tr>
                             {
                                 tableHeaders.map(header => 
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">{header}</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-base font-semibold text-gray-900">{header}</th>
                                 )
                             }
                             <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
@@ -45,15 +45,15 @@ const tableHeaders = [
                         {
                             pets.map(pet => 
                                 <tr class="relative hover:bg-gray-50 cursor-pointer">
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 font-medium">
+                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500 font-medium">
                                         <a href={`/app/pets/${pet.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de ${pet.name}`}>
                                             <span class="relative z-10">{pet.name} ({pet.age})</span>
                                         </a>
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{pet.species}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{formatRelativeTime(pet.lastVisit)}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{pet.appointmentCount}</td>
-                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.species}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{formatRelativeTime(pet.lastVisit)}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.appointmentCount}</td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-base font-medium sm:pr-0">
                                         <a href={`/app/pets/${pet.id}/edit`} class="text-blue-800 hover:text-blue-900 relative z-10">...<span class="sr-only">, {pet.name}</span></a>
                                     </td>
                                 </tr>

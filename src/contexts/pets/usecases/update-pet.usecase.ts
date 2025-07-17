@@ -4,11 +4,11 @@ import type { PetResource } from "@/contexts/pets/services/resources/pet.resourc
 import type { Pet } from "@/contexts/pets/models/pet.model";
 import { PetsRepository } from "@/contexts/pets/services/repositories/pets.repository";
 
-interface PetInfo extends Pet {
-    ownerName: string;
-}
+// interface PetInfo extends Pet {
+//     ownerName: string;
+// }
 
-export async function updatePet(petId: string, pet: SavePetResource): Promise<UsecaseResult<PetInfo>> {
+export async function updatePet(petId: string, pet: SavePetResource): Promise<UsecaseResult<any>> {
     let existingPet: PetResource;
     
     try {
@@ -28,10 +28,6 @@ export async function updatePet(petId: string, pet: SavePetResource): Promise<Us
     }
 
     return {
-        data: {
-            ...existingPet,
-            ownerName: "John Doe",
-        },
         success: true,
     }
 }

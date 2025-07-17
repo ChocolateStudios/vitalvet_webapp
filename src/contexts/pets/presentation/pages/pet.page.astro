@@ -26,7 +26,6 @@ const profileInput = {
     name: "name",
     type: "text",
     autocomplete: "name",
-    placeholder: "Pepito",
     label: "Nombre",
     value: pet?.name,
 };
@@ -37,7 +36,6 @@ const detailInputs = [
         name: "owner",
         type: "text",
         autocomplete: "owner",
-        placeholder: "Manuel Quispe",
         label: "Propietario", // TODO: Cambiar por select de propietarios
         value: pet?.ownerName,
     },
@@ -46,7 +44,6 @@ const detailInputs = [
         name: "birthday",
         type: "date",
         autocomplete: "birthday",
-        placeholder: "17 / 03 / 2021",
         label: "Fecha de nacimiento",
         value: pet?.birthday ? pet.birthday.toISOString().split('T')[0] : "",
     },
@@ -55,7 +52,6 @@ const detailInputs = [
         name: "age",
         type: "number",
         autocomplete: "age",
-        placeholder: "40",
         label: "Edad",
         value: pet?.age,
     },
@@ -64,7 +60,6 @@ const detailInputs = [
         name: "species",
         type: "text",
         autocomplete: "species",
-        placeholder: "Perro",
         label: "Especie",
         value: pet?.species,
     },
@@ -73,7 +68,6 @@ const detailInputs = [
         name: "subspecies",
         type: "text",
         autocomplete: "subspecies",
-        placeholder: "Subespecie",
         label: "Subespecie",
         value: pet?.subspecies,
     }
@@ -93,13 +87,12 @@ const detailInputs = [
     </div>
     <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate>
         <!-- Card de Perfil (Izquierda) -->
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center">
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">
                 <img 
                     src={petProfilePhoto.src} 
                     alt={`Foto de ${pet?.name || 'mascota'}`} 
-                    class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md" 
-                    transition:name={pet ? `pet-photo-${pet.id}`: 'new-pet-photo'}
+                    class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md"
                 />
                 <button type="button" aria-label="Cambiar foto" class="absolute bottom-0 right-0 bg-[#6faab5] text-white rounded-full p-2 hover:bg-[#5f9ea8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]">
                     <EditIcon />
@@ -134,7 +127,7 @@ const detailInputs = [
                 </button>
                 { pet &&
                     <>
-                        <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                        <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer">
                             Eliminar
                         </button>
                         <DeletePetDialog petName={pet?.name} />

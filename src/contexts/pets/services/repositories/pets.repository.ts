@@ -1,8 +1,8 @@
 import { get, push, ref, remove, set, update } from "firebase/database";
-import type { Pet } from "../../models/pet.model";
-import { PetResource } from "../resources/pet.resource";
-import type { SavePetResource } from "../resources/save-pet.resource";
-import { db } from "../../../../firebase/client";
+import type { Pet } from "@/contexts/pets/models/pet.model";
+import { PetResource } from "@/contexts/pets/services/resources/pet.resource";
+import type { SavePetResource } from "@/contexts/pets/services/resources/save-pet.resource";
+import { db } from "@/firebase/client";
 
 const PETS_PATH = 'pets';
 

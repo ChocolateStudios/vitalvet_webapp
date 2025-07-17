@@ -1,75 +1,235 @@
 ---
-import petProfilePhoto from "../../../../assets/petProfilePhoto.png";
-import ContentContainer from "../../../_shared/presentation/components/content-container.component.astro";
-import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro";
-import { getMedicalAppointment } from "../../usecases/get-medicalappointment.usecase";
-import { getPet } from "../../../pets/usecases/get-pet.usecase";
+import petProfilePhoto from "@/assets/petProfilePhoto.png";
+import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro";
+import BaseTextInput from "@/contexts/_shared/presentation/components/base-text-input.component.astro";
+import BaseTextArea from "@/contexts/_shared/presentation/components/base-text-area.component.astro";
+import DeletePetMedicalAppointmentDialog from "@/contexts/medical_histories/presentation/components/delete-pet-medical-appointment-dialog.component.astro";
+import { getMedicalAppointment } from "@/contexts/medical_histories/usecases/get-medicalappointment.usecase";
+import { getPet } from "@/contexts/pets/usecases/get-pet.usecase";
 
-const { petId: petIdString, medicalAppointmentId: medicalAppointmentIdString } = Astro.props;
+const { petId, medicalAppointmentId } = Astro.props;
 
-const petId = Number(petIdString);
-const medicalAppointmentId = Number(medicalAppointmentIdString);
+// const petId = Number(petIdString);
+// const medicalAppointmentId = Number(medicalAppointmentIdString);
 
-const pet = getPet(petId);
+let pet = null;
+let medicalAppointment = null;
 
-const medicalAppointment = getMedicalAppointment(medicalAppointmentId);
+const getPetResult = await getPet(petId);
 
-const inputFields = [
-    {
-        id: "name",
-        name: "name",
-        type: "text",
-        autocomplete: "name",
-        placeholder: "Pepito",
-        label: "Nombre",
-        value: pet.name,
-    },
-];
+if (getPetResult.success) {
+    pet = getPetResult.data;
+}
+
+const getMedicalAppointmentResult = await getMedicalAppointment(medicalAppointmentId);
+
+if (getMedicalAppointmentResult.success) {
+    medicalAppointment = getMedicalAppointmentResult.data;
+}
+
+const profileInput = {
+    id: "name",
+    name: "name",
+    type: "text",
+    autocomplete: "name",
+    placeholder: "Pepito",
+    label: "Nombre",
+    value: pet?.name,
+};
 
 const medicalAppointmentSections = [
     {
-        title: "Datos de la cita",
-        content: medicalAppointment.details,
+        id: "details",
+        name: "details",
+        label: "Datos de la cita",
+        value: medicalAppointment?.details,
+        placeholder: "Motivo de la consulta, síntomas, etc."
     },
     {
-        title: "Observaciones",
-        content: medicalAppointment.observations,
+        id: "observations",
+        name: "observations",
+        label: "Observaciones",
+        value: medicalAppointment?.observations,
+        placeholder: "Observaciones del veterinario durante la consulta."
     },
     {
-        title: "Receta",
-        content: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Porro distinctio dolor perferendis, aliquid delectus aperiam laudantium unde voluptatem, laborum mollitia tempora reiciendis accusamus nemo aspernatur. Laboriosam nulla quod harum molestiae.",
+        id: "prescription",
+        name: "prescription",
+        label: "Receta / Tratamiento",
+        value: "", // Suponiendo que la receta no está en el modelo actual
+        placeholder: "Medicamentos, dosis y tratamiento a seguir."
     },
 ];
 
 ---
 
 <ContentContainer class="h-full">
-    <h2 class="text-2xl font-bold">Cita médica N° {medicalAppointment.appointmentNumber}</h2>
-    <form class="flex items-center gap-8 h-full">
-        <div class="flex flex-col flex-3 items-center rounded-md outline-3 outline-blue-800 px-7 py-15">
-            <div class="w-fit">
-                <img src={petProfilePhoto.src} alt="Foto de Pepito" class="rounded-full w-40 h-40 object-cover border" />
+    <h2 class="text-2xl font-bold leading-tight text-gray-900 mb-8">
+        {
+            medicalAppointment ? 
+                `Cita médica N° ${medicalAppointment?.appointmentNumber}`
+                :
+                "Nueva cita médica"
+        }
+    </h2>
+    <form id="medicalappointment-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} data-medical-appointment-id={medicalAppointment?.id} novalidate>
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
+            <div class="relative w-40 h-40 mb-6">
+                <img 
+                    src={petProfilePhoto.src} 
+                    alt={`Foto de ${pet?.name || 'mascota'}`} 
+                    class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md" 
+                />
             </div>
-            <BaseTextInput {...inputFields[0]} class="w-full" />
+            <BaseTextInput {...profileInput} class="w-full" />
         </div>
-        <div class="flex flex-col flex-4 gap-4 overflow-y-auto">
+        <div class="lg:col-span-3">
             {
                 medicalAppointmentSections.map(section => 
-                    <details class="group border border-gray-200 rounded-lg overflow-hidden">
-                        <summary class="flex items-center justify-between p-4 cursor-pointer list-none bg-gray-50 hover:bg-gray-100 transition">
-                            <h3 class="font-semibold text-gray-800">{section.title}</h3>
-                            <div class="transition-transform duration-300 group-open:rotate-180">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                            </div>
-                        </summary>
-                        <div class="p-4 border-t border-gray-200 bg-white text-gray-700">
-                            {section.content}
-                        </div>
-                    </details>
+                    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                        <BaseTextArea {...section} />
+                    </div>
                 )
             }
+            <div class="flex sm:flex-wrap sm:flex-row sm:justify-end mt-4 gap-4">
+                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-6 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                    {
+                        medicalAppointment ? "Guardar cambios" : "Crear cita médica"
+                    }
+                </button>
+                { medicalAppointment &&
+                    <>
+                        <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer">
+                            Eliminar
+                        </button>
+                        <DeletePetMedicalAppointmentDialog />
+                    </>
+                }
+            </div>
         </div>
     </form>
 </ContentContainer>
+
+<script>
+    import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/save-medical-appointment.resource";
+    import { createMedicalAppointment } from "@/contexts/medical_histories/usecases/create-medicalappointment.usecase";
+    import { updateMedicalAppointment } from "@/contexts/medical_histories/usecases/update-medicalappointment.usecase";
+
+    const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
+
+    if (form) {
+        const detailsInput = document.getElementById('details') as HTMLInputElement;
+        const observationsInput = document.getElementById('observations') as HTMLInputElement;
+        // const prescriptionInput = document.getElementById('prescription') as HTMLInputElement;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        const formError = document.getElementById('form-error') as HTMLDivElement;
+        
+        const isNewMedicalAppointment = !form.dataset.medicalAppointmentId;
+
+        const showError = (input: HTMLInputElement, message: string) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = message;
+            }
+            // Cambia el color del borde del input a rojo
+            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+            input.classList.add('outline-red-500', 'focus:outline-red-500');
+        }
+
+        const clearError = (input: HTMLInputElement) => {
+            const errorContainer = document.getElementById(`${input.id}-error-container`);
+            if (errorContainer) {
+                errorContainer.textContent = '';
+            }
+            // Restaura el color del borde del input
+            input.classList.remove('outline-red-500', 'focus:outline-red-500');
+            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Limpia errores previos
+            clearError(detailsInput);
+            clearError(observationsInput);
+            // clearError(prescriptionInput);
+            if (formError) {
+                formError.textContent = '';
+            }
+
+            const details = detailsInput.value;
+            const observations = observationsInput.value;
+            // const prescription = prescriptionInput.value;
+
+            let isValid = true;
+
+            // Validaciones
+            if (!details) {
+                showError(detailsInput, 'Los detalles son obligatorios');
+                isValid = false;
+            }
+
+            if (!observations) {
+                showError(observationsInput, 'Las observaciones son obligatorias');
+                isValid = false;
+            }
+
+            // if (!prescription) {
+            //     showError(prescriptionInput, 'La receta/tratamiento es obligatoria');
+            //     isValid = false;
+            // }
+
+            if (isValid) {
+                submitButton.disabled = true;
+
+                const resource = new SaveMedicalAppointmentResource(details, observations, 0);
+
+                if (isNewMedicalAppointment) {
+                    submitButton.textContent = 'Creando cita médica...';
+
+                    try {
+                        const response = await createMedicalAppointment(form.dataset.petId!, resource);
+                        if (response.success) {
+                            window.location.href = `/app/pets/${form.dataset.petId!}/medical-histories`;
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al crear cita médica:', error);
+                        formError.textContent = 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Crear cita médica';
+                    }
+                } else {
+                    submitButton.textContent = 'Actualizando cita médica...';
+
+                    try {
+                        const response = await updateMedicalAppointment(form.dataset.medicalAppointmentId!, resource);
+                        if (response.success) {
+                            window.location.reload();
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al actualizar la cita médica:', error);
+                        formError.textContent = 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Guardar cambios';
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Lógica para el botón de eliminar ---
+    const openDialogButton = document.getElementById('open-delete-dialog-button');
+    // Dialog in delete-pet-dialog.component.astro
+    const dialog = document.getElementById('delete-dialog');
+    const toggleDialog = (show: boolean) => {
+        dialog?.classList.toggle('hidden', !show);
+    }
+
+    openDialogButton?.addEventListener('click', () => toggleDialog(true));
+</script>
