@@ -2,7 +2,7 @@
 import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro";
 import SearchBar from "@/contexts/pets/presentation/components/search-bar.component.astro";
 import { getAllPets } from "@/contexts/pets/usecases/getall-pets.usecase";
-import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter";
+import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter.util";
 
 const pets = await getAllPets();
 
@@ -36,9 +36,6 @@ const tableHeaders = [
                                 <th scope="col" class="px-3 py-3.5 text-left text-base font-semibold text-gray-900">{header}</th>
                                 )
                             }
-                            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                                <span class="sr-only">Editar</span>
-                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -53,9 +50,6 @@ const tableHeaders = [
                                     <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.species}</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{formatRelativeTime(pet.lastVisit)}</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.appointmentCount}</td>
-                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-base font-medium sm:pr-0">
-                                        <a href={`/app/pets/${pet.id}/edit`} class="text-blue-800 hover:text-blue-900 relative z-10">...<span class="sr-only">, {pet.name}</span></a>
-                                    </td>
                                 </tr>
                             )
                         }

@@ -108,7 +108,7 @@ const inputFields = [
             input.classList.add('outline-gray-300', 'focus:outline-blue-800');
         }
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
             // Limpia errores previos
@@ -156,11 +156,11 @@ const inputFields = [
                 submitButton.textContent = 'Registrando...';
 
                 try {
-                    const response = registerUser(new SaveUserResource(email, password));
+                    const response = await registerUser(new SaveUserResource(email, password));
                     if (response.success) {
                         window.location.href = '/app/home';
                     } else {
-                        formError.textContent = response.message ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                        formError.textContent = response.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
                     }
                 } catch (error) {
                     console.error('Error al registrar usuario:', error);

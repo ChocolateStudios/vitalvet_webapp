@@ -78,7 +78,7 @@ const inputFields = [
             input.classList.add('outline-gray-300', 'focus:outline-blue-800');
         }
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
             // Limpia errores previos
@@ -114,11 +114,11 @@ const inputFields = [
                 submitButton.textContent = 'Iniciando sesión...';
 
                 try {
-                    const response = loginUser(new SaveUserResource(email, password));
+                    const response = await loginUser(new SaveUserResource(email, password));
                     if (response.success) {
                         window.location.href = '/app/home';
                     } else {
-                        formError.textContent = response.message ?? 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
+                        formError.textContent = response.errorMessage ?? 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
                     }
                 } catch (error) {
                     console.error('Error al iniciar sesión:', error);

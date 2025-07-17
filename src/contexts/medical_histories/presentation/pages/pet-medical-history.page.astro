@@ -4,7 +4,7 @@ import ContentContainer from "../../../_shared/presentation/components/content-c
 import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro";
 import { getAllMedicalAppointmentsByPetId } from "../../usecases/getall-medicalappointments-by-petid.usecase";
 import { getPet } from "../../../pets/usecases/get-pet.usecase";
-import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter";
+import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter.util";
 
 const { petId } = Astro.props;
 

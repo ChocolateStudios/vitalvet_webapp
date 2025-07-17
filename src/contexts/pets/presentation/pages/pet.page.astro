@@ -68,7 +68,7 @@ const detailInputs = [
         name: "subspecies",
         type: "text",
         autocomplete: "subspecies",
-        label: "Subespecie",
+        label: "Raza",
         value: pet?.subspecies,
     }
 ]
@@ -233,7 +233,7 @@ const detailInputs = [
             }
 
             if (!petSubspecies) {
-                showError(petSubspeciesInput, 'La subespecie es obligatoria');
+                showError(petSubspeciesInput, 'La raza es obligatoria');
                 isValid = false;
             } 
 

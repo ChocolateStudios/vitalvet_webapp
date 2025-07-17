@@ -1,14 +1,14 @@
 ---
-import ContentContainer from "../../../_shared/presentation/components/content-container.component.astro"
-import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro"
+import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro"
+import BaseTextInput from "@/contexts/_shared/presentation/components/base-text-input.component.astro"
 
-const inputFields = [
+
+const profileInputs = [
     {
         id: "name",
         name: "name",
         type: "text",
         autocomplete: "name",
-        placeholder: "Pepito",
         label: "Nombres",
     },
     {
@@ -16,7 +16,6 @@ const inputFields = [
         name: "lastname",
         type: "text",
         autocomplete: "lastname",
-        placeholder: "Quispe",
         label: "Apellidos",
     },
     {
@@ -24,7 +23,6 @@ const inputFields = [
         name: "birthday",
         type: "date",
         autocomplete: "birthday",
-        placeholder: "17 / 03 / 2021",
         label: "Fecha de nacimiento",
     },
     {
@@ -32,20 +30,30 @@ const inputFields = [
         name: "email",
         type: "email",
         autocomplete: "email",
-        placeholder: "john.catron@example-pet-store.com",
         label: "Correo electrónico",
+    },
+    {
+        id: "phone",
+        name: "phone",
+        type: "text",
+        autocomplete: "phone",
+        label: "Teléfono",
     },
 ]
 ---
 
 <ContentContainer>
-    <h1 class="text-2xl font-bold">Perfil</h1>
-    <form>
-        <img />
-        {
-            inputFields.map(input => 
-                <BaseTextInput {...input} />
-            )
-        }
+    <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">Perfil</h1>
+    <form class="flex justify-center" novalidate>
+        <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
+            {
+                profileInputs.map(input => 
+                    <BaseTextInput {...input} />
+                )
+            }
+            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                Guardar cambios
+            </button>
+        </div>
     </form>
 </ContentContainer>
