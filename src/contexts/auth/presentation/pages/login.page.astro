@@ -47,6 +47,9 @@ const inputFields = [
 </AuthContainer>
 
 <script>
+    import { SaveUserResource } from "../../services/resources/save-user.resource";
+    import { loginUser } from "../../usecases/login-user.usecase";
+
     const form = document.getElementById('login-form') as HTMLFormElement | null;
 
     if (form) {
@@ -107,19 +110,11 @@ const inputFields = [
                 submitButton.textContent = 'Iniciando sesión...';
 
                 try {
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username: email, password })
-                    });
-
-                    if (response.ok) {
+                    const response = await loginUser(new SaveUserResource(email, password));
+                    if (response.success) {
                         window.location.href = '/app/home';
                     } else {
-                        const errorData = await response.json();
-                        formError.textContent = errorData.message || 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
+                        formError.textContent = response.errorMessage ?? 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
                     }
                 } catch (error) {
                     console.error('Error al iniciar sesión:', error);

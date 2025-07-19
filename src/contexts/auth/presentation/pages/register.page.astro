@@ -75,6 +75,9 @@ const inputFields = [
 </AuthContainer>
 
 <script>
+    import { SaveUserResource } from "../../services/resources/save-user.resource";
+    import { registerUser } from "../../usecases/register-user.usecase";
+
     const form = document.getElementById('register-form') as HTMLFormElement | null;
 
     if (form) {
@@ -151,19 +154,11 @@ const inputFields = [
                 submitButton.textContent = 'Registrando...';
 
                 try {
-                    const response = await fetch('/api/auth/register', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ name, lastname, username: email, password })
-                    });
-
-                    if (response.ok) {
+                    const response = await registerUser(new SaveUserResource(email, password));
+                    if (response.success) {
                         window.location.href = '/app/home';
                     } else {
-                        const errorData = await response.json();
-                        formError.textContent = errorData.message || 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                        formError.textContent = response.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
                     }
                 } catch (error) {
                     console.error('Error al registrar usuario:', error);

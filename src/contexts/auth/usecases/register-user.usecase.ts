@@ -1,62 +1,34 @@
 import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
-import { UsersApiMock } from "../services/mock/users.mock";
-import type { AuthenticatedUserResource } from "../services/resources/authenticated-user.resource";
 import type { SaveUserResource } from "../services/resources/save-user.resource";
-import { UsersRepository } from "../services/repositories/users.repository";
 
 export async function registerUser(saveResource: SaveUserResource): Promise<UsecaseResult<any>> {
-    let authenticatedUser: AuthenticatedUserResource | null = null;
-
     try {
-        authenticatedUser = await UsersRepository.registerUser(saveResource);
-    } catch (error) {
-        if (error instanceof Error){
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: saveResource.username, password: saveResource.password})
+        });
+
+        if (response.ok) {
+            const authenticatedUser = await response.json();
+            localStorage.setItem("token", authenticatedUser.token);
+            return {
+                success: true,
+            };
+        } else {
+            const errorData = await response.json();
             return {
                 success: false,
-                errorMessage: error.message,
+                errorMessage: errorData.message || 'Error al registrar el usuario. Por favor, inténtalo de nuevo.',
             };
         }
-    }
-
-    if (!authenticatedUser) {
-        return {
-            success: false,
-            errorMessage: "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
-        };
-    }
-
-    localStorage.setItem("token", authenticatedUser.token);
-    return {
-        success: true,
-    };
-}
-
-export function registerUserMocked(saveResource: SaveUserResource): any/*AuthenticationResponse*/ {
-    let authenticatedUser: AuthenticatedUserResource | null = null;
-
-    try {
-        authenticatedUser = UsersApiMock.registerUser(saveResource);
     } catch (error) {
-        if (error instanceof Error){
-            if (error.message === "Username already taken") {
-                return {
-                    success: false,
-                    message: "El nombre de usuario ya está en uso.",
-                };
-            }
-        }
-    }
-
-    if (!authenticatedUser) {
+        console.error('Error al registrar el usuario:', error);
         return {
             success: false,
-            message: "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+            errorMessage: 'Error al registrar el usuario. Por favor, inténtalo de nuevo.',
         };
     }
-
-    localStorage.setItem("token", authenticatedUser.token);
-    return {
-        success: true,
-        message: "Usuario registrado correctamente",
-    };
 }
