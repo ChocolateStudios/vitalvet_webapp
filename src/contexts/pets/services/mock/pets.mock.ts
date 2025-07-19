@@ -18,6 +18,7 @@ const pets: Pet[] = [
         birthday: new Date(2025, 0, 15, 3, 5, 12),
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "1",
     },
     {
         id: 2,
@@ -30,6 +31,7 @@ const pets: Pet[] = [
         birthday: new Date(2025, 0, 15, 3, 5, 12),
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "2",
     },
     {
         id: 3,
@@ -42,6 +44,7 @@ const pets: Pet[] = [
         birthday: new Date(2025, 0, 15, 3, 5, 12),
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "3",
     },
     {
         id: 4,
@@ -54,6 +57,7 @@ const pets: Pet[] = [
         birthday: new Date(2025, 0, 15, 3, 5, 12),
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "4",
     },
 ];
 

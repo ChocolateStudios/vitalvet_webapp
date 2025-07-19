@@ -3,7 +3,8 @@ import type { User } from "../../models/user.model";
 
 export class AuthenticatedUserResource extends BaseModel {
     public username: string = "";
-    public password: string = "";
+    public name: string = "";
+    public lastname: string = "";
     public token: string = "";
 
     public constructor() {
@@ -13,8 +14,8 @@ export class AuthenticatedUserResource extends BaseModel {
     public static fromModel(model: User): AuthenticatedUserResource {
         const resource = new AuthenticatedUserResource();
         resource.username = model.username;
-        resource.password = model.password;
-        resource.token = "";
+        resource.name = model.name;
+        resource.lastname = model.lastname;
         return resource;
     }
 }

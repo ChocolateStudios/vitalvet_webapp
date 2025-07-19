@@ -7,19 +7,27 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "astro check"
   },
   "engines": {
     "node": "20"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.4",
     "@astrojs/node": "^9.3.0",
     "@tailwindcss/vite": "^4.1.11",
     "astro": "^5.10.1",
     "axios": "^1.10.0",
+    "bcrypt": "^6.0.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.3.2",
-    "tailwindcss": "^4.1.11"
+    "jsonwebtoken": "^9.0.2",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0"
   }
 }

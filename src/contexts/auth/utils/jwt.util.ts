@@ -1,4 +1,3 @@
-// src/contexts/auth/services/jwt.service.ts
 import jwt from 'jsonwebtoken';
 
 interface JwtPayload {
@@ -6,10 +5,10 @@ interface JwtPayload {
 }
 
 const JWT_SECRET = import.meta.env.JWT_SECRET;
-const JWT_EXPIRES_IN = '30d'; // Token válido por 7 días
+const JWT_EXPIRES_IN = '30d'; // Token válido por 30 días
 
 if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET no está definida en las variables de entorno. Asegúrate de crear  un archivo .env');
+    throw new Error('JWT_SECRET no está definida en las variables de entorno. Asegúrate de crear un archivo .env');
 }
 
 /**

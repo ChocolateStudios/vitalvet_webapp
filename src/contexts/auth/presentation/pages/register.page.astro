@@ -75,9 +75,6 @@ const inputFields = [
 </AuthContainer>
 
 <script>
-    import { SaveUserResource } from "../../services/resources/save-user.resource";
-    import { registerUser } from "../../usecases/register-user.usecase";
-
     const form = document.getElementById('register-form') as HTMLFormElement | null;
 
     if (form) {
@@ -93,7 +90,6 @@ const inputFields = [
             if (errorContainer) {
                 errorContainer.textContent = message;
             }
-            // Cambia el color del borde del input a rojo
             input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
             input.classList.add('outline-red-500', 'focus:outline-red-500');
         }
@@ -103,7 +99,6 @@ const inputFields = [
             if (errorContainer) {
                 errorContainer.textContent = '';
             }
-            // Restaura el color del borde del input
             input.classList.remove('outline-red-500', 'focus:outline-red-500');
             input.classList.add('outline-gray-300', 'focus:outline-blue-800');
         }
@@ -111,7 +106,8 @@ const inputFields = [
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            // Limpia errores previos
+            clearError(nameInput);
+            clearError(lastnameInput);
             clearError(emailInput);
             clearError(passwordInput);
             if (formError) {
@@ -124,7 +120,6 @@ const inputFields = [
             const password = passwordInput.value;
             let isValid = true;
 
-            // Validaciones
             if (!name) {
                 showError(nameInput, 'El nombre es obligatorio');
                 isValid = false;
@@ -156,11 +151,19 @@ const inputFields = [
                 submitButton.textContent = 'Registrando...';
 
                 try {
-                    const response = await registerUser(new SaveUserResource(email, password));
-                    if (response.success) {
+                    const response = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name, lastname, username: email, password })
+                    });
+
+                    if (response.ok) {
                         window.location.href = '/app/home';
                     } else {
-                        formError.textContent = response.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                        const errorData = await response.json();
+                        formError.textContent = errorData.message || 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
                     }
                 } catch (error) {
                     console.error('Error al registrar usuario:', error);

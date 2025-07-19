@@ -13,6 +13,7 @@ const events: Event[] = [
         petId: 1,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "1",
     },
     {
         id: 2,
@@ -24,6 +25,7 @@ const events: Event[] = [
         petId: 4,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "2",
     },
     {
         id: 3,
@@ -35,6 +37,7 @@ const events: Event[] = [
         petId: 2,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "3",
     },
     {
         id: 4,
@@ -46,6 +49,7 @@ const events: Event[] = [
         petId: 3,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "4",
     },
     {
         id: 5,
@@ -57,6 +61,7 @@ const events: Event[] = [
         petId: 2,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "5",
     },
     {
         id: 6,
@@ -68,6 +73,7 @@ const events: Event[] = [
         petId: 2,
         createdAt: new Date(2025, 0, 15, 3, 5, 12),
         updatedAt: new Date(2025, 0, 15, 3, 5, 12),
+        stringId: "6",
     },
 ];
 

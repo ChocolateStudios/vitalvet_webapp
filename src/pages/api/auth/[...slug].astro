@@ -1,0 +1,49 @@
+---
+import type { APIRoute } from 'astro';
+import { UsersApi } from '@/contexts/auth/services/api/users.api';
+import { SaveUserResource } from '@/contexts/auth/services/resources/save-user.resource';
+
+export const ALL: APIRoute = async ({ request, params }) => {
+    const { slug } = params;
+
+    if (request.method !== 'POST') {
+        return new Response(JSON.stringify({ message: 'Method not allowed' }), { status: 405 });
+    }
+
+    try {
+        const body = await request.json();
+
+        switch (slug) {
+            case 'login': {
+                const { username, password } = body;
+                if (!username || !password) {
+                    return new Response(JSON.stringify({ message: 'Missing fields' }), { status: 400 });
+                }
+                const resource = new SaveUserResource(username, password);
+                const authenticatedUser = await UsersApi.loginUser(resource);
+                return new Response(JSON.stringify(authenticatedUser), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            case 'register': {
+                const { name, lastname, username, password } = body;
+                if (!name || !lastname || !username || !password) {
+                    return new Response(JSON.stringify({ message: 'Missing fields' }), { status: 400 });
+                }
+                const resource = new SaveUserResource(username, password, name, lastname);
+                const authenticatedUser = await UsersApi.registerUser(resource);
+                return new Response(JSON.stringify(authenticatedUser), {
+                    status: 201,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            default:
+                return new Response(JSON.stringify({ message: 'Not found' }), { status: 404 });
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+        return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
+    }
+};
+---

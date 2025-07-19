@@ -11,6 +11,8 @@ const medicalAppointments: MedicalAppointment[] = [
         doctorProfileId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
+        stringId: "1",
+        prescription: "Tratamiento antipulgas"
     },
     {
         id: 2,
@@ -20,6 +22,8 @@ const medicalAppointments: MedicalAppointment[] = [
         doctorProfileId: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
+        stringId: "2",
+        prescription: "Limpiar la herida y aplicar un antiséptico"
     },
 ];
 
