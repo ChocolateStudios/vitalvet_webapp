@@ -4,6 +4,7 @@ import type { MedicalAppointment } from "../../models/medical-appointment.model"
 export class MedicalAppointmentResource extends AuditableModel {
     public details: string = "";
     public observations: string = "";
+    public prescription: string = "";
     public petId: number = 0;
     public doctorProfileId: number = 0;
 
@@ -12,6 +13,7 @@ export class MedicalAppointmentResource extends AuditableModel {
         this.id = model.id;
         this.details = model.details;
         this.observations = model.observations;
+        this.prescription = model.prescription;
         this.petId = model.petId;
         this.doctorProfileId = model.doctorProfileId;
         this.createdAt = model.createdAt;

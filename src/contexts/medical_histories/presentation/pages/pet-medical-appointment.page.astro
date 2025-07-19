@@ -56,7 +56,7 @@ const medicalAppointmentSections = [
         id: "prescription",
         name: "prescription",
         label: "Receta / Tratamiento",
-        value: "", // Suponiendo que la receta no está en el modelo actual
+        value: medicalAppointment?.prescription,
         placeholder: "Medicamentos, dosis y tratamiento a seguir."
     },
 ];
@@ -120,7 +120,7 @@ const medicalAppointmentSections = [
     if (form) {
         const detailsInput = document.getElementById('details') as HTMLInputElement;
         const observationsInput = document.getElementById('observations') as HTMLInputElement;
-        // const prescriptionInput = document.getElementById('prescription') as HTMLInputElement;
+        const prescriptionInput = document.getElementById('prescription') as HTMLInputElement;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
         const formError = document.getElementById('form-error') as HTMLDivElement;
         
@@ -152,14 +152,14 @@ const medicalAppointmentSections = [
             // Limpia errores previos
             clearError(detailsInput);
             clearError(observationsInput);
-            // clearError(prescriptionInput);
+            clearError(prescriptionInput);
             if (formError) {
                 formError.textContent = '';
             }
 
             const details = detailsInput.value;
             const observations = observationsInput.value;
-            // const prescription = prescriptionInput.value;
+            const prescription = prescriptionInput.value;
 
             let isValid = true;
 
@@ -174,15 +174,15 @@ const medicalAppointmentSections = [
                 isValid = false;
             }
 
-            // if (!prescription) {
-            //     showError(prescriptionInput, 'La receta/tratamiento es obligatoria');
-            //     isValid = false;
-            // }
+            if (!prescription) {
+                showError(prescriptionInput, 'La receta/tratamiento es obligatoria');
+                isValid = false;
+            }
 
             if (isValid) {
                 submitButton.disabled = true;
 
-                const resource = new SaveMedicalAppointmentResource(details, observations, 0);
+                const resource = new SaveMedicalAppointmentResource(details, observations, prescription, 0);
 
                 if (isNewMedicalAppointment) {
                     submitButton.textContent = 'Creando cita médica...';
