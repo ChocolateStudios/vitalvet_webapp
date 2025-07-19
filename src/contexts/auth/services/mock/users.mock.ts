@@ -8,24 +8,18 @@ const users: User[] = [
         id: 1,
         username: "admin@vitalvet.com",
         password: "admin123456",
-        name: "Admin",
-        lastname: "Vital",
         stringId: "1"
     },
     {
         id: 2,
         username: "user@vitalvet.com",
         password: "user123456",
-        name: "User",
-        lastname: "Vital",
         stringId: "2"
     },
     {
         id: 3,
         username: "guest@vitalvet.com",
         password: "guest123456",
-        name: "Guest",
-        lastname: "Vital",
         stringId: "3"
     }
 ];

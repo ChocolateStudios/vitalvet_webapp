@@ -27,11 +27,11 @@ export const ALL: APIRoute = async ({ request, params }) => {
                 });
             }
             case 'register': {
-                const { name, lastname, username, password } = body;
-                if (!name || !lastname || !username || !password) {
+                const { username, password } = body;
+                if (!username || !password) {
                     return new Response(JSON.stringify({ message: 'Missing fields' }), { status: 400 });
                 }
-                const resource = new SaveUserResource(username, password, name, lastname);
+                const resource = new SaveUserResource(username, password);
                 const authenticatedUser = await UsersApi.registerUser(resource);
                 return new Response(JSON.stringify(authenticatedUser), {
                     status: 201,

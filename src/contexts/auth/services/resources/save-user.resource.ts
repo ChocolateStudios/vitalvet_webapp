@@ -3,14 +3,10 @@ import type { User } from "../../models/user.model";
 export class SaveUserResource {
     public username: string;
     public password: string;
-    public name: string | null;
-    public lastname: string | null;
 
-    constructor(username: string, password: string, name: string | null = null, lastname: string | null = null) {
+    constructor(username: string, password: string) {
         this.username = username;
         this.password = password;
-        this.name = name;
-        this.lastname = lastname;
     }
 
     public toModel(): User {
@@ -18,9 +14,7 @@ export class SaveUserResource {
             id: 0,
             username: this.username,
             password: this.password,
-            stringId: "",
-            name: this.name || "",
-            lastname: this.lastname || ""
+            stringId: ""
         };
 
         return user;
