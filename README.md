@@ -1,48 +1,65 @@
-# Astro Starter Kit: Basics
+# VitalVet
 
-```sh
-npm create astro@latest -- --template basics
-```
+VitalVet is a web application for managing the medical records of veterinary patients. It allows veterinarians to create and manage patient records, including their medical history, appointments, and more.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+## Technologies
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+This project is built with the following technologies:
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+-   **Astro:** A modern static site builder.
+-   **Tailwind CSS:** A utility-first CSS framework.
+-   **TypeScript:** A typed superset of JavaScript.
+-   **Firebase Hosting:** For hosting the application.
+-   **Firebase Realtime Database:** For storing and syncing data in real-time.
+-   **Firebase Authentication:** For user authentication.
 
-## 🚀 Project Structure
+## Getting Started
 
-Inside of your Astro project, you'll see the following folders and files:
+To get a local copy up and running, follow these simple steps.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+### Prerequisites
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+-   Node.js (version 20 or higher)
+-   npm
 
-## 🧞 Commands
+### Installation
 
-All commands are run from the root of the project, from a terminal:
+1.  Clone the repo
+    ```sh
+    git clone https://github.com/your_username_/your_project_name.git
+    ```
+2.  Install NPM packages
+    ```sh
+    npm install
+    ```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Environment Variables
 
-## 👀 Want to learn more?
+To run this project, you will need to add the following environment variables to your `.env` file:
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+`VITE_API_KEY`
+`VITE_AUTH_DOMAIN`
+`VITE_PROJECT_ID`
+`VITE_STORAGE_BUCKET`
+`VITE_MESSAGING_SENDER_ID`
+`VITE_APP_ID`
+
+These variables are for the Firebase configuration. You can get them from your Firebase project console.
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm run dev`
+
+Runs the app in the development mode.
+Open [http://localhost:4321](http://localhost:4321) to view it in the browser.
+
+### `npm run build`
+
+Builds the app for production to the `dist` folder.
+
+### `npm run preview`
+
+Runs a local preview of the production build.
+
