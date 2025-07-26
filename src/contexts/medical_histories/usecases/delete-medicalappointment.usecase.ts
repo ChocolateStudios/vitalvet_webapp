@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/services/repositories/medical-appointments.repository";
 import type { MedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/medical-appointment.resource";
 

@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SaveUserResource } from "../services/resources/save-user.resource";
 
 export async function loginUser(saveResource: SaveUserResource): Promise<UsecaseResult<any>> {

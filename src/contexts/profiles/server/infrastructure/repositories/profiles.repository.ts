@@ -1,7 +1,7 @@
-import { ProfileResource } from "@/contexts/profiles/services/resources/profile.resource";
+import { ProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/profile.resource";
 import { db } from "@/firebase/client";
 import { equalTo, get, orderByChild, query, ref } from "firebase/database";
-import type { Profile } from "@/contexts/profiles/models/profile.model";
+import type { Profile } from "@/contexts/profiles/server/models/profile.model";
 
 const PROFILES_PATH = 'profiles';
 

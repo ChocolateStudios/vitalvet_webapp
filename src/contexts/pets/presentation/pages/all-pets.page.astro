@@ -2,7 +2,7 @@
 import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro";
 import SearchBar from "@/contexts/pets/presentation/components/search-bar.component.astro";
 import { getAllPets } from "@/contexts/pets/usecases/getall-pets.usecase";
-import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter.util";
+import { formatRelativeTime } from "@/contexts/_shared/client/utils/date-formatter.util";
 
 const pets = await getAllPets(Astro.url.origin);
 

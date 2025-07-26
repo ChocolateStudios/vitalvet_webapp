@@ -1,5 +1,5 @@
 import { MedicalAppointmentsApiMock } from "@/contexts/medical_histories/services/mock/medical-appointments.mock";
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { MedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/medical-appointment.resource";
 
 interface MedicalAppointmentListItemInfo {

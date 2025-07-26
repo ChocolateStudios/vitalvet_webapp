@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/save-medical-appointment.resource";
 
 export async function createMedicalAppointment(petId: string, medicalAppointment: SaveMedicalAppointmentResource, baseUrl: string = ''): Promise<UsecaseResult<any>> {

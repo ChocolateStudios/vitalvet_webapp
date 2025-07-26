@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
 export async function deletePet(petId: string, baseUrl: string = ''): Promise<UsecaseResult<any>> {
     try {

@@ -1,4 +1,4 @@
-import { AuditableModel } from "../../../_shared/models/auditable.model";
+import { AuditableModel } from "../../../_shared/server/models/auditable.model";
 import type { Pet } from "../../models/pet.model";
 
 export class PetResource extends AuditableModel {

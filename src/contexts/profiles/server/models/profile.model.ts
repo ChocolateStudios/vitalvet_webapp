@@ -1,4 +1,4 @@
-import { AuditableModel } from "@/contexts/_shared/models/auditable.model";
+import { AuditableModel } from "@/contexts/_shared/server/models/auditable.model";
 
 export class Profile extends AuditableModel {
     public name: string = "";

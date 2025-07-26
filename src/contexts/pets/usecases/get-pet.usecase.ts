@@ -1,7 +1,7 @@
 import type { Pet } from "@/contexts/pets/models/pet.model";
 import type { PetResource } from "@/contexts/pets/services/resources/pet.resource";
 import { PetsApiMock } from "@/contexts/pets/services/mock/pets.mock";
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
 interface PetInfo extends Pet {
     ownerName: string;

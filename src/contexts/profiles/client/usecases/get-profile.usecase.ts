@@ -1,13 +1,13 @@
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
-import type { Profile } from "@/contexts/profiles/models/profile.model";
-import type { ProfileResource } from "@/contexts/profiles/services/resources/profile.resource";
-import { ProfilesRepository } from "@/contexts/profiles/services/repositories/profiles.repository";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { Profile } from "@/contexts/profiles/server/models/profile.model";
+import type { ProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/profile.resource";
+import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 
-interface ProfileInfo extends Profile {
+export interface ProfileInfo extends Profile {
     email: string;
 }
 
-export async function getProfile(token: string, baseUrl: string = ''): Promise<UsecaseResult<ProfileInfo>> {
+export async function getProfile(baseUrl: string = ''): Promise<UsecaseResult<ProfileInfo>> {
     try {
         const response = await fetch(`${baseUrl}/api/profiles`);
 

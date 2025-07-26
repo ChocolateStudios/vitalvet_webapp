@@ -1,7 +1,7 @@
 import type { MedicalAppointment } from "@/contexts/medical_histories/models/medical-appointment.model";
 import { MedicalAppointmentsApiMock } from "@/contexts/medical_histories/services/mock/medical-appointments.mock";
 import type { MedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/medical-appointment.resource";
-import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import { MedicalAppointmentsRepository } from "../services/repositories/medical-appointments.repository";
 
 interface MedicalAppointmentInfo extends MedicalAppointment {

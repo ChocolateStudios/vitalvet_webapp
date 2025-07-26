@@ -1,4 +1,4 @@
-import { AuditableModel } from "../../_shared/models/auditable.model";
+import { AuditableModel } from "../../_shared/server/models/auditable.model";
 
 export class Event extends AuditableModel {
     public title: string = "";

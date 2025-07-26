@@ -1,4 +1,4 @@
-import { AuditableModel } from "../../../_shared/models/auditable.model";
+import { AuditableModel } from "../../../_shared/server/models/auditable.model";
 import type { MedicalAppointment } from "../../models/medical-appointment.model";
 
 export class MedicalAppointmentResource extends AuditableModel {

@@ -1,4 +1,4 @@
-import type { Profile } from "@/contexts/profiles/models/profile.model";
+import type { Profile } from "@/contexts/profiles/server/models/profile.model";
 
 export class SaveProfileResource {
     public name: string;
