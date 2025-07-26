@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { PetsApi } from '@/contexts/pets/services/api/pets.api';
-import type { SavePetResource } from '@/contexts/pets/services/resources/save-pet.resource';
+import { SavePetResource } from '@/contexts/pets/services/resources/save-pet.resource';
 
 export const prerender = false;
 
@@ -20,7 +20,17 @@ export const GET: APIRoute = async ({ request }) => {
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        const resource: SavePetResource = body;
+        // Re-instanciamos la clase a partir del objeto plano del JSON.
+        // Es crucial convertir la fecha de string a Date.
+        const resource = new SavePetResource(
+            body.name,
+            body.age,
+            body.species,
+            body.subspecies,
+            body.imgUrl,
+            body.weight,
+            new Date(body.birthday)
+        );
         const newPet = await PetsApi.createPet(resource);
         return new Response(JSON.stringify(newPet), {
             status: 201,

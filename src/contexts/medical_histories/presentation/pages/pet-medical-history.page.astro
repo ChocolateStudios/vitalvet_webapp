@@ -13,17 +13,19 @@ const { petId } = Astro.props;
 let pet = null;
 let medicalHistory = null;
 
-const getPetResult = await getPet(petId);
+const getPetResult = await getPet(petId, Astro.url.origin);
 
 if (getPetResult.success) {
     pet = getPetResult.data;
 }
 
-const getMedicalHistory = await getAllMedicalAppointmentsByPetId(petId);
+const getMedicalHistory = await getAllMedicalAppointmentsByPetId(petId, Astro.url.origin);
 
 if (getMedicalHistory.success) {
     medicalHistory = getMedicalHistory.data;
 }
+
+console.log(medicalHistory)
 
 const profileInput = {
     id: "name",
@@ -53,7 +55,7 @@ const tableHeaders = [
                     class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md" 
                 />
             </div>
-            <BaseTextInput {...profileInput} class="w-full" />
+            <BaseTextInput {...profileInput} class="w-full" readonly />
         </div>
         <div class="lg:col-span-3 -mt-11">
             <div class="flex justify-end mb-2">

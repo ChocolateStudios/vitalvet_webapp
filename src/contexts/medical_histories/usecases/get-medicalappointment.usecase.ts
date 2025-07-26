@@ -8,32 +8,33 @@ interface MedicalAppointmentInfo extends MedicalAppointment {
     appointmentNumber: number,
 }
 
-export async function getMedicalAppointment(medicalAppointmentId: string): Promise<UsecaseResult<MedicalAppointmentInfo>> {
-    let medicalAppointment: MedicalAppointmentResource;
-    
+export async function getMedicalAppointment(petId: string, medicalAppointmentId: string, baseUrl: string = ''): Promise<UsecaseResult<MedicalAppointmentInfo>> {
     try {
-        medicalAppointment = await MedicalAppointmentsRepository.getMedicalAppointment(medicalAppointmentId);
+        const response = await fetch(`${baseUrl}/api/pets/${petId}/medical-appointments/${medicalAppointmentId}`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                errorMessage: errorData.message || `Medical appointment no encontrado con id ${medicalAppointmentId} no encontrada para la mascota con id ${petId}`,
+            };
+        }
+
+        const existingMedicalAppointment: MedicalAppointmentResource = await response.json();
+
+        return {
+            data: {
+                ...existingMedicalAppointment,
+                stringPetId: '',
+            },
+            success: true,
+        };
     } catch (error) {
         return {
             success: false,
             errorMessage: (error as Error).message,
-        }
+        };
     }
-
-    if (!medicalAppointment) {
-        return {
-            success: false,
-            errorMessage: 'No se encontró la cita médica',
-        }
-    }
-    
-    return {
-        data: {
-            ...medicalAppointment,
-            appointmentNumber: Number(medicalAppointmentId) + 1,
-        },
-        success: true,
-    };
 }
 
 export function getMedicalAppointmentMocked(medicalAppointmentId: number): MedicalAppointmentInfo {
@@ -45,6 +46,7 @@ export function getMedicalAppointmentMocked(medicalAppointmentId: number): Medic
     
     return {
         ...medicalAppointment,
+        stringPetId: '',
         appointmentNumber: Number(medicalAppointmentId) + 1,
     };
 }

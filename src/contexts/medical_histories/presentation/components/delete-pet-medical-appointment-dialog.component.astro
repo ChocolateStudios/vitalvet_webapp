@@ -40,46 +40,55 @@
 <script>
     import { deleteMedicalAppointment } from "@/contexts/medical_histories/usecases/delete-medicalappointment.usecase";
 
-    // Form in pet-medical-appointment.page.astro
-    const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
+    function initializePageScripts() {
+        const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
 
-    if (form) {
-        const dialog = document.getElementById('delete-dialog');
-        const cancelButton = document.getElementById('cancel-delete-button') as HTMLButtonElement;
-        const confirmButton = document.getElementById('confirm-delete-button') as HTMLButtonElement;
+        if (form) {
+            const dialog = document.getElementById('delete-dialog');
+            const cancelButton = document.getElementById('cancel-delete-button') as HTMLButtonElement;
+            const confirmButton = document.getElementById('confirm-delete-button') as HTMLButtonElement;
 
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
+            const toggleDialog = (show: boolean) => {
+                dialog?.classList.toggle('hidden', !show);
+            }
 
-        cancelButton?.addEventListener('click', () => toggleDialog(false));
+            cancelButton?.addEventListener('click', () => toggleDialog(false));
 
-        confirmButton?.addEventListener('click', async () => {
-            const medicalAppointmentId = form?.dataset.medicalAppointmentId;
-            if (!medicalAppointmentId) return;
+            confirmButton?.addEventListener('click', async () => {
+                const medicalAppointmentId = form?.dataset.medicalAppointmentId;
+                if (!medicalAppointmentId) return;
+                const petId = form?.dataset.petId;
+                if (!petId) return;
 
-            confirmButton.textContent = "Eliminando...";
-            confirmButton.disabled = true;
+                confirmButton.textContent = "Eliminando...";
+                confirmButton.disabled = true;
 
-            try {
-                const result = await deleteMedicalAppointment(medicalAppointmentId);
-                if (result.success) {
-                    window.location.href = '/app/home';
-                } else {
-                    alert(result.errorMessage || 'No se pudo eliminar la cita médica.');
+                try {
+                    const result = await deleteMedicalAppointment(petId, medicalAppointmentId);
+                    if (result.success) {
+                        window.location.href = '/app/home';
+                    } else {
+                        alert(result.errorMessage || 'No se pudo eliminar la cita médica.');
+                        confirmButton.textContent = "Confirmar";
+                        confirmButton.disabled = false;
+                        toggleDialog(false);
+                    }
+                } catch (error) {
+                    alert('No se pudo eliminar la cita médica.');
+                    confirmButton.textContent = "Confirmar";
+                    confirmButton.disabled = false;
+                } finally {
                     confirmButton.textContent = "Confirmar";
                     confirmButton.disabled = false;
                     toggleDialog(false);
                 }
-            } catch (error) {
-                alert('No se pudo eliminar la cita médica.');
-                confirmButton.textContent = "Confirmar";
-                confirmButton.disabled = false;
-            } finally {
-                confirmButton.textContent = "Confirmar";
-                confirmButton.disabled = false;
-                toggleDialog(false);
-            }
-        });
+            });
+        }
     }
+
+    // Ejecuta los scripts en la carga inicial de la página
+    initializePageScripts();
+
+    // Vuelve a ejecutar los scripts en cada navegación del lado del cliente
+    document.addEventListener('astro:page-load', initializePageScripts);
 </script>

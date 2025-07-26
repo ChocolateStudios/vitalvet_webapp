@@ -7,9 +7,9 @@ interface PetInfo extends Pet {
     ownerName: string;
 }
 
-export async function getPet(petId: string): Promise<UsecaseResult<PetInfo>> {
+export async function getPet(petId: string, baseUrl: string = ''): Promise<UsecaseResult<PetInfo>> {
     try {
-        const response = await fetch(`/api/pets/${petId}`);
+        const response = await fetch(`${baseUrl}/api/pets/${petId}`);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -24,6 +24,7 @@ export async function getPet(petId: string): Promise<UsecaseResult<PetInfo>> {
         return {
             data: {
                 ...existingPet,
+                birthday: new Date(existingPet.birthday),
                 ownerName: "John Doe"
             },
             success: true,

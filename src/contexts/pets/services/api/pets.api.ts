@@ -18,7 +18,15 @@ export class PetsApi {
         }
 
         newPet.stringId = petId;
-        await set(newPetRef, newPet);
+
+        // Es una buena práctica guardar las fechas como strings ISO en Firebase
+        const dataToSave = {
+            ...newPet,
+            birthday: newPet.birthday.toISOString(),
+            createdAt: newPet.createdAt.toISOString(),
+            updatedAt: newPet.updatedAt.toISOString(),
+        };
+        await set(newPetRef, dataToSave);
         return PetResource.fromModel(newPet);
     }
 
@@ -43,7 +51,11 @@ export class PetsApi {
         }
 
         const petData = snapshot.val();
-        return PetResource.fromModel({ ...petData, id: petId });
+        return PetResource.fromModel({ 
+            ...petData, 
+            id: petId,
+            stringId: petId,
+        });
     }
 
     static async updatePet(petId: string, data: SavePetResource): Promise<PetResource> {
@@ -55,8 +67,16 @@ export class PetsApi {
         }
 
         const updatedPetData = data.toModel();
-        await set(petRef, updatedPetData);
-        return PetResource.fromModel({ ...updatedPetData, id: petId });
+
+        // Es una buena práctica guardar las fechas como strings ISO en Firebase
+        const dataToSave = {
+            ...updatedPetData,
+            birthday: updatedPetData.birthday.toISOString(),
+            updatedAt: updatedPetData.updatedAt.toISOString(),
+        };
+
+        await set(petRef, dataToSave);
+        return PetResource.fromModel({ ...updatedPetData, stringId: petId });
     }
 
     static async deletePet(petId: string): Promise<void> {

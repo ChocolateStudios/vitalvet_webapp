@@ -1,21 +1,21 @@
-import type { APIRoute } from 'astro';
-import { PetsApi } from '@/contexts/pets/services/api/pets.api';
-import { SavePetResource } from '@/contexts/pets/services/resources/save-pet.resource';
+import { MedicalAppointmentsApi } from "@/contexts/medical_histories/services/api/medical-appointments.api";
+import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/save-medical-appointment.resource";
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params }) => {
-    const { petId } = params;
+    const { petId, medicalAppointmentId } = params;
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
     }
+    if (!medicalAppointmentId) {
+        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
+    }
 
     try {
-        const pet = await PetsApi.getPetById(petId);
-        if (!pet) {
-            return new Response(JSON.stringify({ message: 'Pet not found' }), { status: 404 });
-        }
-        return new Response(JSON.stringify(pet), {
+        const appointments = await MedicalAppointmentsApi.getMedicalAppointmentById(petId, medicalAppointmentId);
+        return new Response(JSON.stringify(appointments), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
@@ -26,23 +26,23 @@ export const GET: APIRoute = async ({ params }) => {
 };
 
 export const PUT: APIRoute = async ({ request, params }) => {
-    const { petId } = params;
+    const { petId, medicalAppointmentId } = params;
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
+    }
+    if (!medicalAppointmentId) {
+        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
     }
 
     try {
         const body = await request.json();
-        const resource = new SavePetResource(
-            body.name,
-            body.age,
-            body.species,
-            body.subspecies,
-            body.imgUrl,
-            body.weight,
-            new Date(body.birthday)
+        const resource = new SaveMedicalAppointmentResource(
+            body.details,
+            body.observations,
+            body.prescription,
+            body.doctorProfileId,
         );
-        const updatedPet = await PetsApi.updatePet(petId, resource);
+        const updatedPet = await MedicalAppointmentsApi.updateMedicalAppointment(petId, medicalAppointmentId, resource);
         return new Response(JSON.stringify(updatedPet), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -54,13 +54,16 @@ export const PUT: APIRoute = async ({ request, params }) => {
 };
 
 export const DELETE: APIRoute = async ({ params }) => {
-    const { petId } = params;
+    const { petId, medicalAppointmentId } = params;
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
     }
+    if (!medicalAppointmentId) {
+        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
+    }
 
     try {
-        await PetsApi.deletePet(petId);
+        await MedicalAppointmentsApi.deleteMedicalAppointment(petId, medicalAppointmentId);
         return new Response(null, { status: 204 });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

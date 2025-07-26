@@ -1,6 +1,6 @@
 ---
 
-const { id, name, type, autocomplete, label, value = "",  class: className = "", visible = true } = Astro.props;
+const { id, name, type, autocomplete, label, value = "",  class: className = "", visible = true, readonly = false } = Astro.props;
 
 const hasIconLeft = Astro.slots.has('icon-left');
 const hasIconRight = Astro.slots.has('icon-right');
@@ -27,12 +27,14 @@ const hasIconRight = Astro.slots.has('icon-right');
         {type} 
         {autocomplete}
         {value}
+        {readonly}
         placeholder=""
         class:list={[
             "peer block w-full rounded-md border border-gray-300 bg-white px-3.5 pb-2.5 pt-5 text-base text-gray-900",
             "focus:outline-none focus:ring-0 focus:border-2 focus:border-[#6faab5]",
             { 'pl-10': hasIconLeft },  // Padding extra si hay ícono a la izquierda
             { 'pr-10': hasIconRight }, // Padding extra si hay ícono a la derecha
+            { 'bg-gray-100 cursor-not-allowed focus:border-gray-300': readonly },
         ]} 
     />
 

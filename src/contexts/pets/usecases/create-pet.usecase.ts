@@ -1,9 +1,9 @@
 import type { SavePetResource } from "@/contexts/pets/services/resources/save-pet.resource";
 import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
 
-export async function createPet(pet: SavePetResource): Promise<UsecaseResult<any>> {
+export async function createPet(pet: SavePetResource, baseUrl: string = ''): Promise<UsecaseResult<any>> {
     try {
-        const response = await fetch('/api/pets', {
+        const response = await fetch(`${baseUrl}/api/pets`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

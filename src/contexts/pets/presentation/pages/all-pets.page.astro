@@ -4,12 +4,12 @@ import SearchBar from "@/contexts/pets/presentation/components/search-bar.compon
 import { getAllPets } from "@/contexts/pets/usecases/getall-pets.usecase";
 import { formatRelativeTime } from "@/contexts/_shared/utils/date-formatter.util";
 
-const pets = await getAllPets();
+const pets = await getAllPets(Astro.url.origin);
 
 const tableHeaders = [
     "Nombre (edad)",
     "Especie",
-    "Última visualización",
+    "Raza",
     "N° de citas",
 ]
 
@@ -48,7 +48,7 @@ const tableHeaders = [
                                         </a>
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.species}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{formatRelativeTime(pet.lastVisit)}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.subspecies}</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.appointmentCount}</td>
                                 </tr>
                             )

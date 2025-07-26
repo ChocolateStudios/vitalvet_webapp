@@ -15,7 +15,7 @@ const { petId } = Astro.props;
 
 // Es una buena práctica manejar el caso en que el ID no sea un número válido.
 let pet = null;
-const getPetResult = await getPet(petId);
+const getPetResult = await getPet(petId, Astro.url.origin);
 
 if (getPetResult.success) {
     pet = getPetResult.data;
@@ -122,7 +122,7 @@ const detailInputs = [
                         </a>
                     </>
                 }
-                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                     { pet ? "Guardar cambios" : "Crear mascota" }
                 </button>
                 { pet &&
@@ -143,151 +143,166 @@ const detailInputs = [
     import { createPet } from "@/contexts/pets/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/usecases/update-pet.usecase";
 
-    const form = document.getElementById('pet-form') as HTMLFormElement | null;
+    function initializePageScripts() {
+        const form = document.getElementById('pet-form') as HTMLFormElement | null;
 
-    if (form) {
-        const petNameInput = document.getElementById('name') as HTMLInputElement;
-        const petOwnerInput = document.getElementById('owner') as HTMLInputElement;
-        const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
-        const petAgeInput = document.getElementById('age') as HTMLInputElement;
-        const petSpeciesInput = document.getElementById('species') as HTMLInputElement;
-        const petSubspeciesInput = document.getElementById('subspecies') as HTMLInputElement;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-        const formError = document.getElementById('form-error') as HTMLDivElement;
-        
-        const isNewPet = !form.dataset.petId;
+        if (form) {
+            const petNameInput = document.getElementById('name') as HTMLInputElement;
+            const petOwnerInput = document.getElementById('owner') as HTMLInputElement;
+            const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
+            const petAgeInput = document.getElementById('age') as HTMLInputElement;
+            const petSpeciesInput = document.getElementById('species') as HTMLInputElement;
+            const petSubspeciesInput = document.getElementById('subspecies') as HTMLInputElement;
+            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+            const formError = document.getElementById('form-error') as HTMLDivElement;
 
-        const showError = (input: HTMLInputElement, message: string) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = message;
+            // Habilita el botón de envío una vez que el script se ha cargado.
+            if (submitButton) {
+                submitButton.disabled = false;
             }
-            // Cambia el color del borde del input a rojo
-            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-            input.classList.add('outline-red-500', 'focus:outline-red-500');
-        }
+            
+            const isNewPet = !form.dataset.petId;
 
-        const clearError = (input: HTMLInputElement) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = '';
-            }
-            // Restaura el color del borde del input
-            input.classList.remove('outline-red-500', 'focus:outline-red-500');
-            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-        }
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            // Limpia errores previos
-            clearError(petNameInput);
-            clearError(petOwnerInput);
-            clearError(birthdayInput);
-            clearError(petAgeInput);
-            clearError(petSpeciesInput);
-            clearError(petSubspeciesInput);
-            if (formError) {
-                formError.textContent = '';
+            const showError = (input: HTMLInputElement, message: string) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = message;
+                }
+                // Cambia el color del borde del input a rojo
+                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                input.classList.add('outline-red-500', 'focus:outline-red-500');
             }
 
-            const petName = petNameInput.value;
-            const petOwner = petOwnerInput.value;
-            const birthday = birthdayInput.value;
-            const petAge = petAgeInput.value;
-            const petSpecies = petSpeciesInput.value;
-            const petSubspecies = petSubspeciesInput.value;
-
-            let isValid = true;
-
-            // Validaciones
-            if (!petName) {
-                showError(petNameInput, 'El nombre es obligatorio');
-                isValid = false;
-            } else if (petName.length < 3) {
-                showError(petNameInput, 'El nombre debe tener al menos 3 caracteres');
-                isValid = false;
+            const clearError = (input: HTMLInputElement) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = '';
+                }
+                // Restaura el color del borde del input
+                input.classList.remove('outline-red-500', 'focus:outline-red-500');
+                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
             }
 
-            if (!petOwner) {
-                showError(petOwnerInput, 'El nombre del dueño es obligatorio');
-                isValid = false;
-            }
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
 
-            if (!birthday) {
-                showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
-                isValid = false;
-            }
+                // Limpia errores previos
+                clearError(petNameInput);
+                clearError(petOwnerInput);
+                clearError(birthdayInput);
+                clearError(petAgeInput);
+                clearError(petSpeciesInput);
+                clearError(petSubspeciesInput);
+                if (formError) {
+                    formError.textContent = '';
+                }
 
-            if (!petAge) {
-                showError(petAgeInput, 'La edad es obligatoria');
-                isValid = false;
-            } else if (isNaN(Number(petAge))) {
-                showError(petAgeInput, 'La edad debe ser un número válido');
-                isValid = false;
-            }
+                const petName = petNameInput.value;
+                const petOwner = petOwnerInput.value;
+                const birthday = birthdayInput.value;
+                const petAge = petAgeInput.value;
+                const petSpecies = petSpeciesInput.value;
+                const petSubspecies = petSubspeciesInput.value;
 
-            if (!petSpecies) {
-                showError(petSpeciesInput, 'La especie es obligatoria');
-                isValid = false;
-            }
+                let isValid = true;
 
-            if (!petSubspecies) {
-                showError(petSubspeciesInput, 'La raza es obligatoria');
-                isValid = false;
-            } 
+                // Validaciones
+                if (!petName) {
+                    showError(petNameInput, 'El nombre es obligatorio');
+                    isValid = false;
+                } else if (petName.length < 3) {
+                    showError(petNameInput, 'El nombre debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
 
-            if (isValid) {
-                submitButton.disabled = true;
+                if (!petOwner) {
+                    showError(petOwnerInput, 'El nombre del dueño es obligatorio');
+                    isValid = false;
+                }
 
-                const resource = new SavePetResource(petName, Number(petAge), petSpecies, petSubspecies, "", 0, new Date(birthday));
+                if (!birthday) {
+                    showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
+                    isValid = false;
+                }
 
-                if (isNewPet) {
-                    submitButton.textContent = 'Creando mascota...';
+                if (!petAge) {
+                    showError(petAgeInput, 'La edad es obligatoria');
+                    isValid = false;
+                } else if (isNaN(Number(petAge))) {
+                    showError(petAgeInput, 'La edad debe ser un número válido');
+                    isValid = false;
+                }
 
-                    try {
-                        const response = await createPet(resource);
-                        if (response.success) {
-                            window.location.href = '/app/home';
-                        } else {
-                            formError.textContent = response.errorMessage ?? 'Error al crear mascota. Por favor, inténtalo de nuevo.';
+                if (!petSpecies) {
+                    showError(petSpeciesInput, 'La especie es obligatoria');
+                    isValid = false;
+                }
+
+                if (!petSubspecies) {
+                    showError(petSubspeciesInput, 'La raza es obligatoria');
+                    isValid = false;
+                } 
+
+                if (isValid) {
+                    submitButton.disabled = true;
+
+                    const resource = new SavePetResource(petName, Number(petAge), petSpecies, petSubspecies, "", 0, new Date(birthday));
+
+                    if (isNewPet) {
+                        submitButton.textContent = 'Creando mascota...';
+
+                        try {
+                            const response = await createPet(resource);
+                            if (response.success) {
+                                window.location.href = '/app/home';
+                            } else {
+                                formError.textContent = response.errorMessage ?? 'Error al crear mascota. Por favor, inténtalo de nuevo.';
+                            }
+                        } catch (error) {
+                            console.error('Error al crear mascota:', error);
+                            formError.textContent = 'Error al crear mascota. Por favor, inténtalo de nuevo.';
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Crear mascota';
                         }
-                    } catch (error) {
-                        console.error('Error al crear mascota:', error);
-                        formError.textContent = 'Error al crear mascota. Por favor, inténtalo de nuevo.';
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Crear mascota';
-                    }
-                } else {
-                    submitButton.textContent = 'Actualizando mascota...';
+                    } else {
+                        submitButton.textContent = 'Actualizando mascota...';
 
-                    try {
-                        const response = await updatePet(form.dataset.petId!, resource);
-                        if (response.success) {
-                            window.location.reload();
-                        } else {
-                            formError.textContent = response.errorMessage ?? 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
+                        try {
+                            const response = await updatePet(form.dataset.petId!, resource);
+                            if (response.success) {
+                                // window.location.reload();
+                                window.location.href = '/app/home';
+                            } else {
+                                formError.textContent = response.errorMessage ?? 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
+                            }
+                        } catch (error) {
+                            console.error('Error al crear mascota:', error);
+                            formError.textContent = 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Guardar cambios';
                         }
-                    } catch (error) {
-                        console.error('Error al crear mascota:', error);
-                        formError.textContent = 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Guardar cambios';
                     }
                 }
-            }
-        });
+            });
+        }
+
+        // --- Lógica para el botón de eliminar ---
+        const openDialogButton = document.getElementById('open-delete-dialog-button');
+        // Dialog in delete-pet-dialog.component.astro
+        const dialog = document.getElementById('delete-dialog');
+        const toggleDialog = (show: boolean) => {
+            dialog?.classList.toggle('hidden', !show);
+        }
+
+        openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    // --- Lógica para el botón de eliminar ---
-    const openDialogButton = document.getElementById('open-delete-dialog-button');
-    // Dialog in delete-pet-dialog.component.astro
-    const dialog = document.getElementById('delete-dialog');
-    const toggleDialog = (show: boolean) => {
-        dialog?.classList.toggle('hidden', !show);
-    }
+    // Ejecuta los scripts en la carga inicial de la página
+    initializePageScripts();
 
-    openDialogButton?.addEventListener('click', () => toggleDialog(true));
+    // Vuelve a ejecutar los scripts en cada navegación del lado del cliente
+    document.addEventListener('astro:page-load', initializePageScripts);
+
 </script>

@@ -1,5 +1,6 @@
 import { MedicalAppointmentsApiMock } from "@/contexts/medical_histories/services/mock/medical-appointments.mock";
 import type { UsecaseResult } from "@/contexts/_shared/usecases/usecase-result";
+import type { MedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/medical-appointment.resource";
 
 interface MedicalAppointmentListItemInfo {
     id: number,
@@ -8,9 +9,9 @@ interface MedicalAppointmentListItemInfo {
     doctorName: string,
 }
 
-export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<UsecaseResult<MedicalAppointmentListItemInfo[]>> {
+export async function getAllMedicalAppointmentsByPetId(petId: string, baseUrl: string = ''): Promise<UsecaseResult<MedicalAppointmentListItemInfo[]>> {
     try {
-        const response = await fetch(`/api/pets/${petId}/medical-appointments`);
+        const response = await fetch(`${baseUrl}/api/pets/${petId}/medical-appointments`);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -21,11 +22,11 @@ export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<U
         }
 
         const medicalAppointments = await response.json();
-        const medicalAppointmentsInfo = medicalAppointments.map((ma, index) => {
+        const medicalAppointmentsInfo = medicalAppointments.map((ma: MedicalAppointmentResource) => {
             return {
                 id: ma.id,
-                appointmentNumber: index + 1,
                 createdAt: ma.createdAt,
+                appointmentNumber: ma.appointmentNumber,
                 doctorName: "Doctor ejemplo",
             };
         });

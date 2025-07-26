@@ -6,11 +6,13 @@ export class MedicalAppointmentResource extends AuditableModel {
     public observations: string = "";
     public prescription: string = "";
     public petId: number = 0;
+    public appointmentNumber: number = 0;
     public doctorProfileId: number = 0;
 
     constructor(model: MedicalAppointment) {
         super();
         this.id = model.id;
+        this.stringId = model.stringId,
         this.details = model.details;
         this.observations = model.observations;
         this.prescription = model.prescription;
