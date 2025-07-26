@@ -79,11 +79,18 @@ const detailInputs = [
 <!-- Si existe pet mostrar datos y opciones para editar o eliminar -->
 <!-- Si no existe pet entonces mostrar vacio como para crear un pet -->
 <ContentContainer class="h-full">
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold leading-tight text-gray-900">
-            { pet ? "Datos de la mascota" : "Nueva mascota" }
-        </h2>
-        { pet && <p class="mt-1 text-md text-gray-600">Revisa y actualiza la información de {pet.name}.</p> }
+    <div class="mb-8 flex items-start gap-4">
+        <a href="/app/home" class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <div>
+            <h2 class="text-2xl font-bold leading-tight text-gray-900">
+                { pet ? "Datos de la mascota" : "Nueva mascota" }
+            </h2>
+            { pet && <p class="mt-1 text-md text-gray-600">Revisa y actualiza la información de {pet.name}.</p> }
+        </div>
     </div>
     <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate>
         <!-- Card de Perfil (Izquierda) -->

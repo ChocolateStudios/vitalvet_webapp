@@ -4,7 +4,7 @@ import { SaveUserResource } from '@/contexts/auth/services/resources/save-user.r
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, params }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
 
     try {
         const body = await request.json();
@@ -15,6 +15,15 @@ export const POST: APIRoute = async ({ request, params }) => {
         }
         const resource = new SaveUserResource(username, password);
         const authenticatedUser = await UsersApi.loginUser(resource);
+
+        // Establecemos el token en una cookie segura
+        cookies.set('token', authenticatedUser.token, {
+            httpOnly: false, // TODO: cambiar a true
+            secure: import.meta.env.PROD, // Solo en HTTPS para producción
+            path: '/',
+            maxAge: 60 * 60 * 24 * 30, // 30 días
+        });
+
         return new Response(JSON.stringify(authenticatedUser), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

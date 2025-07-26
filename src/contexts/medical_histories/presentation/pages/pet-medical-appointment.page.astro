@@ -56,14 +56,21 @@ const medicalAppointmentSections = [
 ---
 
 <ContentContainer class="h-full">
-    <h2 class="text-2xl font-bold leading-tight text-gray-900 mb-8">
-        {
-            medicalAppointment ? 
-                `Cita médica N° ${medicalAppointment?.appointmentNumber}`
-                :
-                "Nueva cita médica"
-        }
-    </h2>
+    <div class="mb-8 flex items-start gap-4">
+        <a href={`/app/pets/${petId}/medical-history`} class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <h2 class="text-2xl font-bold leading-tight text-gray-900 mb-8">
+            {
+                medicalAppointment ? 
+                    `Cita médica N° ${medicalAppointment?.appointmentNumber}`
+                    :
+                    "Nueva cita médica"
+            }
+        </h2>
+    </div>
     <form id="medicalappointment-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} data-medical-appointment-id={medicalAppointment?.id} novalidate>
         <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">

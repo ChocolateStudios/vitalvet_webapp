@@ -1,6 +1,6 @@
 import type { Profile } from "@/contexts/profiles/models/profile.model";
 
-export class SavePetResource {
+export class SaveProfileResource {
     public name: string;
     public lastname: string;
     public phone: string;

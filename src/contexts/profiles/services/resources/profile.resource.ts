@@ -4,9 +4,10 @@ import type { Profile } from "@/contexts/profiles/models/profile.model";
 export class ProfileResource extends AuditableModel {
     public name: string = "";
     public lastname: string = "";
-    public roleId: string = "";
     public phone: string = "";
     public birthday: Date = new Date();
+    public userId: string = "";
+    public roleId: string = "";
 
     public constructor() {
         super();
@@ -20,7 +21,8 @@ export class ProfileResource extends AuditableModel {
         resource.lastname = model.lastname;
         resource.phone = model.phone;
         resource.birthday = model.birthday;
-        resource.roleId = model.roleId;;
+        resource.userId = model.userId;
+        resource.roleId = model.roleId;
         resource.createdAt = model.createdAt;
         resource.updatedAt = model.updatedAt;
         return resource;

@@ -29,7 +29,6 @@ export class MedicalAppointmentsApi {
         const allAppointments = await this.getAllMedicalAppointmentsByPetId(petId);
 
         // Buscamos la cita específica en la lista ya ordenada.
-            console.log(allAppointments)
         const medicalAppointment = allAppointments.find(appointment => appointment.stringId === medicalAppointmentId);
 
         if (!medicalAppointment) {

@@ -1,7 +1,22 @@
 ---
 import ContentContainer from "@/contexts/_shared/presentation/components/content-container.component.astro"
 import BaseTextInput from "@/contexts/_shared/presentation/components/base-text-input.component.astro"
+import { getProfile } from "../../usecases/get-profile.usecase";
 
+// 1. Obtener el token de la cookie en el servidor.
+const token = Astro.cookies.get('token')?.value;
+
+if (!token) {
+    // Si no hay token, redirigir al login.
+    return Astro.redirect('/auth/login');
+}
+
+let profile = null;
+const getProfileResult = await getProfile(token, Astro.url.origin);
+console.log(getProfileResult)
+if (getProfileResult.success) {
+    profile = getProfileResult.data;
+}
 
 const profileInputs = [
     {
@@ -10,6 +25,7 @@ const profileInputs = [
         type: "text",
         autocomplete: "name",
         label: "Nombres",
+        value: profile?.name,
     },
     {
         id: "lastname",
@@ -17,6 +33,7 @@ const profileInputs = [
         type: "text",
         autocomplete: "lastname",
         label: "Apellidos",
+        value: profile?.lastname,
     },
     {
         id: "birthday",
@@ -24,6 +41,7 @@ const profileInputs = [
         type: "date",
         autocomplete: "birthday",
         label: "Fecha de nacimiento",
+        value: profile?.birthday,
     },
     {
         id: "email",
@@ -31,6 +49,7 @@ const profileInputs = [
         type: "email",
         autocomplete: "email",
         label: "Correo electrónico",
+        value: profile?.email,
     },
     {
         id: "phone",
@@ -38,13 +57,14 @@ const profileInputs = [
         type: "text",
         autocomplete: "phone",
         label: "Teléfono",
+        value: profile?.phone,
     },
 ]
 ---
 
 <ContentContainer>
     <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">Perfil</h1>
-    <form class="flex justify-center" novalidate>
+    <form id="profile-form" class="flex justify-center" data-role-id={profile?.roleId} novalidate>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
@@ -57,3 +77,144 @@ const profileInputs = [
         </div>
     </form>
 </ContentContainer>
+
+<script>
+    import { SaveProfileResource } from "@/contexts/profiles/services/resources/save-profile.resource";
+    import { updateProfile } from "@/contexts/profiles/usecases/update-profile.usecase";
+
+    function initializePageScripts() {
+        const form = document.getElementById('profile-form') as HTMLFormElement | null;
+
+        if (form) {
+            const nameInput = document.getElementById('name') as HTMLInputElement;
+            const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
+            const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
+            const emailInput = document.getElementById('email') as HTMLInputElement;
+            const phoneInput = document.getElementById('phone') as HTMLInputElement;
+            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+            const formError = document.getElementById('form-error') as HTMLDivElement;
+
+            // Habilita el botón de envío una vez que el script se ha cargado.
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+
+            const showError = (input: HTMLInputElement, message: string) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = message;
+                }
+                // Cambia el color del borde del input a rojo
+                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                input.classList.add('outline-red-500', 'focus:outline-red-500');
+            }
+
+            const clearError = (input: HTMLInputElement) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = '';
+                }
+                // Restaura el color del borde del input
+                input.classList.remove('outline-red-500', 'focus:outline-red-500');
+                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                // Limpia errores previos
+                clearError(nameInput);
+                clearError(lastnameInput);
+                clearError(birthdayInput);
+                clearError(emailInput);
+                clearError(phoneInput);
+                if (formError) {
+                    formError.textContent = '';
+                }
+
+                const name = nameInput.value;
+                const lastname = lastnameInput.value;
+                const birthday = birthdayInput.value;
+                const email = emailInput.value;
+                const phone = phoneInput.value;
+
+                let isValid = true;
+
+                // Validaciones
+                if (!name) {
+                    showError(nameInput, 'El nombre es obligatorio');
+                    isValid = false;
+                } else if (name.length < 3) {
+                    showError(nameInput, 'El nombre debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
+                
+                if (!lastname) {
+                    showError(lastnameInput, 'El apellido es obligatorio');
+                    isValid = false;
+                } else if (lastname.length < 3) {
+                    showError(lastnameInput, 'El apellido debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
+
+                if (!birthday) {
+                    showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
+                    isValid = false;
+                }
+
+                if (!email) {
+                    showError(emailInput, 'El correo es obligatorio');
+                    isValid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError(emailInput, 'Por favor, introduce un correo válido');
+                    isValid = false;
+                }
+
+                if (!phone) {
+                    showError(phoneInput, 'El teléfono es obligatoria');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    submitButton.disabled = true;
+
+                    const resource = new SaveProfileResource(name, lastname, form.dataset.roleId!, phone, new Date(birthday));
+
+                    submitButton.textContent = 'Creando mascota...';
+
+                    try {
+                        const response = await updateProfile("token", resource);
+                        if (response.success) {
+                            window.location.href = '/app/home';
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al actualizar perfil:', error);
+                        formError.textContent = 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'actualizar perfil';
+                    }
+                }
+            });
+        }
+
+        // --- Lógica para el botón de eliminar ---
+        const openDialogButton = document.getElementById('open-delete-dialog-button');
+        // Dialog in delete-pet-dialog.component.astro
+        const dialog = document.getElementById('delete-dialog');
+        const toggleDialog = (show: boolean) => {
+            dialog?.classList.toggle('hidden', !show);
+        }
+
+        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+    }
+
+    // Ejecuta los scripts en la carga inicial de la página
+    initializePageScripts();
+
+    // Vuelve a ejecutar los scripts en cada navegación del lado del cliente
+    document.addEventListener('astro:page-load', initializePageScripts);
+
+</script>

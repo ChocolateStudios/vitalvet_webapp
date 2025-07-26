@@ -7,41 +7,31 @@ interface ProfileInfo extends Profile {
     email: string;
 }
 
-export async function getProfile(): Promise<UsecaseResult<ProfileInfo>> {
-    let existingProfile: ProfileResource;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-        return {
-            success: false,
-            errorMessage: `El usuario no inició sesión correctamente.`,
-        }
-    }
-
-    const userId = token.split('.')[1];
-
+export async function getProfile(token: string, baseUrl: string = ''): Promise<UsecaseResult<ProfileInfo>> {
     try {
-        existingProfile = await ProfilesRepository.getProfileByUserId(userId); // obtener user Id de token de localstorage
+        const response = await fetch(`${baseUrl}/api/profiles`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                success: false,
+                errorMessage: errorData.message || `Perfil no encontrado`,
+            };
+        }
+
+        const existingProfile: ProfileResource = await response.json();
+
+        return {
+            data: {
+                ...existingProfile,
+                email: 'lol',
+            },
+            success: true,
+        };
     } catch (error) {
         return {
             success: false,
             errorMessage: (error as Error).message,
-        }
+        };
     }
-
-    if (!existingProfile) {
-        return {
-            success: false,
-            errorMessage: `Perfil no encontrado`,
-        }
-    }
-
-    return {
-        data: {
-            ...existingProfile,
-            email: "helloworld@example.com",
-            userId: userId,
-        },
-        success: true,
-    };
 }
