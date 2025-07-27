@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { PetsApi } from '@/contexts/pets/services/api/pets.api';
-import { SavePetResource } from '@/contexts/pets/services/resources/save-pet.resource';
+import { PetsApi } from '@/contexts/pets/server/interfaces/api/pets.api';
+import { SavePetResource } from '@/contexts/pets/server/interfaces/api/resources/save-pet.resource';
 
 export const prerender = false;
 

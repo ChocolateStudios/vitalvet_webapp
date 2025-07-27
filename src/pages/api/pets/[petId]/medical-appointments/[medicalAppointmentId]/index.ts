@@ -1,6 +1,6 @@
-import { MedicalAppointmentsApi } from "@/contexts/medical_histories/services/api/medical-appointments.api";
-import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/services/resources/save-medical-appointment.resource";
+import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
 import type { APIRoute } from "astro";
+import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
 
 export const prerender = false;
 
@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     try {
-        const appointments = await MedicalAppointmentsApi.getMedicalAppointmentById(petId, medicalAppointmentId);
+        const appointments = await MedicalAppointmentsRepository.getMedicalAppointment(petId, medicalAppointmentId);
         return new Response(JSON.stringify(appointments), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -42,7 +42,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
             body.prescription,
             body.doctorProfileId,
         );
-        const updatedPet = await MedicalAppointmentsApi.updateMedicalAppointment(petId, medicalAppointmentId, resource);
+        const updatedPet = await MedicalAppointmentsRepository.updateMedicalAppointment(petId, medicalAppointmentId, resource);
         return new Response(JSON.stringify(updatedPet), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -63,7 +63,7 @@ export const DELETE: APIRoute = async ({ params }) => {
     }
 
     try {
-        await MedicalAppointmentsApi.deleteMedicalAppointment(petId, medicalAppointmentId);
+        await MedicalAppointmentsRepository.deleteMedicalAppointment(petId, medicalAppointmentId);
         return new Response(null, { status: 204 });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

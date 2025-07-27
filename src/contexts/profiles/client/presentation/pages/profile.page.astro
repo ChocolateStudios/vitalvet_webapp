@@ -12,8 +12,6 @@ const getProfileResult = await getProfile(authenticatedUserId);
 
 if (getProfileResult.ok) {
     profile = await getProfileResult.json();
-} else {
-    return Astro.redirect('/auth/login');
 }
 
 const profileInputs = [

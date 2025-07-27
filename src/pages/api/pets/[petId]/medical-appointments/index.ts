@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { MedicalAppointmentsApi } from '@/contexts/medical_histories/services/api/medical-appointments.api';
-import { SaveMedicalAppointmentResource } from '@/contexts/medical_histories/services/resources/save-medical-appointment.resource';
+import { SaveMedicalAppointmentResource } from '@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource';
+import { MedicalAppointmentsRepository } from '@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository';
 
 export const prerender = false;
 
@@ -11,7 +11,7 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     try {
-        const appointments = await MedicalAppointmentsApi.getAllMedicalAppointmentsByPetId(petId);
+        const appointments = await MedicalAppointmentsRepository.getAllMedicalAppointmentsByPetId(petId);
         return new Response(JSON.stringify(appointments), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -36,7 +36,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             body.prescription,
             body.doctorProfileId,
         );
-        const newAppointment = await MedicalAppointmentsApi.createMedicalAppointment(petId, resource);
+        const newAppointment = await MedicalAppointmentsRepository.registerMedicalAppointment(petId, resource);
         return new Response(JSON.stringify(newAppointment), {
             status: 201,
             headers: { 'Content-Type': 'application/json' }

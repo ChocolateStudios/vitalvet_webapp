@@ -1,0 +1,21 @@
+---
+import { getAllEvents } from "@/contexts/calendar/server/application/usecases/getall-events.usecase"
+import CalendarComponent from "@/contexts/calendar/client/presentation/components/calendar.component.astro";
+
+const events = getAllEvents();
+const today = new Date();
+
+const data = {
+    selectedDate: today,
+    events: events,
+};
+---
+
+<div class="p-4 sm:p-6 lg:p-8 h-full flex flex-col">
+    <div class="absolute top-100 left-160 text-gray-500 z-10 text-7xl font-bold">Próximamente</div>
+    <div class="flex justify-between mb-5">
+        <h2 class="text-2xl font-bold">Calendario</h2>
+        <a href="/app/calendar/events/new" class="bg-blue-800 hover:bg-blue-900 text-white font-semibold rounded-md py-2.5 px-3 text-sm">Añadir Evento</a>
+    </div>
+    <CalendarComponent {data} />
+</div>
