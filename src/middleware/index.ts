@@ -1,14 +1,14 @@
 import { getAuthenticatedUserId } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-id";
 import { defineMiddleware } from "astro:middleware";
 
-const excludedRoutes = ['/app', '/app/login', '/app/register', '/app/recover', '/api/auth/login', , '/api/auth/register', , '/api/auth/recover'];
+const excludedRoutes = ['', '/', '/app', '/app/login', '/app/register', '/app/recover', '/api/auth/login', , '/api/auth/register', , '/api/auth/recover'];
 
 export const onRequest = defineMiddleware((context, next) => {
     const { pathname } = context.url;
     // console.log(pathname)
 
     // Permitir rutas excluidas sin aplicar el middleware
-    if (excludedRoutes.includes(pathname)) {
+    if (!pathname.startsWith('/app/') || excludedRoutes.includes(pathname)) {
         return next();
     }
 

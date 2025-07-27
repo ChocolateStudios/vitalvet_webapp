@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { UsersApi } from '@/contexts/auth/services/api/users.api';
-import { SaveUserResource } from '@/contexts/auth/services/resources/save-user.resource';
+import { SaveUserResource } from '@/contexts/auth/server/interfaces/api/resources/save-user.resource';
+import { UsersRepository } from '@/contexts/auth/server/infrastructure/repositories/users.repository';
 
 export const prerender = false;
 
@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             return new Response(JSON.stringify({ message: 'Missing fields' }), { status: 400 });
         }
         const resource = new SaveUserResource(username, password);
-        const authenticatedUser = await UsersApi.loginUser(resource);
+        const authenticatedUser = await UsersRepository.loginUser(resource);
 
         // Establecemos el token en una cookie segura
         cookies.set('token', authenticatedUser.token, {

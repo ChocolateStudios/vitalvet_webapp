@@ -1,5 +1,5 @@
 ---
-import AuthContainer from "@/contexts/auth/presentation/components/auth-container.component.astro"
+import AuthContainer from "@/contexts/auth/client/presentation/components/auth-container.component.astro"
 import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
 import DogCat from "@/assets/dogcat.png"
 
@@ -11,13 +11,6 @@ const inputFields = [
         autocomplete: "email",
         label: "Correo"
     },
-    {
-        id: "password",
-        name: "password",
-        type: "password",
-        autocomplete: "password",
-        label: "Contraseña"
-    }
 ]
 
 ---
@@ -30,29 +23,30 @@ const inputFields = [
 
     <!-- Form Content -->
     <div class="flex flex-col items-end z-20 m-12 gap-6 p-8 sm:p-12 w-full max-w-lg">
-        <h1 class="font-bold text-3xl">Iniciar sesión</h1>
-        <p class="text-base text-slate-600">¿No tienes cuenta? <a href="/app/register" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Regístrate</a></p>
-        <form id="login-form" class="flex flex-col w-full items-end gap-5" novalidate>
+        <h1 class="font-bold text-3xl">Recuperar cuenta</h1>
+        <div class="flex flex-col gap-2">
+            <p class="text-base text-slate-600">¿Ya tienes cuenta? <a href="/app/login" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Inicia sesión</a></p>
+            <p class="text-base text-slate-600">¿No tienes cuenta? <a href="/app/register" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Regístrate</a></p>
+        </div>
+        <form id="recover-form" class="flex flex-col w-full items-end gap-5" novalidate>
             {
                 inputFields.map((inputField) => 
                     <BaseTextInput {...inputField} class="w-full" />
                 )
             }
             <div id="form-error" class="text-red-600 text-sm font-semibold"></div>
-            <button id="submit-button" type="submit" class="w-fit rounded-full bg-[#6faab5] px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6faab5]/30 transition-colors hover:bg-[#5f9ea8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] disabled:bg-slate-400 disabled:cursor-not-allowed">Iniciar sesión</button>
+            <button id="submit-button" type="submit" class="w-fit rounded-full bg-[#6faab5] px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6faab5]/30 transition-colors hover:bg-[#5f9ea8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] disabled:bg-slate-400 disabled:cursor-not-allowed">Recuperar</button>
         </form>
     </div>
 </AuthContainer>
 
 <script>
-    import { SaveUserResource } from "../../services/resources/save-user.resource";
-    import { loginUser } from "../../usecases/login-user.usecase";
+    import { recoverUser } from "@/contexts/auth/client/usecases/recover-user.usecase";
 
-    const form = document.getElementById('login-form') as HTMLFormElement | null;
+    const form = document.getElementById('recover-form') as HTMLFormElement | null;
 
     if (form) {
         const emailInput = document.getElementById('email') as HTMLInputElement;
-        const passwordInput = document.getElementById('password') as HTMLInputElement;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
         const formError = document.getElementById('form-error') as HTMLDivElement;
 
@@ -61,6 +55,7 @@ const inputFields = [
             if (errorContainer) {
                 errorContainer.textContent = message;
             }
+            // Cambia el color del borde del input a rojo
             input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
             input.classList.add('outline-red-500', 'focus:outline-red-500');
         }
@@ -70,23 +65,24 @@ const inputFields = [
             if (errorContainer) {
                 errorContainer.textContent = '';
             }
+            // Restaura el color del borde del input
             input.classList.remove('outline-red-500', 'focus:outline-red-500');
             input.classList.add('outline-gray-300', 'focus:outline-blue-800');
         }
 
-        form.addEventListener('submit', async (event) => {
+        form.addEventListener('submit', (event) => {
             event.preventDefault();
 
+            // Limpia errores previos
             clearError(emailInput);
-            clearError(passwordInput);
             if (formError) {
                 formError.textContent = '';
             }
 
             const email = emailInput.value;
-            const password = passwordInput.value;
             let isValid = true;
 
+            // Validaciones
             if (!email) {
                 showError(emailInput, 'El correo es obligatorio');
                 isValid = false;
@@ -94,32 +90,24 @@ const inputFields = [
                 showError(emailInput, 'Por favor, introduce un correo válido');
                 isValid = false;
             }
-            
-            if (!password) {
-                showError(passwordInput, 'La contraseña es obligatoria');
-                isValid = false;
-            } else if (password.length < 6) {
-                showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
-                isValid = false;
-            }   
 
             if (isValid) {
                 submitButton.disabled = true;
-                submitButton.textContent = 'Iniciando sesión...';
+                submitButton.textContent = 'Enviando correo de recuperación...';
 
                 try {
-                    const response = await loginUser(new SaveUserResource(email, password));
+                    const response = recoverUser(email);
                     if (response.success) {
-                        window.location.href = '/app/home';
+                        window.location.href = '/app/login';
                     } else {
-                        formError.textContent = response.errorMessage ?? 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
+                        formError.textContent = response.message ?? 'Error al recuperar cuenta. Por favor, inténtalo de nuevo.';
                     }
                 } catch (error) {
-                    console.error('Error al iniciar sesión:', error);
-                    formError.textContent = 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
+                    console.error('Error al recuperar cuenta:', error);
+                    formError.textContent = 'Error al recuperar cuenta. Por favor, inténtalo de nuevo.';
                 } finally {
                     submitButton.disabled = false;
-                    submitButton.textContent = 'Iniciar sesión';
+                    submitButton.textContent = 'Recuperar';
                 }
             }
         });

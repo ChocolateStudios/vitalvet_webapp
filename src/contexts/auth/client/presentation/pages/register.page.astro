@@ -1,7 +1,7 @@
 ---
-import AuthContainer from "../components/auth-container.component.astro"
-import BaseTextInput from "../../../_shared/presentation/components/base-text-input.component.astro"
-import DogCat from "../../../../assets/dogcat.png"
+import AuthContainer from "@/contexts/auth/client/presentation/components/auth-container.component.astro"
+import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
+import DogCat from "@/assets/dogcat.png"
 
 const inputFields = [
     {
@@ -71,8 +71,8 @@ const inputFields = [
 </AuthContainer>
 
 <script>
-    import { SaveUserResource } from "../../services/resources/save-user.resource";
-    import { registerUser } from "../../usecases/register-user.usecase";
+    import { SaveUserResource } from "@/contexts/auth/server/interfaces/api/resources/save-user.resource";
+    import { registerUser } from "@/contexts/auth/client/usecases/register-user.usecase";
 
     const form = document.getElementById('register-form') as HTMLFormElement | null;
 

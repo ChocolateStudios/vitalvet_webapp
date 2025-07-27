@@ -1,4 +1,4 @@
-import { BaseModel } from "../../_shared/server/models/base.model";
+import { BaseModel } from "../../../_shared/server/models/base.model";
 
 export class User extends BaseModel {
     public username: string = "";

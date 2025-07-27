@@ -1,4 +1,4 @@
-import { verifyToken } from "@/contexts/auth/utils/jwt.util";
+import { verifyToken } from "@/contexts/auth/server/utils/jwt.util";
 
 export function getAuthenticatedUserId(token?: string) {
     if (!token) {

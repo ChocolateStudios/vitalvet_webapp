@@ -1,4 +1,4 @@
-import { verifyToken } from "@/contexts/auth/utils/jwt.util";
+import { verifyToken } from "@/contexts/auth/server/utils/jwt.util";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 
 export async function getProfile(userId?: string): Promise<Response> {

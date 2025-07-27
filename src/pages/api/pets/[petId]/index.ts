@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
-import { PetsApi } from '@/contexts/pets/server/interfaces/api/pets.api';
+// import { PetsApi } from '@/contexts/pets/server/interfaces/api/pets.api';
 import { SavePetResource } from '@/contexts/pets/server/interfaces/api/resources/save-pet.resource';
+import { PetsRepository } from '@/contexts/pets/server/infrastructure/repositories/pets.repository';
 
 export const prerender = false;
 
@@ -11,7 +12,7 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     try {
-        const pet = await PetsApi.getPetById(petId);
+        const pet = await PetsRepository.getPet(petId);
         if (!pet) {
             return new Response(JSON.stringify({ message: 'Pet not found' }), { status: 404 });
         }
@@ -42,7 +43,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
             body.weight,
             new Date(body.birthday)
         );
-        const updatedPet = await PetsApi.updatePet(petId, resource);
+        const updatedPet = await PetsRepository.updatePet(petId, resource);
         return new Response(JSON.stringify(updatedPet), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -60,7 +61,7 @@ export const DELETE: APIRoute = async ({ params }) => {
     }
 
     try {
-        await PetsApi.deletePet(petId);
+        await PetsRepository.deletePet(petId);
         return new Response(null, { status: 204 });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

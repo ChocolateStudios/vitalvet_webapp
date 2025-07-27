@@ -1,14 +1,14 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
-import type { SaveUserResource } from "../services/resources/save-user.resource";
+import type { SaveUserResource } from "../../server/interfaces/api/resources/save-user.resource";
 
-export async function registerUser(saveResource: SaveUserResource): Promise<UsecaseResult<any>> {
+export async function loginUser(saveResource: SaveUserResource): Promise<UsecaseResult<any>> {
     try {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: saveResource.username, password: saveResource.password})
+            body: JSON.stringify(saveResource)
         });
 
         if (response.ok) {
@@ -21,14 +21,14 @@ export async function registerUser(saveResource: SaveUserResource): Promise<Usec
             const errorData = await response.json();
             return {
                 success: false,
-                errorMessage: errorData.message || 'Error al registrar el usuario. Por favor, inténtalo de nuevo.',
+                errorMessage: errorData.message || 'Error al iniciar sesión. Por favor, inténtalo de nuevo.',
             };
         }
     } catch (error) {
-        console.error('Error al registrar el usuario:', error);
+        console.error('Error al iniciar sesión:', error);
         return {
             success: false,
-            errorMessage: 'Error al registrar el usuario. Por favor, inténtalo de nuevo.',
+            errorMessage: 'Error al iniciar sesión. Por favor, inténtalo de nuevo.',
         };
     }
 }

@@ -1,12 +1,12 @@
 import type { APIRoute } from 'astro';
-import { PetsApi } from '@/contexts/pets/server/interfaces/api/pets.api';
 import { SavePetResource } from '@/contexts/pets/server/interfaces/api/resources/save-pet.resource';
+import { PetsRepository } from '@/contexts/pets/server/infrastructure/repositories/pets.repository';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
     try {
-        const pets = await PetsApi.getAllPets();
+        const pets = await PetsRepository.getAllPets();
         return new Response(JSON.stringify(pets), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request }) => {
             body.weight,
             new Date(body.birthday)
         );
-        const newPet = await PetsApi.createPet(resource);
+        const newPet = await PetsRepository.registerPet(resource);
         return new Response(JSON.stringify(newPet), {
             status: 201,
             headers: { 'Content-Type': 'application/json' }

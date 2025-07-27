@@ -1,5 +1,5 @@
-import { BaseModel } from "../../../_shared/server/models/base.model";
-import type { User } from "../../models/user.model";
+import { BaseModel } from "../../../../../_shared/server/models/base.model";
+import type { User } from "../../../models/user.model";
 
 export class UserResource extends BaseModel {
     public username: string = "";
