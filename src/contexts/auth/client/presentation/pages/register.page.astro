@@ -73,6 +73,8 @@ const inputFields = [
 <script>
     import { SaveUserResource } from "@/contexts/auth/server/interfaces/api/resources/save-user.resource";
     import { registerUser } from "@/contexts/auth/client/usecases/register-user.usecase";
+    import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
+    import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
 
     const form = document.getElementById('register-form') as HTMLFormElement | null;
 
@@ -150,12 +152,19 @@ const inputFields = [
                 submitButton.textContent = 'Registrando...';
 
                 try {
-                    const response = await registerUser(new SaveUserResource(email, password));
-                    if (response.success) {
-                        window.location.href = '/app/home';
-                    } else {
-                        formError.textContent = response.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                    const userResponse = await registerUser(new SaveUserResource(email, password));
+                    if (!userResponse.success) {
+                        formError.textContent = userResponse.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
                     }
+                    
+                    const profileResponse = await createProfile(new SaveProfileResource(name, lastname, '1', '+51 999 999 999', new Date()), userResponse.data.stringId);
+                    if (profileResponse.success) {
+                        window.location.href = '/app/home';
+                    }
+                    else {
+                        formError.textContent = profileResponse.errorMessage ?? 'Error al registrar perfil. Por favor, contactar al administrador de la aplicación.';
+                    }
+
                 } catch (error) {
                     console.error('Error al registrar usuario:', error);
                     formError.textContent = 'Error al registrar usuario. Por favor, inténtalo de nuevo.';

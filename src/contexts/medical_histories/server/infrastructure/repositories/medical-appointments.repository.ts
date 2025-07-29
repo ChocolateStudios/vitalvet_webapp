@@ -1,8 +1,9 @@
 import type { MedicalAppointment } from "@/contexts/medical_histories/server/models/medical-appointment.model";
 import { db } from "@/firebase/client";
-import { equalTo, get, orderByChild, push, query, ref, remove, set, update } from "firebase/database";
+import { equalTo, get, orderByChild, push, query, ref, remove, runTransaction, set, update } from "firebase/database";
 import type { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
 import { MedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/medical-appointment.resource";
+import { PETS_PATH } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
 
 const MEDICAL_APPOINTMENTS_PATH = 'medical_appointments';
 
@@ -31,6 +32,12 @@ export class MedicalAppointmentsRepository {
 
         await set(newMedicalAppointmentRef, dataToSave);
 
+        // Incrementa el contador de citas médicas para la mascota usando una transacción
+        const petCounterRef = ref(db, `${PETS_PATH}/${petId}/medicalAppointmentsCount`);
+        await runTransaction(petCounterRef, (currentCount) => {
+            return (currentCount || 0) + 1;
+        });
+
         return MedicalAppointmentResource.fromModel(newMedicalAppointment);
     }
 
@@ -54,6 +61,14 @@ export class MedicalAppointmentsRepository {
     static async deleteMedicalAppointment(petId: string, medicalAppointmentId: string): Promise<MedicalAppointmentResource> {
         const medicalAppointmentToDelete = await this.getMedicalAppointment(petId, medicalAppointmentId); // Obtenemos el objeto antes de borrarlo para poder devolverlo
         const medicalAppointmentRef = ref(db, `${MEDICAL_APPOINTMENTS_PATH}/${medicalAppointmentId}`);
+
+        // Decrementa el contador de citas médicas para la mascota usando una transacción
+        const petCounterRef = ref(db, `${PETS_PATH}/${petId}/medicalAppointmentsCount`);
+        await runTransaction(petCounterRef, (currentCount) => {
+            // Aseguramos que el contador no sea negativo
+            return (currentCount || 0) > 0 ? currentCount - 1 : 0;
+        });
+        
         await remove(medicalAppointmentRef);
         return medicalAppointmentToDelete;
     }

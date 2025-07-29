@@ -17,17 +17,20 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         const authenticatedUser = await UsersRepository.loginUser(resource);
 
         // Establecemos el token en una cookie segura
-        cookies.set('token', authenticatedUser.token, {
-            httpOnly: false, // TODO: cambiar a true
+        cookies.set('__session', authenticatedUser.token, {
+            httpOnly: true,
             secure: import.meta.env.PROD, // Solo en HTTPS para producción
             path: '/',
             maxAge: 60 * 60 * 24 * 30, // 30 días
         });
 
+        authenticatedUser.token = '';
+
         return new Response(JSON.stringify(authenticatedUser), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
+        // return new Response(null, { status: 302, headers: { 'Location': '/app/home' } });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
         return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });

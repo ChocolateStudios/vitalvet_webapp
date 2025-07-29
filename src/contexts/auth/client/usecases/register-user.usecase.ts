@@ -13,8 +13,9 @@ export async function registerUser(saveResource: SaveUserResource): Promise<Usec
 
         if (response.ok) {
             const authenticatedUser = await response.json();
-            localStorage.setItem("token", authenticatedUser.token);
+            // localStorage.setItem("token", authenticatedUser.token);
             return {
+                data: authenticatedUser,
                 success: true,
             };
         } else {
@@ -26,9 +27,10 @@ export async function registerUser(saveResource: SaveUserResource): Promise<Usec
         }
     } catch (error) {
         console.error('Error al registrar el usuario:', error);
+
         return {
             success: false,
-            errorMessage: 'Error al registrar el usuario. Por favor, inténtalo de nuevo.',
+            errorMessage: (error as Error).message,
         };
     }
 }

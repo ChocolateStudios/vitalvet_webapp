@@ -11,6 +11,7 @@ export class AuthenticatedUserResource extends BaseModel {
 
     public static fromModel(model: User): AuthenticatedUserResource {
         const resource = new AuthenticatedUserResource();
+        resource.stringId = model.stringId;
         resource.username = model.username;
         return resource;
     }

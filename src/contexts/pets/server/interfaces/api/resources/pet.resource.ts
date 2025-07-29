@@ -9,6 +9,7 @@ export class PetResource extends AuditableModel {
     public imgUrl: string = "";
     public weight: number = 0;
     public birthday: Date = new Date();
+    public medicalAppointmentsCount: number = 0;
 
     public constructor() {
         super();
@@ -24,6 +25,7 @@ export class PetResource extends AuditableModel {
         resource.subspecies = model.subspecies;
         resource.imgUrl = model.imgUrl;
         resource.birthday = model.birthday;
+        // resource.medicalAppointmentsCount; // no esta en el modelo
         resource.createdAt = model.createdAt;
         resource.updatedAt = model.updatedAt;
         return resource;

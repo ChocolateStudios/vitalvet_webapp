@@ -1,6 +1,4 @@
 import type { Pet } from "@/contexts/pets/server/models/pet.model";
-import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
 
 export interface PetInfo extends Pet {

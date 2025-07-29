@@ -1,18 +1,39 @@
 import { getAuthenticatedUserId } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-id";
 import { defineMiddleware } from "astro:middleware";
 
-const excludedRoutes = ['', '/', '/app', '/app/login', '/app/register', '/app/recover', '/api/auth/login', , '/api/auth/register', , '/api/auth/recover'];
+// Definimos las rutas base que no requieren autenticación.
+const baseExcludedRoutes = [
+    '',
+    '/',
+    '/app',
+    '/app/login',
+    '/app/register',
+    '/app/recover',
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/recover'
+];
+
+// Generamos un nuevo array que incluye cada ruta y su variante con una barra ("/") al final.
+// Esto asegura que tanto '/app/login' como '/app/login/' se traten como rutas excluidas.
+const excludedRoutes = baseExcludedRoutes.flatMap(path => path === '/' ? [path] : [path, `${path}/`]);
 
 export const onRequest = defineMiddleware((context, next) => {
     const { pathname } = context.url;
-    // console.log(pathname)
+    // console.log('pathname: ' + pathname)
+    // console.log('excludedRoutes: ' + excludedRoutes)
 
-    // Permitir rutas excluidas sin aplicar el middleware
-    if (!pathname.startsWith('/app/') || excludedRoutes.includes(pathname)) {
+    // Si la ruta está explícitamente excluida, la dejamos pasar.
+    if (excludedRoutes.includes(pathname)) {
         return next();
     }
 
-    const token = context.cookies.get('token')?.value;
+    // Si la ruta no está dentro del área protegida '/app/', también la dejamos pasar.
+    if (!pathname.startsWith('/app/')) {
+        return next();
+    }
+
+    const token = context.cookies.get('__session')?.value;
     // console.log('token ', token)
 
     const authenticatedUserId = getAuthenticatedUserId(token);
@@ -20,11 +41,11 @@ export const onRequest = defineMiddleware((context, next) => {
     // if authenticatedUserId is Response, return Response
     if (authenticatedUserId instanceof Response) {
         // return authenticatedUserId;
-        // return next("/app/login"); // Redirigir si no está autenticado
-        return new Response(null, {
-            status: 302,
-            headers: { Location: '/app/login' },
-        });
+        return next("/app/login"); // Redirigir si no está autenticado
+        // return new Response(null, {
+        //     status: 302,
+        //     headers: { Location: '/app/login' },
+        // });
     }
 
     context.locals.authenticatedUserId = authenticatedUserId;

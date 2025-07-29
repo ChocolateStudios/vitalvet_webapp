@@ -4,7 +4,7 @@ import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositori
 
 export interface PetListItemInfo extends Pet {
     lastVisit: Date,
-    appointmentCount: number,
+    appointmentsCount: number,
 }
 
 export async function getAllPets(): Promise<Response> {
@@ -13,7 +13,7 @@ export async function getAllPets(): Promise<Response> {
         const petsInfo = pets.map((pet: PetResource) => {
             return {
                 ...pet,
-                appointmentCount: 1,
+                appointmentsCount: pet.medicalAppointmentsCount,
             };
         });
         return new Response(JSON.stringify(petsInfo), {

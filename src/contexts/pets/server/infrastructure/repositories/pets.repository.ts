@@ -4,7 +4,7 @@ import { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet
 import type { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
 import { db } from "@/firebase/client";
 
-const PETS_PATH = 'pets';
+export const PETS_PATH = 'pets';
 
 export class PetsRepository {
 
@@ -25,6 +25,7 @@ export class PetsRepository {
         const dataToSave = {
             ...data,
             birthday: newPet.birthday.toISOString(),
+            medicalAppointmentsCount: 0,
             createdAt: newPet.createdAt.toISOString(),
             updatedAt: newPet.updatedAt.toISOString(),
         };
@@ -75,7 +76,9 @@ export class PetsRepository {
             updatedAt: new Date(petData.updatedAt),
         };
 
-        return PetResource.fromModel(petModel);
+        const resource = PetResource.fromModel(petModel);
+        resource.medicalAppointmentsCount = petData.medicalAppointmentsCount || 0;
+        return resource;
     }
 
     static async getAllPets(): Promise<PetResource[]> {
@@ -93,7 +96,9 @@ export class PetsRepository {
                 createdAt: new Date(petData.createdAt),
                 updatedAt: new Date(petData.updatedAt),
             };
-            return PetResource.fromModel(petModel);
+            const resource = PetResource.fromModel(petModel);
+            resource.medicalAppointmentsCount = petData.medicalAppointmentsCount || 0;
+            return resource;
         });
     }
 }

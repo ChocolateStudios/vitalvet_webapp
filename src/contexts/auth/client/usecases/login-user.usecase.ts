@@ -11,9 +11,9 @@ export async function loginUser(saveResource: SaveUserResource): Promise<Usecase
             body: JSON.stringify(saveResource)
         });
 
-        if (response.ok) {
-            const authenticatedUser = await response.json();
-            localStorage.setItem("token", authenticatedUser.token);
+        if (response.ok || response.redirected) {
+            // const authenticatedUser = await response.json();
+            // localStorage.setItem("token", authenticatedUser.token);
             return {
                 success: true,
             };

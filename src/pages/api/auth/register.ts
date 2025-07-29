@@ -17,13 +17,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         const authenticatedUser = await UsersRepository.registerUser(resource);
 
         // Establecemos el token en una cookie segura
-        cookies.set('token', authenticatedUser.token, {
+        cookies.set('__session', authenticatedUser.token, {
             httpOnly: false, // TODO: cambiar a true
             secure: import.meta.env.PROD, // Solo en HTTPS para producción
             path: '/',
             maxAge: 60 * 60 * 24 * 30, // 30 días
         });
 
+        authenticatedUser.token = '';
         return new Response(JSON.stringify(authenticatedUser), {
             status: 201,
             headers: { 'Content-Type': 'application/json' }

@@ -10,8 +10,8 @@ const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 let profile: ProfileInfo | null = null;
 const getProfileResult = await getProfile(authenticatedUserId);
 
-if (getProfileResult.ok) {
-    profile = await getProfileResult.json();
+if (getProfileResult.success) {
+    profile = getProfileResult.data;
 }
 
 const profileInputs = [
