@@ -1,4 +1,4 @@
 export class BaseModel {
-    public id: number = 0;
-    public stringId: string = "";
+    public id: number | string = 0;
+    // public stringId: string = "";
 }

@@ -1,7 +1,4 @@
 import type { MedicalAppointment } from "@/contexts/medical_histories/server/models/medical-appointment.model";
-import { MedicalAppointmentsApiMock } from "@/contexts/medical_histories/server/services/mock/medical-appointments.mock";
-import type { MedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/medical-appointment.resource";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
 
 export interface MedicalAppointmentInfo extends MedicalAppointment {
@@ -13,7 +10,6 @@ export async function getMedicalAppointment(petId: string, medicalAppointmentId:
         const medicalAppointment = await MedicalAppointmentsRepository.getMedicalAppointment(petId, medicalAppointmentId);
         const petInfo: MedicalAppointmentInfo = {
             ...medicalAppointment,
-            stringPetId: '',
         };
         return new Response(JSON.stringify(petInfo), {
             status: 200,

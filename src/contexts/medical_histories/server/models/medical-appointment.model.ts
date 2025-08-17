@@ -4,7 +4,7 @@ export class MedicalAppointment extends AuditableModel {
     public details: string = "";
     public observations: string = "";
     public prescription: string = "";
-    public petId: number = 0;
-    public stringPetId: string = "";
-    public doctorProfileId: number = 0;
+    public appointmentDate: Date = new Date();
+    public petId: number | string = 0;
+    public doctorProfileId: number | string = 0;
 }

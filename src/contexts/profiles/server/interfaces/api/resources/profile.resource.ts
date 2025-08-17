@@ -10,6 +10,7 @@ export class ProfileResource extends AuditableModel {
     public userId: string = "";
     public roleId: string = "";
     public roleName: string = "";
+    public me: boolean = false;
 
     public constructor() {
         super();
@@ -18,7 +19,6 @@ export class ProfileResource extends AuditableModel {
     public static fromModel(model: Profile): ProfileResource {
         const resource = new ProfileResource();
         resource.id = model.id;
-        resource.stringId = model.stringId;
         resource.name = model.name;
         resource.lastname = model.lastname;
         resource.phone = model.phone;

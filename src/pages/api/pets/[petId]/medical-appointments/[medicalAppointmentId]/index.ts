@@ -40,6 +40,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
             body.details,
             body.observations,
             body.prescription,
+            new Date(body.appointmentDate),
             body.doctorProfileId,
         );
         const updatedPet = await MedicalAppointmentsRepository.updateMedicalAppointment(petId, medicalAppointmentId, resource);

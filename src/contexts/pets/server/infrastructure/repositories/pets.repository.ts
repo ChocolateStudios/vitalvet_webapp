@@ -19,7 +19,7 @@ export class PetsRepository {
             throw new Error('No se pudo generar un ID para la nueva mascota.');
         }
 
-        newPet.stringId = petId; // Asigna el ID único de Firebase
+        newPet.id = petId; // Asigna el ID único de Firebase
 
         // Firebase maneja mejor los timestamps como strings ISO o números
         const dataToSave = {

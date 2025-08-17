@@ -157,7 +157,6 @@ const inputFields = [
                     try {
                         const userResponse = await registerUser(new SaveUserResource(email, password));
                         if (!userResponse.success) {
-                            console.log('userResponse', userResponse.errorMessage)
                             formError.textContent = userResponse.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
                             return;
                         }

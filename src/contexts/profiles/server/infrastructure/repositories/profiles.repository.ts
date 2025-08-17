@@ -81,4 +81,53 @@ export class ProfilesRepository {
 
         return ProfileResource.fromModel(profileModel);
     }
+
+    static async getAllProfilesByProfileIds(profileIds: string[]): Promise<ProfileResource[]> {
+        const profilesCollectionRef = ref(db, PROFILES_PATH)
+        const snapshot = await get(profilesCollectionRef);
+        if (!snapshot.exists()) return [];
+
+        const profilesData = snapshot.val();
+
+        return Object.keys(profilesData)
+            .filter(profileId => profileIds.includes(profileId))
+            .map(profileId => {
+                const profileData = profilesData[profileId];
+                const profileModel: Profile = {
+                    ...profileData,
+                    id: profileId,
+                    birthday: new Date(profileData.birthday),
+                    createdAt: new Date(profileData.createdAt),
+                    updatedAt: new Date(profileData.updatedAt),
+                };
+                return ProfileResource.fromModel(profileModel);
+            });
+    }
+
+    static async getAllProfilesByRoleId(roleId: string): Promise<ProfileResource[]> {
+        const profilesCollectionRef = ref(db, PROFILES_PATH);
+
+        // Construye la consulta para filtrar por username en el servidor
+        const profileQuery = query(profilesCollectionRef, orderByChild('roleId'), equalTo(roleId));
+        const snapshot = await get(profileQuery);
+
+        if (!snapshot.exists()) {
+            return [];
+        }
+
+        const profilesData = snapshot.val();
+        // Se mapean los resultados a ProfileResource, asegurando la consistencia
+        // en la creación de objetos como en otros métodos del repositorio.
+        return Object.keys(profilesData).map(profileId => {
+            const profileData = profilesData[profileId];
+            const profileModel: Profile = {
+                ...profileData,
+                id: profileId,
+                birthday: new Date(profileData.birthday),
+                createdAt: new Date(profileData.createdAt),
+                updatedAt: new Date(profileData.updatedAt),
+            };
+            return ProfileResource.fromModel(profileModel);
+        });
+    }
 }

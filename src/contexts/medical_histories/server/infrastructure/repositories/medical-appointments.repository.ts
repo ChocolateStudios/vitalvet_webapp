@@ -20,12 +20,13 @@ export class MedicalAppointmentsRepository {
             throw new Error('No se pudo generar un ID para la nueva cita médica.');
         }
 
-        newMedicalAppointment.stringId = medicalAppointmentId; // Asigna el ID único de Firebase
+        newMedicalAppointment.id = medicalAppointmentId; // Asigna el ID único de Firebase
 
         // Firebase maneja mejor los timestamps como strings ISO o números
         const dataToSave = {
             ...data,
             petId: petId,
+            appointmentDate: newMedicalAppointment.appointmentDate.toISOString(),
             createdAt: newMedicalAppointment.createdAt.toISOString(),
             updatedAt: newMedicalAppointment.updatedAt.toISOString(),
         };
@@ -78,7 +79,7 @@ export class MedicalAppointmentsRepository {
         const allAppointments = await this.getAllMedicalAppointmentsByPetId(petId);
 
         // Buscamos la cita específica en la lista ya ordenada.
-        const medicalAppointment = allAppointments.find(appointment => appointment.stringId === medicalAppointmentId);
+        const medicalAppointment = allAppointments.find(appointment => appointment.id === medicalAppointmentId);
 
         if (!medicalAppointment) {
             throw new Error(`Cita médica no encontrada con el id ${medicalAppointmentId} para la mascota con id ${petId}`);
@@ -96,19 +97,19 @@ export class MedicalAppointmentsRepository {
         const snapshot = await get(queryByPetId);
         if (!snapshot.exists()) return [];
 
-        const appointmentsData  = snapshot.val();
+        const appointmentsData = snapshot.val();
 
         // 1. Convertir el objeto de citas en un array
         const appointmentsList: MedicalAppointment[] = Object.keys(appointmentsData).map(key => ({ 
             ...appointmentsData[key], 
             id: key,
-            stringId: key,
+            appointmentDate: new Date(appointmentsData[key].appointmentDate),
             createdAt: new Date(appointmentsData[key].createdAt),
             updatedAt: new Date(appointmentsData[key].updatedAt),
         }));
 
         // 2. Ordenar el array por fecha de creación (ascendente)
-        appointmentsList.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        appointmentsList.sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
 
         // 3. Convertir el array de citas en un array de recursos
         return appointmentsList.map((appointment, index) => {

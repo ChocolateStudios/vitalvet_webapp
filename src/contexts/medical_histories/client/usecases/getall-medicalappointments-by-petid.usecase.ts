@@ -1,4 +1,3 @@
-import { MedicalAppointmentsApiMock } from "@/contexts/medical_histories/server/services/mock/medical-appointments.mock";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { MedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/medical-appointment.resource";
 
@@ -41,18 +40,4 @@ export async function getAllMedicalAppointmentsByPetId(petId: string, baseUrl: s
             errorMessage: (error as Error).message,
         };
     }
-}
-
-export function getAllMedicalAppointmentsByPetIdMocked(petId: number): MedicalAppointmentListItemInfo[] {
-    const medicalAppointments = MedicalAppointmentsApiMock.getAllMedicalAppointmentsByPetId(petId);
-    const medicalAppointmentsInfo = medicalAppointments.map((ma, index) => {
-        return {
-            id: ma.id,
-            appointmentNumber: index + 1,
-            createdAt: ma.createdAt,
-            doctorName: "Doctor ejemplo",
-        };
-    })
-
-    return medicalAppointmentsInfo;
 }

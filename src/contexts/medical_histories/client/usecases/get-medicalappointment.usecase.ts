@@ -1,8 +1,6 @@
 import type { MedicalAppointment } from "@/contexts/medical_histories/server/models/medical-appointment.model";
-import { MedicalAppointmentsApiMock } from "@/contexts/medical_histories/server/services/mock/medical-appointments.mock";
 import type { MedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/medical-appointment.resource";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
-import { MedicalAppointmentsRepository } from "../../server/infrastructure/repositories/medical-appointments.repository";
 
 interface MedicalAppointmentInfo extends MedicalAppointment {
     appointmentNumber: number,
@@ -25,7 +23,6 @@ export async function getMedicalAppointment(petId: string, medicalAppointmentId:
         return {
             data: {
                 ...existingMedicalAppointment,
-                stringPetId: '',
             },
             success: true,
         };
@@ -35,18 +32,4 @@ export async function getMedicalAppointment(petId: string, medicalAppointmentId:
             errorMessage: (error as Error).message,
         };
     }
-}
-
-export function getMedicalAppointmentMocked(medicalAppointmentId: number): MedicalAppointmentInfo {
-    const medicalAppointment: MedicalAppointmentResource = MedicalAppointmentsApiMock.getMedicalAppointment(medicalAppointmentId);
-
-    if (!medicalAppointment) {
-        // TODO: return error message
-    }
-    
-    return {
-        ...medicalAppointment,
-        stringPetId: '',
-        appointmentNumber: Number(medicalAppointmentId) + 1,
-    };
 }

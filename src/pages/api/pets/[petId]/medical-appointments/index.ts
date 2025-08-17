@@ -34,6 +34,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             body.details,
             body.observations,
             body.prescription,
+            new Date(body.appointmentDate),
             body.doctorProfileId,
         );
         const newAppointment = await MedicalAppointmentsRepository.registerMedicalAppointment(petId, resource);
