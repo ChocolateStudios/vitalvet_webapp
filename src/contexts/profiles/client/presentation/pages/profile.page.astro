@@ -37,7 +37,7 @@ const profileInputs = [
         type: "date",
         autocomplete: "birthday",
         label: "Fecha de nacimiento",
-        value: profile?.birthday,
+        value: profile?.birthday ? (new Date(profile.birthday)).toISOString().split('T')[0] : "",
     },
     {
         id: "email",
@@ -54,6 +54,15 @@ const profileInputs = [
         autocomplete: "phone",
         label: "Teléfono",
         value: profile?.phone,
+    },
+    {
+        id: "role",
+        name: "role",
+        type: "text",
+        autocomplete: "role",
+        label: "Rol",
+        value: profile?.roleName,
+        readonly: true,
     },
 ]
 ---
@@ -179,7 +188,7 @@ const profileInputs = [
                     submitButton.textContent = 'Creando mascota...';
 
                     try {
-                        const response = await updateProfile("token", resource);
+                        const response = await updateProfile(resource);
                         if (response.success) {
                             window.location.href = '/app/home';
                         } else {
@@ -190,7 +199,7 @@ const profileInputs = [
                         formError.textContent = 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
                     } finally {
                         submitButton.disabled = false;
-                        submitButton.textContent = 'actualizar perfil';
+                        submitButton.textContent = 'Guardar cambios';
                     }
                 }
             });
@@ -207,10 +216,8 @@ const profileInputs = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    // Ejecuta los scripts en la carga inicial de la página
-    initializePageScripts();
-
-    // Vuelve a ejecutar los scripts en cada navegación del lado del cliente
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
     document.addEventListener('astro:page-load', initializePageScripts);
 
 </script>

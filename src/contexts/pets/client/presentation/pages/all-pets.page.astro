@@ -65,34 +65,40 @@ const tableHeaders = [
 </ContentContainer>
 
 <script>
-    const searchInput = document.getElementById("pet-search") as HTMLInputElement;
-    const table = document.getElementById('pets-table');
-    const tableRows = table?.querySelectorAll('tbody tr');
+    function initializePageScripts() {
+        const searchInput = document.getElementById("pet-search") as HTMLInputElement;
+        const table = document.getElementById('pets-table');
+        const tableRows = table?.querySelectorAll('tbody tr');
 
-    const normalizeText = (text: string | null | undefined): string => {
-        if (!text) return "";
-        return text
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/\p{M}/gu, "");
-    }
+        const normalizeText = (text: string | null | undefined): string => {
+            if (!text) return "";
+            return text
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/\p{M}/gu, "");
+        }
 
-    if (searchInput && tableRows) {
-        searchInput.addEventListener('input', () => {
-            const searchTerm = normalizeText(searchInput.value);
+        if (searchInput && tableRows) {
+            searchInput.addEventListener('input', () => {
+                const searchTerm = normalizeText(searchInput.value);
 
-            tableRows.forEach(row => {
-                let rowText = "";
-                row.querySelectorAll('td').forEach(cell => {
-                    rowText += normalizeText(cell.textContent);
+                tableRows.forEach(row => {
+                    let rowText = "";
+                    row.querySelectorAll('td').forEach(cell => {
+                        rowText += normalizeText(cell.textContent);
+                    });
+
+                    if (rowText.includes(searchTerm)) {
+                        (row as HTMLElement).style.display = '';
+                    } else {
+                        (row as HTMLElement).style.display = 'none';
+                    }
                 });
-
-                if (rowText.includes(searchTerm)) {
-                    (row as HTMLElement).style.display = '';
-                } else {
-                    (row as HTMLElement).style.display = 'none';
-                }
             });
-        });
+        }
     }
+
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
+    document.addEventListener('astro:page-load', initializePageScripts);
 </script>

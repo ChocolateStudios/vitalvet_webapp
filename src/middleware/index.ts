@@ -29,7 +29,7 @@ export const onRequest = defineMiddleware((context, next) => {
     }
 
     // Si la ruta no está dentro del área protegida '/app/', también la dejamos pasar.
-    if (!pathname.startsWith('/app/')) {
+    if (!pathname.startsWith('/app/') && !pathname.startsWith('/api/')) {
         return next();
     }
 

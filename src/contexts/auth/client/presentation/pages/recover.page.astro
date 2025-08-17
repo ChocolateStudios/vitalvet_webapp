@@ -43,73 +43,79 @@ const inputFields = [
 <script>
     import { recoverUser } from "@/contexts/auth/client/usecases/recover-user.usecase";
 
-    const form = document.getElementById('recover-form') as HTMLFormElement | null;
+    function initializePageScripts() {
+        const form = document.getElementById('recover-form') as HTMLFormElement | null;
 
-    if (form) {
-        const emailInput = document.getElementById('email') as HTMLInputElement;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-        const formError = document.getElementById('form-error') as HTMLDivElement;
+        if (form) {
+            const emailInput = document.getElementById('email') as HTMLInputElement;
+            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+            const formError = document.getElementById('form-error') as HTMLDivElement;
 
-        const showError = (input: HTMLInputElement, message: string) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = message;
-            }
-            // Cambia el color del borde del input a rojo
-            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-            input.classList.add('outline-red-500', 'focus:outline-red-500');
-        }
-
-        const clearError = (input: HTMLInputElement) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = '';
-            }
-            // Restaura el color del borde del input
-            input.classList.remove('outline-red-500', 'focus:outline-red-500');
-            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-        }
-
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            // Limpia errores previos
-            clearError(emailInput);
-            if (formError) {
-                formError.textContent = '';
-            }
-
-            const email = emailInput.value;
-            let isValid = true;
-
-            // Validaciones
-            if (!email) {
-                showError(emailInput, 'El correo es obligatorio');
-                isValid = false;
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showError(emailInput, 'Por favor, introduce un correo válido');
-                isValid = false;
-            }
-
-            if (isValid) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Enviando correo de recuperación...';
-
-                try {
-                    const response = recoverUser(email);
-                    if (response.success) {
-                        window.location.href = '/app/login';
-                    } else {
-                        formError.textContent = response.message ?? 'Error al recuperar cuenta. Por favor, inténtalo de nuevo.';
-                    }
-                } catch (error) {
-                    console.error('Error al recuperar cuenta:', error);
-                    formError.textContent = 'Error al recuperar cuenta. Por favor, inténtalo de nuevo.';
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Recuperar';
+            const showError = (input: HTMLInputElement, message: string) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = message;
                 }
+                // Cambia el color del borde del input a rojo
+                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                input.classList.add('outline-red-500', 'focus:outline-red-500');
             }
-        });
+
+            const clearError = (input: HTMLInputElement) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = '';
+                }
+                // Restaura el color del borde del input
+                input.classList.remove('outline-red-500', 'focus:outline-red-500');
+                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+            }
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                // Limpia errores previos
+                clearError(emailInput);
+                if (formError) {
+                    formError.textContent = '';
+                }
+
+                const email = emailInput.value;
+                let isValid = true;
+
+                // Validaciones
+                if (!email) {
+                    showError(emailInput, 'El correo es obligatorio');
+                    isValid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError(emailInput, 'Por favor, introduce un correo válido');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Enviando correo de recuperación...';
+
+                    try {
+                        const response = recoverUser(email);
+                        if (response.success) {
+                            window.location.href = '/app/login';
+                        } else {
+                            formError.textContent = response.message ?? 'Error al recuperar cuenta. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al recuperar cuenta:', error);
+                        formError.textContent = 'Error al recuperar cuenta. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Recuperar';
+                    }
+                }
+            });
+        }
     }
+
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
+    document.addEventListener('astro:page-load', initializePageScripts);
 </script>

@@ -3,7 +3,7 @@ import { UsersRepository } from "@/contexts/auth/server/infrastructure/repositor
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 import { RolesRepository } from "@/contexts/profiles/server/infrastructure/repositories/roles.repository";
 
-export async function getProfile(userId?: string): Promise<UsecaseResult<any>> {
+export async function getAllProfilesByRoleId(userId?: string): Promise<UsecaseResult<any>> {
     if (!userId) {
         throw new Error('No se encontró user Id.');
     }

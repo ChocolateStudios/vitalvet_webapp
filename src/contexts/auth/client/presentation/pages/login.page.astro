@@ -48,80 +48,86 @@ const inputFields = [
     import { SaveUserResource } from "@/contexts/auth/server/interfaces/api/resources/save-user.resource";
     import { loginUser } from "@/contexts/auth/client/usecases/login-user.usecase";
 
-    const form = document.getElementById('login-form') as HTMLFormElement | null;
+    function initializePageScripts() {
+        const form = document.getElementById('login-form') as HTMLFormElement | null;
 
-    if (form) {
-        const emailInput = document.getElementById('email') as HTMLInputElement;
-        const passwordInput = document.getElementById('password') as HTMLInputElement;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-        const formError = document.getElementById('form-error') as HTMLDivElement;
+        if (form) {
+            const emailInput = document.getElementById('email') as HTMLInputElement;
+            const passwordInput = document.getElementById('password') as HTMLInputElement;
+            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+            const formError = document.getElementById('form-error') as HTMLDivElement;
 
-        const showError = (input: HTMLInputElement, message: string) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = message;
-            }
-            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-            input.classList.add('outline-red-500', 'focus:outline-red-500');
-        }
-
-        const clearError = (input: HTMLInputElement) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = '';
-            }
-            input.classList.remove('outline-red-500', 'focus:outline-red-500');
-            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-        }
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            clearError(emailInput);
-            clearError(passwordInput);
-            if (formError) {
-                formError.textContent = '';
-            }
-
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            let isValid = true;
-
-            if (!email) {
-                showError(emailInput, 'El correo es obligatorio');
-                isValid = false;
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showError(emailInput, 'Por favor, introduce un correo válido');
-                isValid = false;
-            }
-            
-            if (!password) {
-                showError(passwordInput, 'La contraseña es obligatoria');
-                isValid = false;
-            } else if (password.length < 6) {
-                showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
-                isValid = false;
-            }   
-
-            if (isValid) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Iniciando sesión...';
-
-                try {
-                    const response = await loginUser(new SaveUserResource(email, password));
-                    if (response.success) {
-                        window.location.href = '/app/home';
-                    } else {
-                        formError.textContent = response.errorMessage ?? 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
-                    }
-                } catch (error) {
-                    console.error('Error al iniciar sesión:', error);
-                    formError.textContent = 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Iniciar sesión';
+            const showError = (input: HTMLInputElement, message: string) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = message;
                 }
+                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                input.classList.add('outline-red-500', 'focus:outline-red-500');
             }
-        });
+
+            const clearError = (input: HTMLInputElement) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = '';
+                }
+                input.classList.remove('outline-red-500', 'focus:outline-red-500');
+                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                clearError(emailInput);
+                clearError(passwordInput);
+                if (formError) {
+                    formError.textContent = '';
+                }
+
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                let isValid = true;
+
+                if (!email) {
+                    showError(emailInput, 'El correo es obligatorio');
+                    isValid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError(emailInput, 'Por favor, introduce un correo válido');
+                    isValid = false;
+                }
+                
+                if (!password) {
+                    showError(passwordInput, 'La contraseña es obligatoria');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+                    isValid = false;
+                }   
+
+                if (isValid) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Iniciando sesión...';
+
+                    try {
+                        const response = await loginUser(new SaveUserResource(email, password));
+                        if (response.success) {
+                            window.location.href = '/app/home';
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al iniciar sesión:', error);
+                        formError.textContent = 'Error al iniciar sesión. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Iniciar sesión';
+                    }
+                }
+            });
+        }
     }
+
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
+    document.addEventListener('astro:page-load', initializePageScripts);
 </script>

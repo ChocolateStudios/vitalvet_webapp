@@ -5,6 +5,7 @@ import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/re
 
 export interface ProfileInfo extends Profile {
     email: string;
+    roleName: string;
 }
 
 export async function getProfile(baseUrl: string = ''): Promise<UsecaseResult<ProfileInfo>> {
@@ -24,7 +25,6 @@ export async function getProfile(baseUrl: string = ''): Promise<UsecaseResult<Pr
         return {
             data: {
                 ...existingProfile,
-                email: 'lol',
             },
             success: true,
         };

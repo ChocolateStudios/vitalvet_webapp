@@ -146,6 +146,7 @@ const medicalAppointmentSections = [
             }
 
             form.addEventListener('submit', async (event) => {
+                console.log('presionado')
                 event.preventDefault();
 
                 // Limpia errores previos
@@ -234,9 +235,7 @@ const medicalAppointmentSections = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    // Ejecuta los scripts en la carga inicial de la página
-    initializePageScripts();
-
-    // Vuelve a ejecutar los scripts en cada navegación del lado del cliente
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
     document.addEventListener('astro:page-load', initializePageScripts);
 </script>

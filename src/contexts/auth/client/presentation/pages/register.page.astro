@@ -49,7 +49,7 @@ const inputFields = [
     <div class="flex flex-col z-20 m-12 gap-6 p-8 sm:p-12 w-full max-w-lg">
         <h1 class="font-bold text-3xl">Registro</h1>
         <p class="text-base text-slate-600">¿Ya tienes cuenta? <a href="/app/login" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Inicia sesión</a></p>
-        <form id="register-form" class="flex flex-col w-full gap-5">
+        <form id="register-form" class="flex flex-col w-full gap-5" novalidate>
             {
                 inputFields.map((inputField) => 
                 inputField.asRow ? 
@@ -76,103 +76,113 @@ const inputFields = [
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
 
-    const form = document.getElementById('register-form') as HTMLFormElement | null;
+    function initializePageScripts() {
+        const form = document.getElementById('register-form') as HTMLFormElement | null;
 
-    if (form) {
-        const nameInput = document.getElementById('name') as HTMLInputElement;
-        const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
-        const emailInput = document.getElementById('email') as HTMLInputElement;
-        const passwordInput = document.getElementById('password') as HTMLInputElement;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-        const formError = document.getElementById('form-error') as HTMLDivElement;
+        if (form) {
+            const nameInput = document.getElementById('name') as HTMLInputElement;
+            const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
+            const emailInput = document.getElementById('email') as HTMLInputElement;
+            const passwordInput = document.getElementById('password') as HTMLInputElement;
+            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+            const formError = document.getElementById('form-error') as HTMLDivElement;
 
-        const showError = (input: HTMLInputElement, message: string) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = message;
-            }
-            input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-            input.classList.add('outline-red-500', 'focus:outline-red-500');
-        }
-
-        const clearError = (input: HTMLInputElement) => {
-            const errorContainer = document.getElementById(`${input.id}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = '';
-            }
-            input.classList.remove('outline-red-500', 'focus:outline-red-500');
-            input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-        }
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            clearError(nameInput);
-            clearError(lastnameInput);
-            clearError(emailInput);
-            clearError(passwordInput);
-            if (formError) {
-                formError.textContent = '';
-            }
-
-            const name = nameInput.value;
-            const lastname = lastnameInput.value;
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            let isValid = true;
-
-            if (!name) {
-                showError(nameInput, 'El nombre es obligatorio');
-                isValid = false;
-            }
-
-            if (!lastname) {
-                showError(lastnameInput, 'El apellido es obligatorio');
-                isValid = false;
-            }
-
-            if (!email) {
-                showError(emailInput, 'El correo es obligatorio');
-                isValid = false;
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showError(emailInput, 'Por favor, introduce un correo válido');
-                isValid = false;
-            }
-            
-            if (!password) {
-                showError(passwordInput, 'La contraseña es obligatoria');
-                isValid = false;
-            } else if (password.length < 6) {
-                showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
-                isValid = false;
-            }   
-
-            if (isValid) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Registrando...';
-
-                try {
-                    const userResponse = await registerUser(new SaveUserResource(email, password));
-                    if (!userResponse.success) {
-                        formError.textContent = userResponse.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
-                    }
-                    
-                    const profileResponse = await createProfile(new SaveProfileResource(name, lastname, '1', '+51 999 999 999', new Date()), userResponse.data.stringId);
-                    if (profileResponse.success) {
-                        window.location.href = '/app/home';
-                    }
-                    else {
-                        formError.textContent = profileResponse.errorMessage ?? 'Error al registrar perfil. Por favor, contactar al administrador de la aplicación.';
-                    }
-
-                } catch (error) {
-                    console.error('Error al registrar usuario:', error);
-                    formError.textContent = 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Registrarse';
+            const showError = (input: HTMLInputElement, message: string) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = message;
                 }
+                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                input.classList.add('outline-red-500', 'focus:outline-red-500');
             }
-        });
+
+            const clearError = (input: HTMLInputElement) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = '';
+                }
+                input.classList.remove('outline-red-500', 'focus:outline-red-500');
+                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                clearError(nameInput);
+                clearError(lastnameInput);
+                clearError(emailInput);
+                clearError(passwordInput);
+                if (formError) {
+                    formError.textContent = '';
+                }
+
+                const name = nameInput.value;
+                const lastname = lastnameInput.value;
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                let isValid = true;
+
+                if (!name) {
+                    showError(nameInput, 'El nombre es obligatorio');
+                    isValid = false;
+                }
+
+                if (!lastname) {
+                    showError(lastnameInput, 'El apellido es obligatorio');
+                    isValid = false;
+                }
+
+                if (!email) {
+                    showError(emailInput, 'El correo es obligatorio');
+                    isValid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError(emailInput, 'Por favor, introduce un correo válido');
+                    isValid = false;
+                }
+                
+                if (!password) {
+                    showError(passwordInput, 'La contraseña es obligatoria');
+                    isValid = false;
+                } else if (password.length < 6) {
+                    showError(passwordInput, 'La contraseña debe tener al menos 6 caracteres');
+                    isValid = false;
+                }   
+
+                if (isValid) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Registrando...';
+
+                    const saveProfileResource = new SaveProfileResource(name, lastname, '1', '+51 999 999 999', new Date());
+
+                    try {
+                        const userResponse = await registerUser(new SaveUserResource(email, password));
+                        if (!userResponse.success) {
+                            console.log('userResponse', userResponse.errorMessage)
+                            formError.textContent = userResponse.errorMessage ?? 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                            return;
+                        }
+                        
+                        const profileResponse = await createProfile(saveProfileResource);
+                        if (profileResponse.success) {
+                            window.location.href = '/app/home';
+                        }
+                        else {
+                            formError.textContent = profileResponse.errorMessage ?? 'Error al registrar perfil. Por favor, contactar al administrador de la aplicación.';
+                        }
+
+                    } catch (error) {
+                        console.error('Error al registrar usuario:', error);
+                        formError.textContent = 'Error al registrar usuario. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Registrarse';
+                    }
+                }
+            });
+        }
     }
+
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
+    document.addEventListener('astro:page-load', initializePageScripts);
 </script>

@@ -9,6 +9,7 @@ export class ProfileResource extends AuditableModel {
     public email: string = "";
     public userId: string = "";
     public roleId: string = "";
+    public roleName: string = "";
 
     public constructor() {
         super();
