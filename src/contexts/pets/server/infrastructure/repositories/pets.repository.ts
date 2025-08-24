@@ -3,7 +3,7 @@ import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import type { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
 import { db } from "@/firebase/client";
-// import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
+import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 
 export const PETS_PATH = 'pets';
 
@@ -73,7 +73,7 @@ export class PetsRepository {
         const petModel: Pet = {
             ...petData,
             id: petId,
-            status: petData.status,
+            status: (petData.status || PetStatus.Undefined) as PetStatus,
             birthday: new Date(petData.birthday),
             createdAt: new Date(petData.createdAt),
             updatedAt: new Date(petData.updatedAt),
@@ -95,7 +95,7 @@ export class PetsRepository {
             const petModel: Pet = {
                 ...petData,
                 id: key,
-                status: petData.status,
+                status: (petData.status || PetStatus.Undefined) as PetStatus,
                 birthday: new Date(petData.birthday),
                 createdAt: new Date(petData.createdAt),
                 updatedAt: new Date(petData.updatedAt),

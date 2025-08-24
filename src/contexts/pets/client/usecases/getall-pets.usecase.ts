@@ -1,9 +1,15 @@
 import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
+import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 
-export interface PetListItemInfo extends Pet {
+export interface PetListItemInfo {
+    id?: number | string,
+    name?: string,
     medicalAppointmentsCount: number,
     owner?: string,
+    species?: string,
+    subspecies?: string,
+    isDead?: boolean,
 }
 
 export async function getAllPets(baseUrl: string = ''): Promise<PetListItemInfo[]> {
@@ -13,8 +19,7 @@ export async function getAllPets(baseUrl: string = ''): Promise<PetListItemInfo[
         const petsInfo = pets.map((pet: PetResource) => {
             return {
                 ...pet,
-                lastVisit: new Date(2025, 0, 15, 3, 5, 12),
-                appointmentCount: 1,
+                isDead: (pet.status as PetStatus) === PetStatus.Inactive,
             };
         });
 

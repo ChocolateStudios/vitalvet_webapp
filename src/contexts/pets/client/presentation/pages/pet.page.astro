@@ -3,17 +3,38 @@ import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
 import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+import BaseSwitch from "@/contexts/_shared/client/presentation/components/base-switch.component.astro";
 import DeletePetDialog from "@/contexts/pets/client/presentation/components/delete-pet-dialog.component.astro";
 import EditIcon from "@/contexts/_shared/client/presentation/components/icons/EditIcon.astro";
+import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
+import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
+import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
+import BaseCombobox from "@/contexts/_shared/client/presentation/components/base-combobox.component.astro";
+import ModalManager from "@/contexts/_shared/client/presentation/components/modal-manager.component.astro";
+import AddOwnerModal from "@/contexts/pets/client/presentation/components/add-owner-modal.component.astro";
+
+const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
 const { petId } = Astro.props;
 
 let pet: PetInfo | null = null;
+let ownerProfiles: any[] = [];
+
 const getPetResult = await getPet(petId);
 
 if (getPetResult.success) {
-    pet = getPetResult.data;
+    pet = getPetResult.data ?? null;
+}
+
+const getOwnerProfilesResult = await getAllProfilesByRoleId(import.meta.env.OWNER_ROLE_ID, authenticatedUserId);
+if (getOwnerProfilesResult.success) {
+    ownerProfiles = getOwnerProfilesResult.data;
+    ownerProfiles = ownerProfiles.map(op => ({
+            id: op.id,
+            name: `${op.name} ${op.lastname} ${op.me ? '(Tú)' : ''}`,
+            me: op.me,
+        }));
 }
 
 const profileInput = {
@@ -29,10 +50,18 @@ const detailInputs = [
     {
         id: "owner",
         name: "owner",
-        type: "text",
-        autocomplete: "owner",
-        label: "Propietario", // TODO: Cambiar por select de propietarios
-        value: pet?.ownerName,
+        type: "combobox",
+        label: "Dueño",
+        value: pet ? 
+            pet?.ownerProfileId.toString()
+            : (ownerProfiles && ownerProfiles.length > 0) ? ownerProfiles.find(op => op.me === true)?.id.toString() : "",
+        options: ownerProfiles ?? [],
+        actions: [
+            {
+                label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nuevo dueño`,
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'add-owner-modal' } }))"
+            }
+        ],
     },
     {
         id: "birthday",
@@ -90,10 +119,14 @@ const detailInputs = [
     {
         id: "status",
         name: "status",
-        type: "text",
-        autocomplete: "status",
-        label: "Estado",
-        value:  "Muerto",
+        type: "switch",
+        trueLabel: "Activo",
+        falseLabel: "Inactivo",
+        value:  pet?.status === PetStatus.Inactive ? PetStatus.Inactive : PetStatus.Active,
+        trueValue: PetStatus.Active,
+        falseValue: PetStatus.Inactive,
+        trueTooltip: "El estado actual de la mascota indica que sigue con vida.",
+        falseTooltip: "El estado actual de la mascota indica que ha fallecido.",
     },
 ]
 
@@ -137,9 +170,14 @@ const detailInputs = [
             <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Información detallada</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {
-                detailInputs.map(input => 
-                    <BaseTextInput {...input} />
-                )
+                detailInputs.map(input => {
+                    if (input.type === 'switch') {
+                        return <BaseSwitch {...input} />;
+                    } else if (input.type === 'combobox') {
+                        return <BaseCombobox {...input} />;
+                    }
+                    return <BaseTextInput {...input} />;
+                })
             }
             </div>
             <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
@@ -167,6 +205,8 @@ const detailInputs = [
             </div>
         </div>
     </form>
+    <AddOwnerModal />
+    <ModalManager />
 </ContentContainer>
 
 <script>
@@ -174,17 +214,22 @@ const detailInputs = [
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
 
+    declare global {
+        interface Window {
+            ownerCreationListenerInitialized?: boolean;
+        }
+    }
     function initializePageScripts() {
         const form = document.getElementById('pet-form') as HTMLFormElement | null;
 
         if (form) {
             const petNameInput = document.getElementById('name') as HTMLInputElement;
-            const petOwnerInput = document.getElementById('owner') as HTMLInputElement;
+            const petOwnerInput = document.getElementById('owner-value') as HTMLInputElement;
             const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
             const petSpeciesInput = document.getElementById('species') as HTMLInputElement;
             const petSubspeciesInput = document.getElementById('subspecies') as HTMLInputElement;
             const petAgeInput = document.getElementById('age') as HTMLInputElement;
-            const petStatusInput = document.getElementById('status') as HTMLInputElement;
+            const petStatusInput = document.getElementById('status-value') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
 
@@ -249,7 +294,7 @@ const detailInputs = [
                 }
 
                 if (!petOwner) {
-                    showError(petOwnerInput, 'El nombre del dueño es obligatorio');
+                    showError(petOwnerInput, 'El dueño es obligatorio');
                     isValid = false;
                 }
 
@@ -279,15 +324,9 @@ const detailInputs = [
                     isValid = false;
                 } 
 
-                if (!petStatus) {
-                    showError(petStatusInput, 'El estado es obligatorio');
-                    isValid = false;
-                } 
-
                 if (isValid) {
                     submitButton.disabled = true;
-
-                    const resource = new SavePetResource(petName, petSpecies, petSubspecies, "", new Date(birthday), petStatus);
+                    const resource = new SavePetResource(petName, petSpecies, petSubspecies, "", new Date(birthday), petStatus, petOwner ?? 0);
 
                     if (isNewPet) {
                         submitButton.textContent = 'Creando mascota...';
@@ -340,8 +379,35 @@ const detailInputs = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
+    function initializeOwnerCreationListener() {
+        // Evita añadir el listener múltiples veces con Astro View Transitions
+        if (window.ownerCreationListenerInitialized) return;
+        window.ownerCreationListenerInitialized = true;
+
+        document.addEventListener('owner-created', (e) => {
+            const event = e as CustomEvent;
+            const newOwner = event.detail.newOwner;
+
+            // Busca la instancia del combobox de dueños
+            const ownerCombobox = window.comboboxInstances?.['owner'];
+
+            if (ownerCombobox && newOwner) {
+                // Prepara la nueva opción para el combobox
+                const newOption = {
+                    id: newOwner.id,
+                    name: `${newOwner.name} ${newOwner.lastname}`
+                };
+                // Llama al nuevo método para añadir y seleccionar la opción
+                ownerCombobox.addOptionAndSelect(newOption);
+            }
+        });
+    }
+
     // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
     // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    document.addEventListener('astro:page-load', () => {
+        initializePageScripts();
+        initializeOwnerCreationListener();
+    });
 
 </script>

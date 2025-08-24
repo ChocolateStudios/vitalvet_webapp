@@ -36,12 +36,12 @@ export const PUT: APIRoute = async ({ request, params }) => {
         const body = await request.json();
         const resource = new SavePetResource(
             body.name,
-            body.age,
             body.species,
             body.subspecies,
             body.imgUrl,
-            body.weight,
-            new Date(body.birthday)
+            new Date(body.birthday),
+            body.status,
+            body.ownerProfileId,
         );
         const updatedPet = await PetsRepository.updatePet(petId, resource);
         return new Response(JSON.stringify(updatedPet), {

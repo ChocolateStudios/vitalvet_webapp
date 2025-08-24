@@ -1,0 +1,71 @@
+
+<script>
+    // Declare a custom property on the Window interface to avoid TypeScript errors
+    declare global {
+        interface Window {
+            modalManagerInitialized?: boolean;
+        }
+    }
+    
+    function initializeModalManager() {
+        // Evita la doble inicialización con Astro View Transitions
+        if (window.modalManagerInitialized) {
+            return;
+        }
+        window.modalManagerInitialized = true;
+
+        const openModal = (modalId: any) => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Evita el scroll del fondo
+            }
+        };
+
+        const closeModal = (modal: any) => {
+            if (modal) {
+                modal.classList.add('hidden');
+                // Revisa si hay otros modales abiertos antes de restaurar el scroll
+                const anyModalOpen = document.querySelector('[role="dialog"]:not(.hidden)');
+                if (!anyModalOpen) {
+                    document.body.style.overflow = '';
+                }
+            }
+        };
+
+        // Evento para abrir un modal
+        document.addEventListener('open-modal', (e) => {
+            const event = e as CustomEvent;
+            openModal(event.detail.id);
+        });
+
+        // Evento para cerrar un modal por su ID
+        document.addEventListener('close-modal-by-id', (e) => {
+            const event = e as CustomEvent;
+            const modal = document.getElementById(event.detail.id);
+            closeModal(modal);
+        });
+
+        // Evento para cerrar el modal activo (desde botones, etc.)
+        document.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            const closeButton = target.closest('[data-modal-close]');
+            const backdrop = target.closest('[data-modal-backdrop]');
+            
+            if (closeButton || backdrop) {
+                const modal = target.closest('[role="dialog"]');
+                closeModal(modal);
+            }
+        });
+
+        // Evento para cerrar con la tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('[role="dialog"]:not(.hidden)');
+                closeModal(openModal);
+            }
+        });
+    }
+
+    document.addEventListener('astro:page-load', initializeModalManager);
+</script>

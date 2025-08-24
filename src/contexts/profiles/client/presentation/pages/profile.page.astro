@@ -185,7 +185,7 @@ const profileInputs = [
 
                     const resource = new SaveProfileResource(name, lastname, form.dataset.roleId!, phone, new Date(birthday));
 
-                    submitButton.textContent = 'Creando mascota...';
+                    submitButton.textContent = 'Actualizando perfil...';
 
                     try {
                         const response = await updateProfile(resource);

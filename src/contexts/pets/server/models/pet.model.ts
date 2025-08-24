@@ -8,4 +8,5 @@ export class Pet extends AuditableModel {
     public imgUrl: string = "";
     public birthday: Date = new Date();
     public status: PetStatus = PetStatus.Undefined;
+    public ownerProfileId: number | string = 0;
 }

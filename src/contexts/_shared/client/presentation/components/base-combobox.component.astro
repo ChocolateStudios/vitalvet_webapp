@@ -4,12 +4,18 @@ interface Option {
   name: string;
 }
 
+interface Action {
+  label: string;
+  onClick: string;
+}
+
 interface Props {
   id: string;
   name: string;
   label: string;
   options?: Option[];
   value?: string | number;
+  actions?: Action[];
   class?: string;
   visible?: boolean;
   readonly?: boolean;
@@ -20,6 +26,7 @@ const {
   name, // Usado para el input oculto que guarda el valor real (ID)
   label,
   options = [], // Espera un array de objetos: [{ id, name }]
+  actions = [],
   value = "", // El ID de la opción seleccionada inicialmente
   class: className = "",
   visible = true,
@@ -94,20 +101,49 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     </svg>
   </div>
 
-  <!-- Lista desplegable de opciones -->
-  <ul
-    id={`${id}-listbox`}
-    role="listbox"
-    class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden"
+  <!-- Contenedor del desplegable (lista + acciones) -->
+  <div
+    id={`${id}-listbox-wrapper`}
+    class="absolute z-20 mt-1 w-full rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
   >
-    <!-- Las opciones se renderizarán aquí con JS -->
-  </ul>
+    <!-- Lista de opciones scrolleable -->
+    <ul
+      id={`${id}-listbox`}
+      role="listbox"
+      class="max-h-60 w-full overflow-auto py-1 sm:text-sm"
+    >
+      <!-- Las opciones se renderizarán aquí con JS -->
+    </ul>
+
+    <!-- Acciones fijas en la parte inferior -->
+    {actions.length > 0 && (
+      <div class="border-t border-gray-200 p-1">
+        {actions.map(action => (
+          <button
+            type="button"
+            class="relative w-full text-left cursor-pointer select-none rounded-md py-2 px-3 text-sm text-gray-700 hover:bg-[#6faab5] hover:text-white"
+            onclick={action.onClick}
+            set:html={action.label}
+          ></button>
+        ))}
+      </div>
+    )}
+  </div>
 
   <!-- Contenedor de errores -->
   <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4"></div>
 </div>
 
 <script>
+  // Declara una propiedad global para almacenar las instancias de los combobox
+  // y evitar errores de TypeScript.
+  declare global {
+    interface Window {
+      comboboxInstances: { [key: string]: Combobox };
+    }
+  }
+  window.comboboxInstances = window.comboboxInstances || {};
+
   interface Option {
     id: string | number;
     name: string;
@@ -116,6 +152,7 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
   class Combobox {
     container: HTMLElement;
     input: HTMLInputElement | null;
+    listboxWrapper: HTMLDivElement | null;
     hiddenInput: HTMLInputElement | null;
     listbox: HTMLUListElement | null;
     options: Option[];
@@ -127,6 +164,7 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     constructor(container: HTMLElement) {
       this.container = container;
       this.input = container.querySelector('input[role="combobox"]');
+      this.listboxWrapper = container.querySelector(`#${this.input?.id}-listbox-wrapper`);
       this.hiddenInput = container.querySelector('input[type="hidden"]');
       this.listbox = container.querySelector('ul[role="listbox"]');
       this.options = JSON.parse(container.dataset.options || "[]");
@@ -137,6 +175,10 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       this.isOpen = false;
 
       this.addEventListeners();
+      // Almacena la instancia en el objeto global para poder acceder a ella desde fuera
+      if (this.input) {
+        window.comboboxInstances[this.input.id] = this;
+      }
     }
 
     addEventListeners() {
@@ -194,6 +236,26 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       this.input.value = option.name;
       this.hiddenInput.value = option.id.toString();
       this.close();
+    }
+
+    addOptionAndSelect(newOption: any) {
+        if (!this.input || !this.hiddenInput) return;
+
+        // Verifica si la opción ya existe por ID para no duplicarla
+        const exists = this.options.some(opt => String(opt.id) === String(newOption.id));
+        if (!exists) {
+            this.options.push(newOption);
+        }
+
+        // Actualiza los inputs visible y oculto con el nuevo valor
+        this.input.value = newOption.name;
+        this.hiddenInput.value = newOption.id.toString();
+
+        // Dispara un evento de cambio en el input oculto por si otros scripts dependen de él
+        this.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Cierra el desplegable si estaba abierto
+        this.close();
     }
 
     highlightOption(index: number) {
@@ -269,15 +331,15 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       this.isOpen ? this.close() : this.open();
     }
     open() {
-      if (!this.input || !this.listbox) return;
+      if (!this.input || !this.listboxWrapper) return;
       this.filterOptions(this.input.value);
-      this.listbox.classList.remove("hidden");
+      this.listboxWrapper.classList.remove("hidden");
       this.input.setAttribute("aria-expanded", "true");
       this.isOpen = true;
     }
     close() {
-      if (!this.input || !this.listbox) return;
-      this.listbox.classList.add("hidden");
+      if (!this.input || !this.listboxWrapper) return;
+      this.listboxWrapper.classList.add("hidden");
       this.input.setAttribute("aria-expanded", "false");
       this.input.removeAttribute("aria-activedescendant");
       this.highlightedIndex = -1;

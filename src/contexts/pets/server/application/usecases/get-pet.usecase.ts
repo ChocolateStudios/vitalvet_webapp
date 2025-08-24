@@ -1,17 +1,23 @@
 import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
+import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
+import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
+import type { PetStatus } from "../../models/pet-status.enum";
 
-export async function getPet(petId: string): Promise<UsecaseResult<any>> {
+export async function getPet(petId: string): Promise<UsecaseResult<PetInfo>> {
     try {
         const pet = await PetsRepository.getPet(petId);
         const lastMedicalAppointment = await MedicalAppointmentsRepository.getLastMedicalAppointmentByPetId(petId);
+        const ownerProfile = await ProfilesRepository.getProfileById(pet.ownerProfileId);
         
         const petInfo = {
             ...pet,
             birthday: new Date(pet.birthday),
-            ownerName: "John Doe",
-            weight: lastMedicalAppointment.weight,
+            ownerProfileId: ownerProfile?.id,
+            ownerName: ownerProfile?.name,
+            weight: lastMedicalAppointment?.weight,
+            status: pet.status as PetStatus,
         };
         
         return {
@@ -21,7 +27,7 @@ export async function getPet(petId: string): Promise<UsecaseResult<any>> {
     }
     catch (error) {
         return {
-            data: null,
+            data: undefined,
             success: false,
         };
     }

@@ -82,6 +82,48 @@ export class ProfilesRepository {
         return ProfileResource.fromModel(profileModel);
     }
 
+    static async getProfileById(profileId: string | number): Promise<ProfileResource> {
+        const profileRef = ref(db, `${PROFILES_PATH}/${profileId}`);
+        const snapshot = await get(profileRef);
+
+        if (!snapshot.exists()) {
+            throw new Error(`Perfil no encontrado con el id ${profileId}`);
+        }
+
+        const profileData = snapshot.val();
+        const profileModel: Profile = {
+            ...profileData,
+            id: profileId,
+            birthday: new Date(profileData.birthday),
+            createdAt: new Date(profileData.createdAt),
+            updatedAt: new Date(profileData.updatedAt),
+        };
+
+        return ProfileResource.fromModel(profileModel);
+    }
+
+    // DUPLICADO CON EL DE ABAJO
+    static async getAllProfilesByIds(profileIds: string[]): Promise<ProfileResource[]> {
+        // Crea un array de promesas, donde cada una obtiene un perfil por su ID.
+        // Usamos Promise.allSettled para manejar casos donde algunos perfiles no existan,
+        // sin que la promesa completa falle.
+        const settledPromises = await Promise.allSettled(
+            profileIds.map(id => this.getProfileById(id))
+        );
+
+        // Filtramos solo las promesas que se cumplieron y extraemos su valor.
+        const successfulProfiles = settledPromises
+            .filter(result => {
+                if (result.status === 'rejected') {
+                    console.warn(`No se pudo obtener el perfil:`, result.reason);
+                }
+                return result.status === 'fulfilled';
+            })
+            .map(result => (result as PromiseFulfilledResult<ProfileResource>).value);
+            
+        return successfulProfiles;
+    }
+
     static async getAllProfilesByProfileIds(profileIds: string[]): Promise<ProfileResource[]> {
         const profilesCollectionRef = ref(db, PROFILES_PATH)
         const snapshot = await get(profilesCollectionRef);

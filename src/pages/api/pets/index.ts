@@ -24,12 +24,12 @@ export const POST: APIRoute = async ({ request }) => {
         // Es crucial convertir la fecha de string a Date.
         const resource = new SavePetResource(
             body.name,
-            body.age,
             body.species,
             body.subspecies,
             body.imgUrl,
-            body.weight,
-            new Date(body.birthday)
+            new Date(body.birthday),
+            body.status,
+            body.ownerProfileId,
         );
         const newPet = await PetsRepository.registerPet(resource);
         return new Response(JSON.stringify(newPet), {
