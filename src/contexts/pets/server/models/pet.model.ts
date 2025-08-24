@@ -1,11 +1,11 @@
-import { AuditableModel } from "../../../_shared/server/models/auditable.model";
+import { AuditableModel } from "@/contexts/_shared/server/models/auditable.model";
+import { PetStatus } from "./pet-status.enum";
 
 export class Pet extends AuditableModel {
     public name: string = "";
-    public age: number = 0;
-    public weight: number = 0.0;
     public species: string = "";
     public subspecies: string = "";
-    public birthday: Date = new Date();
     public imgUrl: string = "";
+    public birthday: Date = new Date();
+    public status: PetStatus = PetStatus.Undefined;
 }

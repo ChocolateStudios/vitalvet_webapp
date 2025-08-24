@@ -1,9 +1,9 @@
 import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 
-interface PetListItemInfo extends Pet {
-    lastVisit: Date,
-    appointmentCount: number,
+export interface PetListItemInfo extends Pet {
+    medicalAppointmentsCount: number,
+    owner?: string,
 }
 
 export async function getAllPets(baseUrl: string = ''): Promise<PetListItemInfo[]> {

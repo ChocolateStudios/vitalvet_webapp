@@ -2,6 +2,7 @@ import { AuditableModel } from "../../../../../_shared/server/models/auditable.m
 import type { MedicalAppointment } from "../../../models/medical-appointment.model";
 
 export class MedicalAppointmentResource extends AuditableModel {
+    public weight: number = 0;
     public details: string = "";
     public observations: string = "";
     public prescription: string = "";
@@ -13,6 +14,7 @@ export class MedicalAppointmentResource extends AuditableModel {
     constructor(model: MedicalAppointment) {
         super();
         this.id = model.id;
+        this.weight = model.weight;
         this.details = model.details;
         this.observations = model.observations;
         this.prescription = model.prescription;

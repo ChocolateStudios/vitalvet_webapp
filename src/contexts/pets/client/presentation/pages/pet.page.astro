@@ -1,18 +1,19 @@
 ---
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
-import { getPet, type PetInfo } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
+import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
 import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 import DeletePetDialog from "@/contexts/pets/client/presentation/components/delete-pet-dialog.component.astro";
 import EditIcon from "@/contexts/_shared/client/presentation/components/icons/EditIcon.astro";
+import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 
 const { petId } = Astro.props;
 
 let pet: PetInfo | null = null;
 const getPetResult = await getPet(petId);
 
-if (getPetResult.ok) {
-    pet = await getPetResult.json();
+if (getPetResult.success) {
+    pet = getPetResult.data;
 }
 
 const profileInput = {
@@ -42,14 +43,6 @@ const detailInputs = [
         value: pet?.birthday ? (new Date(pet.birthday)).toISOString().split('T')[0] : "",
     },
     {
-        id: "age",
-        name: "age",
-        type: "number",
-        autocomplete: "age",
-        label: "Edad",
-        value: pet?.age,
-    },
-    {
         id: "species",
         name: "species",
         type: "text",
@@ -64,7 +57,44 @@ const detailInputs = [
         autocomplete: "subspecies",
         label: "Raza",
         value: pet?.subspecies,
-    }
+    },
+    {
+        id: "age",
+        name: "age",
+        type: "number",
+        autocomplete: "age",
+        label: "Edad (años)",
+        value: pet?.birthday ? (() => {
+            const birthDate = new Date(pet.birthday);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        })() : "",
+        readonly: true,
+        tooltip: pet?.birthday ? "La edad se autocalcula según la fecha de nacimiento." : "La edad se autocalcula cuando se crea la mascota.",
+    },
+    {
+        id: "weight",
+        name: "weight",
+        type: "number",
+        autocomplete: "weight",
+        label: "Peso (kg)",
+        value:  (pet && pet?.medicalAppointmentsCount > 0) ? pet?.weight : "",
+        readonly: true,
+        tooltip: (pet && pet?.medicalAppointmentsCount > 0) ? "El peso se obtuvo de la última cita médica." : "El peso se obtendrá cuando se registre la primera cita médica.",
+    },
+    {
+        id: "status",
+        name: "status",
+        type: "text",
+        autocomplete: "status",
+        label: "Estado",
+        value:  "Muerto",
+    },
 ]
 
 ---
@@ -151,9 +181,10 @@ const detailInputs = [
             const petNameInput = document.getElementById('name') as HTMLInputElement;
             const petOwnerInput = document.getElementById('owner') as HTMLInputElement;
             const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
-            const petAgeInput = document.getElementById('age') as HTMLInputElement;
             const petSpeciesInput = document.getElementById('species') as HTMLInputElement;
             const petSubspeciesInput = document.getElementById('subspecies') as HTMLInputElement;
+            const petAgeInput = document.getElementById('age') as HTMLInputElement;
+            const petStatusInput = document.getElementById('status') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
 
@@ -204,6 +235,7 @@ const detailInputs = [
                 const petAge = petAgeInput.value;
                 const petSpecies = petSpeciesInput.value;
                 const petSubspecies = petSubspeciesInput.value;
+                const petStatus = petStatusInput.value;
 
                 let isValid = true;
 
@@ -226,13 +258,16 @@ const detailInputs = [
                     isValid = false;
                 }
 
-                if (!petAge) {
-                    showError(petAgeInput, 'La edad es obligatoria');
-                    isValid = false;
-                } else if (isNaN(Number(petAge))) {
-                    showError(petAgeInput, 'La edad debe ser un número válido');
-                    isValid = false;
-                }
+                //********************************* */
+                // No se valida ya que se autocalcula del birthday
+                //********************************* */
+                // if (!petAge) {
+                //     showError(petAgeInput, 'La edad es obligatoria');
+                //     isValid = false;
+                // } else if (isNaN(Number(petAge))) {
+                //     showError(petAgeInput, 'La edad debe ser un número válido');
+                //     isValid = false;
+                // }
 
                 if (!petSpecies) {
                     showError(petSpeciesInput, 'La especie es obligatoria');
@@ -244,10 +279,15 @@ const detailInputs = [
                     isValid = false;
                 } 
 
+                if (!petStatus) {
+                    showError(petStatusInput, 'El estado es obligatorio');
+                    isValid = false;
+                } 
+
                 if (isValid) {
                     submitButton.disabled = true;
 
-                    const resource = new SavePetResource(petName, Number(petAge), petSpecies, petSubspecies, "", 0, new Date(birthday));
+                    const resource = new SavePetResource(petName, petSpecies, petSubspecies, "", new Date(birthday), petStatus);
 
                     if (isNewPet) {
                         submitButton.textContent = 'Creando mascota...';

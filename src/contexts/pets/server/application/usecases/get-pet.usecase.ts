@@ -1,25 +1,28 @@
-import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
 
-export interface PetInfo extends Pet {
-    ownerName: string;
-}
-
-export async function getPet(petId: string): Promise<Response> {
+export async function getPet(petId: string): Promise<UsecaseResult<any>> {
     try {
         const pet = await PetsRepository.getPet(petId);
-        const petInfo: PetInfo = {
+        const lastMedicalAppointment = await MedicalAppointmentsRepository.getLastMedicalAppointmentByPetId(petId);
+        
+        const petInfo = {
             ...pet,
             birthday: new Date(pet.birthday),
-            ownerName: "John Doe"
+            ownerName: "John Doe",
+            weight: lastMedicalAppointment.weight,
         };
-        return new Response(JSON.stringify(petInfo), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-        console.error("Error fetching pet:", errorMessage); // Loguear el error real para depuración
-        return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
+        
+        return {
+            data: petInfo,
+            success: true,
+        };
+    }
+    catch (error) {
+        return {
+            data: null,
+            success: false,
+        };
     }
 }

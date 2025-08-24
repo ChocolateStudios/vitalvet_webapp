@@ -3,6 +3,7 @@ import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import type { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
 import { db } from "@/firebase/client";
+// import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 
 export const PETS_PATH = 'pets';
 
@@ -26,6 +27,7 @@ export class PetsRepository {
             ...data,
             birthday: newPet.birthday.toISOString(),
             medicalAppointmentsCount: 0,
+            // status: newPet.status, // Guardamos el status como string ('active' o 'inactive')
             createdAt: newPet.createdAt.toISOString(),
             updatedAt: newPet.updatedAt.toISOString(),
         };
@@ -71,6 +73,7 @@ export class PetsRepository {
         const petModel: Pet = {
             ...petData,
             id: petId,
+            status: petData.status,
             birthday: new Date(petData.birthday),
             createdAt: new Date(petData.createdAt),
             updatedAt: new Date(petData.updatedAt),
@@ -92,6 +95,7 @@ export class PetsRepository {
             const petModel: Pet = {
                 ...petData,
                 id: key,
+                status: petData.status,
                 birthday: new Date(petData.birthday),
                 createdAt: new Date(petData.createdAt),
                 updatedAt: new Date(petData.updatedAt),

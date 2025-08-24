@@ -7,6 +7,7 @@ export interface MedicalAppointmentListItemInfo {
     appointmentNumber: number,
     appointmentDate: Date,
     doctorName: string,
+    weight: number,
 }
 
 export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<Response> {
@@ -28,6 +29,7 @@ export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<R
                 appointmentDate: ma.appointmentDate,
                 appointmentNumber: ma.appointmentNumber,
                 doctorName: doctor != null ? doctor?.name + ' ' + doctor?.lastname : 'No se encontró el doctor',
+                weight: ma.weight,
             };
         });
         return new Response(JSON.stringify(medicalAppointmentsInfo), {

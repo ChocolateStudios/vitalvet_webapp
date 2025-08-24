@@ -31,6 +31,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     try {
         const body = await request.json();
         const resource = new SaveMedicalAppointmentResource(
+            body.weight,
             body.details,
             body.observations,
             body.prescription,

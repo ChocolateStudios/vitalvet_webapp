@@ -118,4 +118,9 @@ export class MedicalAppointmentsRepository {
             return resource;
         })
     }
+
+    static async getLastMedicalAppointmentByPetId(petId: string): Promise<MedicalAppointmentResource> {
+        const allAppointments = await this.getAllMedicalAppointmentsByPetId(petId);
+        return allAppointments[allAppointments.length - 1];
+    }
 }

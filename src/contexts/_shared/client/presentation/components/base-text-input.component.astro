@@ -1,12 +1,12 @@
 ---
 
-const { id, name, type, autocomplete, label, value = "",  class: className = "", visible = true, readonly = false } = Astro.props;
+const { id, name, type, autocomplete, label, value = "",  class: className = "", visible = true, readonly = false, tooltip } = Astro.props;
 
 const hasIconLeft = Astro.slots.has('icon-left');
 const hasIconRight = Astro.slots.has('icon-right');
 ---
 
-<div class:list={["relative w-full", className, visible ? "visible" : "hidden"]}>
+<div class:list={["relative w-full group", className, visible ? "visible" : "hidden"]}>
     <!-- Slot para el ícono izquierdo -->
     {hasIconLeft && (
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500">
@@ -55,4 +55,12 @@ const hasIconRight = Astro.slots.has('icon-right');
     </label>
 
     <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4"></div>
+
+    <!-- Tooltip -->
+    {tooltip && (
+        <div role="tooltip" class="absolute z-20 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-xs pointer-events-none">
+            {tooltip}
+            <div class="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900"></div>
+        </div>
+    )}
 </div>

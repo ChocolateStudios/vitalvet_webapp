@@ -2,8 +2,10 @@ import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
-interface PetInfo extends Pet {
+export interface PetInfo extends Pet {
     ownerName: string;
+    medicalAppointmentsCount: number;
+    weight: number;
 }
 
 export async function getPet(petId: string, baseUrl: string = ''): Promise<UsecaseResult<PetInfo>> {
@@ -24,7 +26,8 @@ export async function getPet(petId: string, baseUrl: string = ''): Promise<Useca
             data: {
                 ...existingPet,
                 birthday: new Date(existingPet.birthday),
-                ownerName: "John Doe"
+                ownerName: "John Doe",
+                weight: 0.0,
             },
             success: true,
         };
