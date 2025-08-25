@@ -1,7 +1,6 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { Profile } from "@/contexts/profiles/server/models/profile.model";
 import type { ProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/profile.resource";
-import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 
 export interface ProfileInfo extends Profile {
     email: string;

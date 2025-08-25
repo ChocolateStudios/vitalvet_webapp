@@ -1,6 +1,7 @@
 import type { MedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/medical-appointment.resource";
 import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
+import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
 export interface MedicalAppointmentListItemInfo {
     id: number | string,
@@ -10,7 +11,7 @@ export interface MedicalAppointmentListItemInfo {
     weight: number,
 }
 
-export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<Response> {
+export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<UsecaseResult<MedicalAppointmentListItemInfo[]>> {
     try {
         const medicalAppointments = await MedicalAppointmentsRepository.getAllMedicalAppointmentsByPetId(petId);
 
@@ -32,13 +33,23 @@ export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<R
                 weight: ma.weight,
             };
         });
-        return new Response(JSON.stringify(medicalAppointmentsInfo), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
+
+        return {
+            data: medicalAppointmentsInfo,
+            success: true,
+        };
+        // return new Response(JSON.stringify(medicalAppointmentsInfo), {
+        //     status: 200,
+        //     headers: { 'Content-Type': 'application/json' }
+        // });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
         console.error("Error fetching all medical appointments:", errorMessage); // Loguear el error real para depuración
-        return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
+        // return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
+
+        return {
+            data: undefined,
+            success: false,
+        };
     }
 }

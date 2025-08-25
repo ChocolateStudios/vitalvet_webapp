@@ -10,7 +10,7 @@ import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import BaseCombobox from "@/contexts/_shared/client/presentation/components/base-combobox.component.astro";
+import BaseCombobox, { type Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/base-combobox.component.astro";
 import ModalManager from "@/contexts/_shared/client/presentation/components/modal-manager.component.astro";
 import AddOwnerModal from "@/contexts/pets/client/presentation/components/add-owner-modal.component.astro";
 
@@ -174,7 +174,7 @@ const detailInputs = [
                     if (input.type === 'switch') {
                         return <BaseSwitch {...input} />;
                     } else if (input.type === 'combobox') {
-                        return <BaseCombobox {...input} />;
+                        return <BaseCombobox {...input as ComboboxProps} />;
                     }
                     return <BaseTextInput {...input} />;
                 })

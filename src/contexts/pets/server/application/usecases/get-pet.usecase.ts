@@ -15,11 +15,11 @@ export async function getPet(petId: string): Promise<UsecaseResult<PetInfo>> {
             ...pet,
             birthday: new Date(pet.birthday),
             ownerProfileId: ownerProfile?.id,
-            ownerName: ownerProfile?.name,
+            ownerName: ownerProfile?.name + ' ' + ownerProfile?.lastname,
             weight: lastMedicalAppointment?.weight,
             status: pet.status as PetStatus,
         };
-        
+
         return {
             data: petInfo,
             success: true,

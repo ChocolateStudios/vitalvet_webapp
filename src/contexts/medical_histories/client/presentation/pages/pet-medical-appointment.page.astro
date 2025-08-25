@@ -20,12 +20,12 @@ let doctorProfiles: any[] = [];
 
 const getPetResult = await getPet(petId);
 if (getPetResult.success) {
-    pet = getPetResult.data;
+    pet = getPetResult.data ?? null;
 }
 
 const getMedicalAppointmentResult = await getMedicalAppointment(petId, medicalAppointmentId);
-if (getMedicalAppointmentResult.ok) {
-    medicalAppointment = await getMedicalAppointmentResult.json();
+if (getMedicalAppointmentResult.data) {
+    medicalAppointment = getMedicalAppointmentResult.data ?? null;
 }
 
 const getDoctorProfilesResult = await getAllProfilesByRoleId(import.meta.env.VETERINARIAN_ROLE_ID, authenticatedUserId);

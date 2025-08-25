@@ -14,12 +14,12 @@ let medicalHistory: MedicalAppointmentListItemInfo[] = []
 
 const getPetResult = await getPet(petId);
 if (getPetResult.success) {
-    pet = getPetResult.data;
+    pet = getPetResult.data ?? null;
 }
 
 const getMedicalHistory = await getAllMedicalAppointmentsByPetId(petId);
-if (getMedicalHistory.ok) {
-    medicalHistory = await getMedicalHistory.json();
+if (getMedicalHistory.success) {
+    medicalHistory = getMedicalHistory.data ?? [];
 }
 
 const profileInputs = [
