@@ -12,7 +12,10 @@ import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/u
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import BaseCombobox, { type Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/base-combobox.component.astro";
 import ModalManager from "@/contexts/_shared/client/presentation/components/modal-manager.component.astro";
-import AddOwnerModal from "@/contexts/pets/client/presentation/components/add-owner-modal.component.astro";
+import PetOwnerModal from "@/contexts/pets/client/presentation/components/petowner-modal.component.astro";
+import { getAllSpecies, getAllSubspecies } from "@/contexts/pets/server/application/usecases/getall-species-subspecies.usecase";
+import SpeciesModal from "@/contexts/pets/client/presentation/components/species-modal.component.astro";
+import SubspeciesModal from "@/contexts/pets/client/presentation/components/subspecies-modal.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -20,9 +23,10 @@ const { petId } = Astro.props;
 
 let pet: PetInfo | null = null;
 let ownerProfiles: any[] = [];
+let allSpecies: any[] = [];
+let allSubspecies: any[] = [];
 
 const getPetResult = await getPet(petId);
-
 if (getPetResult.success) {
     pet = getPetResult.data ?? null;
 }
@@ -35,6 +39,15 @@ if (getOwnerProfilesResult.success) {
             name: `${op.name} ${op.lastname} ${op.me ? '(Tú)' : ''}`,
             me: op.me,
         }));
+}
+
+const getSpeciesResult = await getAllSpecies();
+if (getSpeciesResult.success) {
+    allSpecies = getSpeciesResult.data ?? [];
+}
+const getSubspeciesResult = await getAllSubspecies();
+if (getSubspeciesResult.success) {
+    allSubspecies = getSubspeciesResult.data ?? [];
 }
 
 const profileInput = {
@@ -59,7 +72,7 @@ const detailInputs = [
         actions: [
             {
                 label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nuevo dueño`,
-                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'add-owner-modal' } }))"
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'petowner-modal' } }))"
             }
         ],
     },
@@ -74,18 +87,30 @@ const detailInputs = [
     {
         id: "species",
         name: "species",
-        type: "text",
-        autocomplete: "species",
+        type: "combobox",
         label: "Especie",
-        value: pet?.species,
+        value: (allSubspecies.find(ss => ss.id === pet?.subspeciesId)?.speciesId?.toString()),
+        options: allSpecies ?? [],
+        actions: [
+            {
+                label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva especie`,
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'species-modal' } }))"
+            }
+        ],
     },
     {
         id: "subspecies",
         name: "subspecies",
-        type: "text",
-        autocomplete: "subspecies",
+        type: "combobox",
         label: "Raza",
-        value: pet?.subspecies,
+        value: pet?.subspeciesId?.toString(),
+        options: allSubspecies ?? [],
+        actions: [
+            {
+                label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva raza`,
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'subspecies-modal' } }))"
+            }
+        ],
     },
     {
         id: "age",
@@ -205,7 +230,9 @@ const detailInputs = [
             </div>
         </div>
     </form>
-    <AddOwnerModal />
+    <PetOwnerModal />
+    <SpeciesModal />
+    <SubspeciesModal {allSpecies} />
     <ModalManager />
 </ContentContainer>
 
@@ -216,7 +243,7 @@ const detailInputs = [
 
     declare global {
         interface Window {
-            ownerCreationListenerInitialized?: boolean;
+            listenersInitialized?: boolean;
         }
     }
     function initializePageScripts() {
@@ -226,8 +253,8 @@ const detailInputs = [
             const petNameInput = document.getElementById('name') as HTMLInputElement;
             const petOwnerInput = document.getElementById('owner-value') as HTMLInputElement;
             const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
-            const petSpeciesInput = document.getElementById('species') as HTMLInputElement;
-            const petSubspeciesInput = document.getElementById('subspecies') as HTMLInputElement;
+            const petSpeciesInput = document.getElementById('species-value') as HTMLInputElement;
+            const petSubspeciesInput = document.getElementById('subspecies-value') as HTMLInputElement;
             const petAgeInput = document.getElementById('age') as HTMLInputElement;
             const petStatusInput = document.getElementById('status-value') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
@@ -241,26 +268,37 @@ const detailInputs = [
             const isNewPet = !form.dataset.petId;
 
             const showError = (input: HTMLInputElement, message: string) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                const isHiddenValueInput = input.id.endsWith('-value');
+                const baseId = isHiddenValueInput ? input.id.slice(0, -6) : input.id;
+                const errorContainer = document.getElementById(`${baseId}-error-container`);
                 if (errorContainer) {
                     errorContainer.textContent = message;
                 }
-                // Cambia el color del borde del input a rojo
-                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                input.classList.add('outline-red-500', 'focus:outline-red-500');
+                // Aplica estilos al input visible, no al oculto.
+                const visibleInput = isHiddenValueInput ? document.getElementById(baseId) as HTMLInputElement : input;
+                if (visibleInput) {
+                    visibleInput.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                    visibleInput.classList.add('outline-red-500', 'focus:outline-red-500');
+                }
             }
 
             const clearError = (input: HTMLInputElement) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                const isHiddenValueInput = input.id.endsWith('-value');
+                const baseId = isHiddenValueInput ? input.id.slice(0, -6) : input.id;
+                const errorContainer = document.getElementById(`${baseId}-error-container`);
                 if (errorContainer) {
                     errorContainer.textContent = '';
                 }
-                // Restaura el color del borde del input
-                input.classList.remove('outline-red-500', 'focus:outline-red-500');
-                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+                // Restaura estilos en el input visible.
+                const visibleInput = isHiddenValueInput ? document.getElementById(baseId) as HTMLInputElement : input;
+                if (visibleInput) {
+                    visibleInput.classList.remove('outline-red-500', 'focus:outline-red-500');
+                    visibleInput.classList.add('outline-gray-300', 'focus:outline-blue-800');
+                }
             }
 
             form.addEventListener('submit', async (event) => {
+                console.log('ejecutando')
                 event.preventDefault();
 
                 // Limpia errores previos
@@ -277,7 +315,7 @@ const detailInputs = [
                 const petName = petNameInput.value;
                 const petOwner = petOwnerInput.value;
                 const birthday = birthdayInput.value;
-                const petAge = petAgeInput.value;
+                // const petAge = petAgeInput.value;
                 const petSpecies = petSpeciesInput.value;
                 const petSubspecies = petSubspeciesInput.value;
                 const petStatus = petStatusInput.value;
@@ -323,10 +361,12 @@ const detailInputs = [
                     showError(petSubspeciesInput, 'La raza es obligatoria');
                     isValid = false;
                 } 
+                console.log('ejecutando')
 
                 if (isValid) {
+                    console.log('ejecutando')
                     submitButton.disabled = true;
-                    const resource = new SavePetResource(petName, petSpecies, petSubspecies, "", new Date(birthday), petStatus, petOwner ?? 0);
+                    const resource = new SavePetResource(petName, /*petSpecies, petSubspecies,*/ "", new Date(birthday), petStatus, petOwner ?? 0, petSubspecies ?? 0);
 
                     if (isNewPet) {
                         submitButton.textContent = 'Creando mascota...';
@@ -379,10 +419,10 @@ const detailInputs = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    function initializeOwnerCreationListener() {
+    function initializeListeners() {
         // Evita añadir el listener múltiples veces con Astro View Transitions
-        if (window.ownerCreationListenerInitialized) return;
-        window.ownerCreationListenerInitialized = true;
+        if (window.listenersInitialized) return;
+        window.listenersInitialized = true;
 
         document.addEventListener('owner-created', (e) => {
             const event = e as CustomEvent;
@@ -401,13 +441,49 @@ const detailInputs = [
                 ownerCombobox.addOptionAndSelect(newOption);
             }
         });
+
+        document.addEventListener('species-created', (e) => {
+            const event = e as CustomEvent;
+            const newSpecies = event.detail.newSpecies;
+
+            // Busca la instancia del combobox de especies
+            const speciesCombobox = window.comboboxInstances?.['species'];
+
+            if (speciesCombobox && newSpecies) {
+                // Prepara la nueva opción para el combobox
+                const newOption = {
+                    id: newSpecies.id,
+                    name: `${newSpecies.name}`
+                };
+                // Llama al nuevo método para añadir y seleccionar la opción
+                speciesCombobox.addOptionAndSelect(newOption);
+            }
+        });
+
+        document.addEventListener('subspecies-created', (e) => {
+            const event = e as CustomEvent;
+            const newSubspecies = event.detail.newSubspecies;
+
+            // Busca la instancia del combobox de subspecies
+            const subspeciesCombobox = window.comboboxInstances?.['subspecies'];
+
+            if (subspeciesCombobox && newSubspecies) {
+                // Prepara la nueva opción para el combobox
+                const newOption = {
+                    id: newSubspecies.id,
+                    name: `${newSubspecies.name}`
+                };
+                // Llama al nuevo método para añadir y seleccionar la opción
+                subspeciesCombobox.addOptionAndSelect(newOption);
+            }
+        });
     }
 
     // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
     // y en cada navegación del lado del cliente.
     document.addEventListener('astro:page-load', () => {
         initializePageScripts();
-        initializeOwnerCreationListener();
+        initializeListeners();
     });
 
 </script>

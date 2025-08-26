@@ -9,6 +9,7 @@ export interface PetListItemInfo {
     owner?: string,
     species?: string,
     subspecies?: string,
+    // subspeciesId?: number | string,
     isDead?: boolean,
 }
 

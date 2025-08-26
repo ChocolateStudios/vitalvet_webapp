@@ -347,13 +347,19 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     }
   }
 
-  document.querySelectorAll(".combobox-container").forEach((container) => {
-    const htmlContainer = container as HTMLElement;
+  function initializeComboboxes() {
+    document.querySelectorAll(".combobox-container").forEach((container) => {
+      const htmlContainer = container as HTMLElement;
 
-    // Para evitar doble inicialización con Astro View Transitions
-    if (!htmlContainer.dataset.initialized) {
-      htmlContainer.dataset.initialized = "true";
-      new Combobox(htmlContainer);
-    }
+      // Para evitar doble inicialización con Astro View Transitions
+      if (!htmlContainer.dataset.initialized) {
+        htmlContainer.dataset.initialized = "true";
+        new Combobox(htmlContainer);
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initializeComboboxes();
   });
 </script>

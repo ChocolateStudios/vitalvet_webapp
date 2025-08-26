@@ -56,7 +56,7 @@ const profileInputs = [
     },
 ]
 ---
-<BaseModal id="add-owner-modal" title="Agregar nuevo dueño">
+<BaseModal id="petowner-modal" title="Agregar nuevo dueño">
     <form slot="body" id="owner-form" data-owner-role-id={ownerRoleId} novalidate>
         {
             profileInputs.map(input => 
@@ -175,7 +175,7 @@ const profileInputs = [
 
                 if (isValid) {
                     submitButton.disabled = true;
-                    console.log('ownerRoleId', form.dataset.ownerRoleId!)
+                    
                     const resource = new SaveProfileResource(name, lastname, form.dataset.ownerRoleId!, phone, new Date(birthday));
 
                     if (isNewOwner) {
@@ -191,7 +191,7 @@ const profileInputs = [
 
                                 // 2. Dispara un evento para cerrar este modal específico
                                 document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                                    detail: { id: 'add-owner-modal' }
+                                    detail: { id: 'petowner-modal' }
                                 }));
 
                                 // 3. Limpia el formulario para la próxima vez
@@ -231,16 +231,6 @@ const profileInputs = [
                 }
             });
         }
-
-        // --- Lógica para el botón de eliminar ---
-        const openDialogButton = document.getElementById('open-delete-dialog-button');
-        // Dialog in delete-pet-dialog.component.astro
-        const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
-
-        openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
     // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
