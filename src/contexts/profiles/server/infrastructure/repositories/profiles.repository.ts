@@ -19,6 +19,8 @@ export class ProfilesRepository {
             throw new Error('No se pudo generar un ID para la nueva mascota.');
         }
 
+        newProfile.id = profileId;
+
         const dataToSave = {
             ...saveResource,
             userId,
