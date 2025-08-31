@@ -6,6 +6,7 @@ export interface PetListItemInfo {
     id?: number | string,
     name?: string,
     medicalAppointmentsCount: number,
+    bathsCount: number,
     owner?: string,
     species?: string,
     subspecies?: string,

@@ -3,7 +3,7 @@ import type { MedicalAppointment } from "../../../models/medical-appointment.mod
 
 export class MedicalAppointmentResource extends AuditableModel {
     public weight: number = 0;
-    public details: string = "";
+    // public details: string = "";
     public observations: string = "";
     public prescription: string = "";
     public appointmentDate: Date = new Date();
@@ -15,7 +15,7 @@ export class MedicalAppointmentResource extends AuditableModel {
         super();
         this.id = model.id;
         this.weight = model.weight;
-        this.details = model.details;
+        // this.details = model.details;
         this.observations = model.observations;
         this.prescription = model.prescription;
         this.appointmentDate = model.appointmentDate;

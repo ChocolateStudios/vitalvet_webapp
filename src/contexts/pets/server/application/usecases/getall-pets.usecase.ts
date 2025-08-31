@@ -26,6 +26,7 @@ export async function getAllPets(): Promise<UsecaseResult<PetListItemInfo[]>> {
             id: pet.id,
             name: pet.name,
             medicalAppointmentsCount: pet.medicalAppointmentsCount,
+            bathsCount: pet.bathsCount,
             owner: owner?.name + ' ' + owner?.lastname,
             species: species,
             subspecies: subspecies,

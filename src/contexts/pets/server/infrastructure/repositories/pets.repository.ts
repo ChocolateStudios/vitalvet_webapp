@@ -27,7 +27,7 @@ export class PetsRepository {
             ...data,
             birthday: newPet.birthday.toISOString(),
             medicalAppointmentsCount: 0,
-            // status: newPet.status, // Guardamos el status como string ('active' o 'inactive')
+            bathsCount: 0,
             createdAt: newPet.createdAt.toISOString(),
             updatedAt: newPet.updatedAt.toISOString(),
         };
@@ -81,6 +81,7 @@ export class PetsRepository {
 
         const resource = PetResource.fromModel(petModel);
         resource.medicalAppointmentsCount = petData.medicalAppointmentsCount || 0;
+        resource.bathsCount = petData.bathsCount || 0;
         return resource;
     }
 
@@ -102,6 +103,7 @@ export class PetsRepository {
             };
             const resource = PetResource.fromModel(petModel);
             resource.medicalAppointmentsCount = petData.medicalAppointmentsCount || 0;
+            resource.bathsCount = petData.bathsCount || 0;
             return resource;
         });
     }

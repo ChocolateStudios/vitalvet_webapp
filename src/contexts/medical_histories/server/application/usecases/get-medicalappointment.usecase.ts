@@ -9,12 +9,12 @@ export interface MedicalAppointmentInfo extends MedicalAppointment {
 export async function getMedicalAppointment(petId: string, medicalAppointmentId: string): Promise<UsecaseResult<MedicalAppointmentInfo>> {
     try {
         const medicalAppointment = await MedicalAppointmentsRepository.getMedicalAppointment(petId, medicalAppointmentId);
-        const petInfo: MedicalAppointmentInfo = {
+        const medicalAppointmentInfo: MedicalAppointmentInfo = {
             ...medicalAppointment,
         };
 
         return {
-            data: petInfo,
+            data: medicalAppointmentInfo,
             success: true,
         }
         // return new Response(JSON.stringify(petInfo), {

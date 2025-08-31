@@ -211,8 +211,11 @@ const detailInputs = [
                         {/* <a href="#" class="rounded-md bg-gray-200 px-4 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400">
                             Ver galería
                         </a> */}
+                        <a href={`/app/pets/${petId}/baths-history`} class="rounded-md bg-gray-200 px-4 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400">
+                            Baños {pet?.bathsCount > 0 ? `(${pet?.bathsCount})` : ''}
+                        </a>
                         <a href={`/app/pets/${petId}/medical-history`} class="rounded-md bg-gray-200 px-4 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400">
-                            Historial médico
+                            Historial médico {pet?.medicalAppointmentsCount > 0 ? `(${pet?.medicalAppointmentsCount})` : ''}
                         </a>
                     </>
                 }

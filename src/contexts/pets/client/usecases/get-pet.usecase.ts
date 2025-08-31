@@ -6,6 +6,7 @@ export interface PetInfo extends Pet {
     ownerProfileId: number | string;
     ownerName: string;
     medicalAppointmentsCount: number;
+    bathsCount: number;
     weight: number;
 }
 

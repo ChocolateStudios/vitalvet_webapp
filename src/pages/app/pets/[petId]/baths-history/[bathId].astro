@@ -1,0 +1,12 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import PetBathPage from '@/contexts/baths/client/presentation/pages/pet-bath.page.astro';
+
+export const prerender = false;
+const { petId, bathId} = Astro.params;
+
+---
+
+<AppLayout>
+  <PetBathPage {petId} {bathId} />
+</AppLayout>

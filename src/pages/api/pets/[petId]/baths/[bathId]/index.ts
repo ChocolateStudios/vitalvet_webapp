@@ -1,20 +1,20 @@
-import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
+import { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
 import type { APIRoute } from "astro";
-import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
+import { BathsRepository } from "@/contexts/baths/server/infrastructure/repositories/baths.repository";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ params }) => {
-    const { petId, medicalAppointmentId } = params;
+    const { petId, bathId } = params;
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
     }
-    if (!medicalAppointmentId) {
-        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
+    if (!bathId) {
+        return new Response(JSON.stringify({ message: 'Bath ID is required' }), { status: 400 });
     }
 
     try {
-        const appointments = await MedicalAppointmentsRepository.getMedicalAppointment(petId, medicalAppointmentId);
+        const appointments = await BathsRepository.getBath(petId, bathId);
         return new Response(JSON.stringify(appointments), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -26,25 +26,22 @@ export const GET: APIRoute = async ({ params }) => {
 };
 
 export const PUT: APIRoute = async ({ request, params }) => {
-    const { petId, medicalAppointmentId } = params;
+    const { petId, bathId } = params;
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
     }
-    if (!medicalAppointmentId) {
-        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
+    if (!bathId) {
+        return new Response(JSON.stringify({ message: 'Bath ID is required' }), { status: 400 });
     }
 
     try {
         const body = await request.json();
-        const resource = new SaveMedicalAppointmentResource(
-            body.weight,
-            // body.details,
+        const resource = new SaveBathResource(
+            new Date(body.bathDate),
             body.observations,
-            body.prescription,
-            new Date(body.appointmentDate),
             body.doctorProfileId,
         );
-        const updatedPet = await MedicalAppointmentsRepository.updateMedicalAppointment(petId, medicalAppointmentId, resource);
+        const updatedPet = await BathsRepository.updateBath(petId, bathId, resource);
         return new Response(JSON.stringify(updatedPet), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -56,16 +53,16 @@ export const PUT: APIRoute = async ({ request, params }) => {
 };
 
 export const DELETE: APIRoute = async ({ params }) => {
-    const { petId, medicalAppointmentId } = params;
+    const { petId, bathId } = params;
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
     }
-    if (!medicalAppointmentId) {
-        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
+    if (!bathId) {
+        return new Response(JSON.stringify({ message: 'Bath ID is required' }), { status: 400 });
     }
 
     try {
-        await MedicalAppointmentsRepository.deleteMedicalAppointment(petId, medicalAppointmentId);
+        await BathsRepository.deleteBath(petId, bathId);
         return new Response(null, { status: 204 });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

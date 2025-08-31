@@ -2,20 +2,20 @@
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
 import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
-import BaseTextArea from "@/contexts/_shared/client/presentation/components/base-text-area.component.astro";
+import BaseTextArea, { type Props as TextAreaProps } from "@/contexts/_shared/client/presentation/components/base-text-area.component.astro";
 import BaseCombobox from "@/contexts/_shared/client/presentation/components/base-combobox.component.astro";
-import DeletePetMedicalAppointmentDialog from "@/contexts/medical_histories/client/presentation/components/delete-pet-medical-appointment-dialog.component.astro";
-import { getMedicalAppointment, type MedicalAppointmentInfo } from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
+import DeletePetBathDialog from "@/contexts/baths/client/presentation/components/delete-pet-bath-dialog.component.astro";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
+import { getBath, type BathInfo } from "@/contexts/baths/server/application/usecases/get-bath.usecase";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
-const { petId, medicalAppointmentId } = Astro.props;
+const { petId, bathId } = Astro.props;
 
 let pet: PetInfo | null = null;
-let medicalAppointment: MedicalAppointmentInfo | null = null;
+let bath: BathInfo | null = null;
 let doctorProfiles: any[] = [];
 
 const getPetResult = await getPet(petId);
@@ -23,9 +23,9 @@ if (getPetResult.success) {
     pet = getPetResult.data ?? null;
 }
 
-const getMedicalAppointmentResult = await getMedicalAppointment(petId, medicalAppointmentId);
-if (getMedicalAppointmentResult.data) {
-    medicalAppointment = getMedicalAppointmentResult.data ?? null;
+const getBathResult = await getBath(petId, bathId);
+if (getBathResult.data) {
+    bath = getBathResult.data ?? null;
 }
 
 const getDoctorProfilesResult = await getAllProfilesByRoleId(import.meta.env.VETERINARIAN_ROLE_ID, authenticatedUserId);
@@ -57,88 +57,69 @@ const profileInputs = [
     },
 ];
 
-const medicalAppointmentInfoInputs = [
+const bathInfoInputs = [
     {
         id: "doctor",
         name: "doctor",
         type: "combobox",
         label: "Veterinario",
-        value: medicalAppointment ? 
-            medicalAppointment?.doctorProfileId.toString()
+        value: bath ? 
+            bath?.doctorProfileId.toString()
             : (doctorProfiles && doctorProfiles.length > 0) ? doctorProfiles.find(dp => dp.me === true)?.id.toString() : "",
         options: doctorProfiles ?? [],
     },
-    // {
-    //     id: "date",
-    //     name: "date",
-    //     type: "date",
-    //     autocomplete: "appointmentDate",
-    //     label: "Fecha de la cita",
-    //     value: medicalAppointment ? 
-    //         medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
-    //         : new Date().toISOString().split('T')[0],
-    // },
 ];
 
-const medicalAppointmentSections = [
+const bathSections = [
+    // {
+    //     // id: "details",
+    //     title: "Datos del baño",
+    //     children: [
+    //         {
+    //             id: "date",
+    //             name: "date",
+    //             type: "date",
+    //             autocomplete: "bathDate",
+    //             label: "Fecha del baño",
+    //             value: bath ? 
+    //                 bath.bathDate ? (new Date(bath.bathDate)).toISOString().split('T')[0] : ""
+    //                 : new Date().toISOString().split('T')[0],
+    //         },
+    //         // {
+    //         //     id: "details",
+    //         //     name: "details",
+    //         //     label: "Descripción",
+    //         //     value: bath?.details,
+    //         // }
+    //     ],
+    //     // name: "details",
+    //     // label: "Datos de la cita",
+    //     // value: bath?.details,
+    // },
     {
-        // id: "details",
-        title: "Detalles de la cita",
+        title: "Datos del baño",
         children: [
-            [
-                {
-                    id: "weight",
-                    name: "weight",
-                    type: "number",
-                    autocomplete: "weight",
-                    label: "Peso (kg)",
-                    value: medicalAppointment?.weight,
-                },
-                {
-                    id: "date",
-                    name: "date",
-                    type: "date",
-                    autocomplete: "appointmentDate",
-                    label: "Fecha de la cita",
-                    value: medicalAppointment ? 
-                        medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
-                        : new Date().toISOString().split('T')[0],
-                },
-            ],
+            {
+                id: "date",
+                name: "date",
+                type: "date",
+                label: "Fecha",
+                value: bath ? (new Date(bath.bathDate)).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            },
             {
                 id: "observations",
                 name: "observations",
+                type: "textarea",
                 label: "Observaciones",
-                value: medicalAppointment?.observations,
+                value: bath?.observations,
             },
-            {
-                id: "prescription",
-                name: "prescription",
-                label: "Receta / Tratamiento",
-                value: medicalAppointment?.prescription,
-            },
-            // {
-            //     id: "details",
-            //     name: "details",
-            //     label: "Descripción",
-            //     value: medicalAppointment?.details,
-            // }
-        ],
-        // name: "details",
-        // label: "Datos de la cita",
-        // value: medicalAppointment?.details,
+        ]
     },
-    // {
-    //     id: "observations",
-    //     name: "observations",
-    //     label: "Observaciones",
-    //     value: medicalAppointment?.observations,
-    // },
     // {
     //     id: "prescription",
     //     name: "prescription",
     //     label: "Receta / Tratamiento",
-    //     value: medicalAppointment?.prescription,
+    //     value: bath?.prescription,
     // },
 ];
 
@@ -146,21 +127,21 @@ const medicalAppointmentSections = [
 
 <ContentContainer class="h-full">
     <div class="mb-8 flex items-start gap-4">
-        <a href={`/app/pets/${petId}/medical-history`} class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
+        <a href={`/app/pets/${petId}/baths-history`} class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
         <h2 class="text-2xl font-bold leading-tight text-gray-900 mb-8">
             {
-                medicalAppointment ? 
-                    `Cita médica N° ${medicalAppointment?.appointmentNumber}`
+                bath ? 
+                    `Baño N° ${bath?.bathNumber}`
                     :
-                    "Nueva cita médica"
+                    "Nuevo baño"
             }
         </h2>
     </div>
-    <form id="medicalappointment-form" data-pet-id={pet?.id} data-medical-appointment-id={medicalAppointment?.id} novalidate>
+    <form id="bath-form" data-pet-id={pet?.id} data-bath-id={bath?.id} novalidate>
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center">
             <div class="lg:col-span-2 flex flex-col gap-6">
                 <div class="bg-gray-200 rounded-xl shadow-lg p-7 text-left" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
@@ -190,10 +171,10 @@ const medicalAppointmentSections = [
                     </div>
                 </div>
                 <div class="bg-white rounded-xl shadow-lg p-7 text-left">
-                    <h3 class="font-semibold mb-3">Información de la cita</h3>
+                    <h3 class="font-semibold mb-3">Información del baño</h3>
                     <div class="flex flex-col items-center w-full">
                     {
-                        medicalAppointmentInfoInputs.map(infoInput => 
+                        bathInfoInputs.map(infoInput => 
                             (infoInput.type === "combobox") ? 
                                 <BaseCombobox {...infoInput} />
                                 :
@@ -205,7 +186,10 @@ const medicalAppointmentSections = [
             </div>
             <div class="lg:col-span-4 space-y-6">
                 {
-                    medicalAppointmentSections.map(section => 
+                    bathSections.map(section => 
+                        // <div class="bg-white rounded-xl shadow-lg p-7 pb-4">
+                        //     <BaseTextInput {...section} />
+                        // </div>
                         section.children ?
                             <div class="bg-white rounded-xl shadow-lg p-7 pb-4">
                                 <h3 class="mb-3">{section.title}</h3>
@@ -220,14 +204,18 @@ const medicalAppointmentSections = [
                                         }
                                         </div>
                                         : 
-                                        <BaseTextArea {...child} />
+                                        (child.type === "textarea") ?
+                                            <BaseTextArea {...child} />
+                                            :
+                                            <BaseTextInput {...child} />
+                                        // <BaseTextArea {...child} />
                                 )
                             }
                             </div>
                             :
                             <div></div>
                             // <div class="bg-white rounded-xl shadow-lg p-7 pb-4">
-                            //     <BaseTextArea {...section} />
+                            //     <BaseTextArea {...section as TextAreaProps} />
                             // </div>
                     )
                 }
@@ -236,15 +224,15 @@ const medicalAppointmentSections = [
         <div class="flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4">
             <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-6 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 {
-                    medicalAppointment ? "Guardar cambios" : "Crear cita médica"
+                    bath ? "Guardar cambios" : "Crear baño"
                 }
             </button>
-            { medicalAppointment &&
+            { bath &&
                 <>
                     <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer">
                         Eliminar
                     </button>
-                    <DeletePetMedicalAppointmentDialog />
+                    <DeletePetBathDialog />
                 </>
             }
         </div>
@@ -252,20 +240,17 @@ const medicalAppointmentSections = [
 </ContentContainer>
 
 <script>
-    import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
-    import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
-    import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
+    import { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
+    import { createBath } from "@/contexts/baths/client/usecases/create-bath.usecase";
+    import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
 
     function initializePageScripts() {
-        const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
+        const form = document.getElementById('bath-form') as HTMLFormElement | null;
 
         if (form) {
-            const weightInput = document.getElementById('weight') as HTMLInputElement;
-            // const detailsInput = document.getElementById('details') as HTMLInputElement;
-            const observationsInput = document.getElementById('observations') as HTMLInputElement;
-            const prescriptionInput = document.getElementById('prescription') as HTMLInputElement;
             const doctorInput = document.getElementById('doctor-value') as HTMLInputElement;
             const dateInput = document.getElementById('date') as HTMLInputElement;
+            const observationsInput = document.getElementById('observations') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
             
@@ -274,7 +259,7 @@ const medicalAppointmentSections = [
                 submitButton.disabled = false;
             }
             
-            const isNewMedicalAppointment = !form.dataset.medicalAppointmentId;
+            const isNewBath = !form.dataset.bathId;
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const errorContainer = document.getElementById(`${input.id}-error-container`);
@@ -298,51 +283,24 @@ const medicalAppointmentSections = [
 
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
+                
+                clearError(dateInput);
+                clearError(observationsInput);
+                clearError(doctorInput);
 
                 // Limpia errores previos
-                // clearError(detailsInput);
-                clearError(observationsInput);
-                clearError(prescriptionInput);
                 if (formError) {
                     formError.textContent = '';
                 }
+                              
 
-                const weight = weightInput.value;
-                // const details = detailsInput.value;
-                const observations = observationsInput.value;
-                const prescription = prescriptionInput.value;
                 const doctor = doctorInput.value;
                 const date = dateInput.value;
+                const observations = observationsInput.value;
 
                 let isValid = true;
 
                 // Validaciones
-                if (!weight) {
-                    showError(weightInput, 'El peso es obligatorio');
-                    isValid = false;
-                } else if (isNaN(Number(weight))) {
-                    showError(weightInput, 'El peso debe ser un número');
-                    isValid = false;
-                } else if (Number(weight) <= 0) {
-                    showError(weightInput, 'El peso debe ser mayor a 0');
-                    isValid = false;
-                }
-
-                // if (!details) {
-                //     showError(detailsInput, 'Los detalles son obligatorios');
-                //     isValid = false;
-                // }
-
-                if (!observations) {
-                    showError(observationsInput, 'Las observaciones son obligatorias');
-                    isValid = false;
-                }
-
-                if (!prescription) {
-                    showError(prescriptionInput, 'La receta/tratamiento es obligatoria');
-                    isValid = false;
-                }
-
                 if (!doctor) {
                     showError(document.getElementById('doctor') as HTMLInputElement, 'El veterinario es obligatorio');
                     isValid = false;
@@ -353,42 +311,47 @@ const medicalAppointmentSections = [
                     isValid = false;
                 }
 
+                if (!observations) {
+                    showError(observationsInput, 'Las observaciones son obligatorias');
+                    isValid = false;
+                }
+
                 if (isValid) {
                     submitButton.disabled = true;
 
-                    const resource = new SaveMedicalAppointmentResource(Number(weight), /*details, */observations, prescription, new Date(date), doctor ?? 0);
+                    const resource = new SaveBathResource(new Date(date), observations, doctor ?? 0);
 
-                    if (isNewMedicalAppointment) {
-                        submitButton.textContent = 'Creando cita médica...';
+                    if (isNewBath) {
+                        submitButton.textContent = 'Creando baño...';
 
                         try {
-                            const response = await createMedicalAppointment(form.dataset.petId!, resource);
+                            const response = await createBath(form.dataset.petId!, resource);
                             if (response.success) {
-                                window.location.href = `/app/pets/${form.dataset.petId!}/medical-history`;
+                                window.location.href = `/app/pets/${form.dataset.petId!}/baths-history`;
                             } else {
-                                formError.textContent = response.errorMessage ?? 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
+                                formError.textContent = response.errorMessage ?? 'Error al crear baño. Por favor, inténtalo de nuevo.';
                             }
                         } catch (error) {
-                            console.error('Error al crear cita médica:', error);
-                            formError.textContent = 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
+                            console.error('Error al crear baño:', error);
+                            formError.textContent = 'Error al crear baño. Por favor, inténtalo de nuevo.';
                         } finally {
                             submitButton.disabled = false;
-                            submitButton.textContent = 'Crear cita médica';
+                            submitButton.textContent = 'Crear baño';
                         }
                     } else {
-                        submitButton.textContent = 'Actualizando cita médica...';
+                        submitButton.textContent = 'Actualizando baño...';
 
                         try {
-                            const response = await updateMedicalAppointment(form.dataset.petId!, form.dataset.medicalAppointmentId!, resource);
+                            const response = await updateBath(form.dataset.petId!, form.dataset.bathId!, resource);
                             if (response.success) {
                                 // window.location.reload();
-                                window.location.href = `/app/pets/${form.dataset.petId!}/medical-history`;
+                                window.location.href = `/app/pets/${form.dataset.petId!}/baths-history`;
                             } else {
-                                formError.textContent = response.errorMessage ?? 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
+                                formError.textContent = response.errorMessage ?? 'Error al actualizar el baño. Por favor, inténtalo de nuevo.';
                             }
                         } catch (error) {
-                            console.error('Error al actualizar la cita médica:', error);
-                            formError.textContent = 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
+                            console.error('Error al actualizar el baño:', error);
+                            formError.textContent = 'Error al actualizar el baño. Por favor, inténtalo de nuevo.';
                         } finally {
                             submitButton.disabled = false;
                             submitButton.textContent = 'Guardar cambios';
