@@ -115,7 +115,7 @@ const detailInputs = [
     {
         id: "age",
         name: "age",
-        type: "number",
+        type: "text",
         autocomplete: "age",
         label: "Edad (años)",
         value: pet?.birthday ? (() => {
@@ -129,7 +129,7 @@ const detailInputs = [
             return age;
         })() : "",
         readonly: true,
-        tooltip: pet?.birthday ? "La edad se autocalcula según la fecha de nacimiento." : "La edad se autocalcula cuando se crea la mascota.",
+        tooltip: "La edad se autocalcula según la fecha de nacimiento.",
     },
     {
         id: "weight",
@@ -262,6 +262,34 @@ const detailInputs = [
             const petStatusInput = document.getElementById('status-value') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
+
+            if (birthdayInput && petAgeInput) {
+                birthdayInput.addEventListener('input', () => {
+                    const birthDateString = birthdayInput.value;
+                    if (birthDateString) {
+                        // The browser usually returns YYYY-MM-DD. Appending T00:00:00 ensures it's parsed in the local timezone
+                        // and avoids potential off-by-one day errors due to UTC conversion.
+                        const birthDate = new Date(`${birthDateString}T00:00:00`);
+                        const today = new Date();
+                        
+                        // Set hours to 0 to compare dates only
+                        today.setHours(0, 0, 0, 0);
+
+                        if (!isNaN(birthDate.getTime()) && birthDate <= today) {
+                            let age = today.getFullYear() - birthDate.getFullYear();
+                            const m = today.getMonth() - birthDate.getMonth();
+                            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                                age--;
+                            }
+                            petAgeInput.value = age.toString();
+                        } else {
+                            petAgeInput.value = '';
+                        }
+                    } else {
+                        petAgeInput.value = '';
+                    }
+                });
+            }
 
             // Habilita el botón de envío una vez que el script se ha cargado.
             if (submitButton) {
