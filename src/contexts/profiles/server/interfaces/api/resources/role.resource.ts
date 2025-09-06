@@ -11,7 +11,6 @@ export class RoleResource extends BaseModel {
     public static fromModel(model: Role): RoleResource {
         const resource = new RoleResource();
         resource.id = model.id;
-        resource.stringId = model.stringId;
         resource.name = model.name;
         return resource;
     }

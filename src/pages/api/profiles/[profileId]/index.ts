@@ -1,12 +1,14 @@
-import type { APIRoute } from "astro";
-import { createMyProfile } from "@/contexts/profiles/server/application/usecases/create-profile.usecase";
+import { getProfileById } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
+import { updateProfile } from "@/contexts/profiles/server/application/usecases/update-profile.usecase";
 import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
+import type { APIRoute } from "astro";
 
-export const prerender = false;
-
-export const POST: APIRoute = async ({ request }) => {
+export const PUT: APIRoute = async ({ request, params }) => {
     try {
         const body = await request.json();
+        const { profileId } = params;
+        // console.log(locals)
+
         
         const saveResource = new SaveProfileResource(
             body.name,
@@ -17,21 +19,23 @@ export const POST: APIRoute = async ({ request }) => {
             body.roleId,
         );
         
-        const newProfile = await createMyProfile(saveResource);
-        return new Response(JSON.stringify(newProfile.data), {
-            status: 201,
+        const profileUpdated = await updateProfile(saveResource, profileId);
+        return new Response(JSON.stringify(profileUpdated.data), {
+            status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-        console.error("Error creating profile:", errorMessage); // Loguear el error real para depuración
+        console.error("Error updating profile:", errorMessage); // Loguear el error real para depuración
         return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
     }
 };
 
-// export const GET: APIRoute = async ({ locals }) => {
+// export const GET: APIRoute = async ({ params }) => {
 //     try {
-//         const profile = await getMyProfile(locals.authenticatedUserId);
+//         const { profileId } = params;
+
+//         const profile = await getProfileById(profileId);
 //         return new Response(JSON.stringify(profile.data), {
 //             status: 200,
 //             headers: { 'Content-Type': 'application/json' }

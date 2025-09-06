@@ -8,7 +8,7 @@ const PROFILES_PATH = 'profiles';
 
 export class ProfilesRepository {
     
-    static async createProfile(userId: string, saveResource: SaveProfileResource): Promise<ProfileResource> {
+    static async createMyProfile(userId: string, saveResource: SaveProfileResource): Promise<ProfileResource> {
         const newProfile: Profile = saveResource.toModel();
 
         const profilesCollectionRef = ref(db, PROFILES_PATH);
@@ -32,8 +32,51 @@ export class ProfilesRepository {
         await set(newProfileRef, dataToSave);
         return ProfileResource.fromModel(newProfile);
     }
+
+    static async createProfile(saveResource: SaveProfileResource): Promise<ProfileResource> {
+        const newProfile: Profile = saveResource.toModel();
+
+        const profilesCollectionRef = ref(db, PROFILES_PATH);
+        const newProfileRef = await push(profilesCollectionRef);
+
+        const profileId = newProfileRef.key;
+        if (!profileId) {
+            throw new Error('No se pudo generar un ID para la nueva mascota.');
+        }
+
+        newProfile.id = profileId;
+
+        const dataToSave = {
+            ...saveResource,
+            userId: 'undefined',
+            birthday: newProfile.birthday.toISOString(),
+            createdAt: newProfile.createdAt.toISOString(),
+            updatedAt: newProfile.updatedAt.toISOString(),
+        };
+
+        await set(newProfileRef, dataToSave);
+        return ProfileResource.fromModel(newProfile);
+    }
     
-    static async updateProfile(userId: string, saveResource: SaveProfileResource): Promise<ProfileResource> {
+    static async updateProfileById(profileId: string, saveResource: SaveProfileResource): Promise<ProfileResource> {
+        const profileRef = ref(db, `${PROFILES_PATH}/${profileId}`);
+        const snapshot = await get(profileRef);
+
+        if (!snapshot.exists()) {
+            throw new Error(`Perfil no encontrado con el profile id ${profileId}`);
+        }
+
+        const dataToUpdate = {
+            ...saveResource,
+            birthday: saveResource.birthday.toISOString(),
+            updatedAt: (new Date()).toISOString(),
+        };
+
+        await update(ref(db, `${PROFILES_PATH}/${profileId}`), dataToUpdate);
+        return this.getProfileById(profileId);
+    }
+    
+    static async updateProfileByUserId(userId: string, saveResource: SaveProfileResource): Promise<ProfileResource> {
         const profilesCollectionRef = ref(db, PROFILES_PATH);
 
         // Construye la consulta para filtrar por username en el servidor

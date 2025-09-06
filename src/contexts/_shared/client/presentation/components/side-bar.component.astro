@@ -1,15 +1,17 @@
 ---
-import VitalvetIcon from './icons/VitalvetIcon.astro';
-import PatientIcon from './icons/PatientIcon.astro';
-import CalendarIcon from './icons/CalendarIcon.astro';
-import ProfileIcon from './icons/ProfileIcon.astro';
-import LogoutIcon from './icons/LogoutIcon.astro';
-import DoubleChevronRightIcon from './icons/DoubleChevronRightIcon.astro';
+import VitalvetIcon from '@/contexts/_shared/client/presentation/components/icons/VitalvetIcon.astro';
+import PatientIcon from '@/contexts/_shared/client/presentation/components/icons/PatientIcon.astro';
+import CalendarIcon from '@/contexts/_shared/client/presentation/components/icons/CalendarIcon.astro';
+import ProfileIcon from '@/contexts/_shared/client/presentation/components/icons/ProfileIcon.astro';
+import OwnerIcon from '@/contexts/_shared/client/presentation/components/icons/OwnerIcon.astro';
+import LogoutIcon from '@/contexts/_shared/client/presentation/components/icons/LogoutIcon.astro';
+import DoubleChevronRightIcon from '@/contexts/_shared/client/presentation/components/icons/DoubleChevronRightIcon.astro';
 
 // Mapeamos los nombres de los iconos a sus componentes importados
 const icons: any = {
     patient: PatientIcon,
     calendar: CalendarIcon,
+    owner: OwnerIcon,
     profile: ProfileIcon,
     logout: LogoutIcon,
 };
@@ -20,6 +22,7 @@ const options = [
     [
         { displayName: "Pacientes", href: "/app/home", icon: "patient" },
         { displayName: "Calendario", href: "/app/calendar", icon: "calendar" },
+        { displayName: "Dueños", href: "/app/owners", icon: "owner" },
     ],
     [
         { displayName: "Perfil", href: "/app/profile", icon: "profile" },

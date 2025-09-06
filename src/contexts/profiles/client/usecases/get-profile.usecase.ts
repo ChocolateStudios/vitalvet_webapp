@@ -7,9 +7,9 @@ export interface ProfileInfo extends Profile {
     roleName: string;
 }
 
-export async function getProfile(baseUrl: string = ''): Promise<UsecaseResult<ProfileInfo>> {
+export async function getMyProfile(): Promise<UsecaseResult<ProfileInfo>> {
     try {
-        const response = await fetch(`${baseUrl}/api/profiles`);
+        const response = await fetch(`/api/profiles`);
 
         if (!response.ok) {
             const errorData = await response.json();

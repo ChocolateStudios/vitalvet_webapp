@@ -1,17 +1,24 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro"
 import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
-import { getProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
-import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
+import { getProfileById } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
+import { getRoleById } from "@/contexts/profiles/server/application/usecases/get-role.usecase";
+import DeleteProfileDialog from "@/contexts/profiles/client/presentation/components/delete-profile-dialog.component.astro";
 
-const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+const { ownerId } = Astro.props;
 
 let profile: ProfileInfo | null = null;
-const getProfileResult = await getProfile(authenticatedUserId);
+let role: any;
 
+const getProfileResult = await getProfileById(ownerId);
 if (getProfileResult.success) {
     profile = getProfileResult.data;
+}
+
+const getRoleResult = await getRoleById(import.meta.env.OWNER_ROLE_ID);
+if (getRoleResult.success) {
+    role = getRoleResult.data;
 }
 
 const profileInputs = [
@@ -61,24 +68,34 @@ const profileInputs = [
         type: "text",
         autocomplete: "role",
         label: "Rol",
-        value: profile?.roleName,
+        value: role.name,
         readonly: true,
     },
 ]
 ---
 
 <ContentContainer>
-    <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">Perfil</h1>
-    <form id="profile-form" class="flex justify-center" data-role-id={profile?.roleId} novalidate>
+    <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">{ profile ? "Datos del dueño" : "Nuevo dueño" }</h1>
+    <form id="profile-form" class="flex justify-center" data-owner-id={profile?.id} data-role-id={profile ? profile.roleId : role.id} novalidate>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
                     <BaseTextInput {...input} />
                 )
             }
-            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
-                Guardar cambios
-            </button>
+            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4 w-full">
+                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                    { profile ? "Guardar cambios" : "Crear dueño" }
+                </button>
+                { profile &&
+                    <>
+                        <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer">
+                            Eliminar
+                        </button>
+                        <DeleteProfileDialog petName={profile?.name} />
+                    </>
+                }
+            </div>
         </div>
     </form>
 </ContentContainer>
@@ -86,6 +103,7 @@ const profileInputs = [
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
+    import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
 
     function initializePageScripts() {
         const form = document.getElementById('profile-form') as HTMLFormElement | null;
@@ -103,6 +121,8 @@ const profileInputs = [
             if (submitButton) {
                 submitButton.disabled = false;
             }
+            
+            const isNewOwner = !form.dataset.ownerId;
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const errorContainer = document.getElementById(`${input.id}-error-container`);
@@ -182,24 +202,43 @@ const profileInputs = [
 
                 if (isValid) {
                     submitButton.disabled = true;
+                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), form.dataset.roleId!);
 
-                    const resource = new SaveProfileResource(name, lastname, form.dataset.roleId!, phone, new Date(birthday));
+                    if (isNewOwner) {
+                        submitButton.textContent = 'Creando dueño...';
 
-                    submitButton.textContent = 'Actualizando perfil...';
-
-                    try {
-                        const response = await updateProfile(resource);
-                        if (response.success) {
-                            window.location.href = '/app/home';
-                        } else {
-                            formError.textContent = response.errorMessage ?? 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
+                        try {
+                            const response = await createProfile(resource);
+                            if (response.success) {
+                                window.location.href = '/app/owners';
+                            } else {
+                                formError.textContent = response.errorMessage ?? 'Error al crear el dueño. Por favor, inténtalo de nuevo.';
+                            }
+                        } catch (error) {
+                            console.error('Error al crear el dueño:', error);
+                            formError.textContent = 'Error al crear el dueño. Por favor, inténtalo de nuevo.';
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Crear dueño';
                         }
-                    } catch (error) {
-                        console.error('Error al actualizar perfil:', error);
-                        formError.textContent = 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Guardar cambios';
+                    }
+                    else {
+                        submitButton.textContent = 'Actualizando dueño...';
+
+                        try {
+                            const response = await updateProfile(resource);
+                            if (response.success) {
+                                window.location.href = '/app/owners';
+                            } else {
+                                formError.textContent = response.errorMessage ?? 'Error al actualizar dueño. Por favor, inténtalo de nuevo.';
+                            }
+                        } catch (error) {
+                            console.error('Error al actualizar dueño:', error);
+                            formError.textContent = 'Error al actualizar dueño. Por favor, inténtalo de nuevo.';
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Guardar cambios';
+                        }
                     }
                 }
             });

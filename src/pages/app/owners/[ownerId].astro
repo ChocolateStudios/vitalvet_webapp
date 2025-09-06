@@ -1,0 +1,12 @@
+---
+import AppLayout from '@/layouts/AppLayout.astro';
+import PetOwnerPage from '@/contexts/profiles/client/presentation/pages/pet-owner.page.astro';
+
+export const prerender = false;
+const { ownerId } = Astro.params;
+
+---
+
+<AppLayout>
+  <PetOwnerPage {ownerId} />
+</AppLayout>

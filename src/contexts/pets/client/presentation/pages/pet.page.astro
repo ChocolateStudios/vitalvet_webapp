@@ -329,7 +329,6 @@ const detailInputs = [
             }
 
             form.addEventListener('submit', async (event) => {
-                console.log('ejecutando')
                 event.preventDefault();
 
                 // Limpia errores previos
@@ -392,10 +391,8 @@ const detailInputs = [
                     showError(petSubspeciesInput, 'La raza es obligatoria');
                     isValid = false;
                 } 
-                console.log('ejecutando')
 
                 if (isValid) {
-                    console.log('ejecutando')
                     submitButton.disabled = true;
                     const resource = new SavePetResource(petName, /*petSpecies, petSubspecies,*/ "", new Date(birthday), petStatus, petOwner ?? 0, petSubspecies ?? 0);
 

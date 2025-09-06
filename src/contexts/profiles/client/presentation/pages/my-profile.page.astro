@@ -1,0 +1,223 @@
+---
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro"
+import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
+import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
+import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
+import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
+
+const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+
+let profile: ProfileInfo | null = null;
+const getProfileResult = await getMyProfile(authenticatedUserId);
+
+if (getProfileResult.success) {
+    profile = getProfileResult.data;
+}
+
+const profileInputs = [
+    {
+        id: "name",
+        name: "name",
+        type: "text",
+        autocomplete: "name",
+        label: "Nombres",
+        value: profile?.name,
+    },
+    {
+        id: "lastname",
+        name: "lastname",
+        type: "text",
+        autocomplete: "lastname",
+        label: "Apellidos",
+        value: profile?.lastname,
+    },
+    {
+        id: "birthday",
+        name: "birthday",
+        type: "date",
+        autocomplete: "birthday",
+        label: "Fecha de nacimiento",
+        value: profile?.birthday ? (new Date(profile.birthday)).toISOString().split('T')[0] : "",
+    },
+    {
+        id: "email",
+        name: "email",
+        type: "email",
+        autocomplete: "email",
+        label: "Correo electrónico",
+        value: profile?.email,
+    },
+    {
+        id: "phone",
+        name: "phone",
+        type: "text",
+        autocomplete: "phone",
+        label: "Teléfono",
+        value: profile?.phone,
+    },
+    {
+        id: "role",
+        name: "role",
+        type: "text",
+        autocomplete: "role",
+        label: "Rol",
+        value: profile?.roleName,
+        readonly: true,
+    },
+]
+---
+
+<ContentContainer>
+    <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">Perfil</h1>
+    <form id="profile-form" class="flex justify-center" data-role-id={profile?.roleId} novalidate>
+        <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
+            {
+                profileInputs.map(input => 
+                    <BaseTextInput {...input} />
+                )
+            }
+            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                Guardar cambios
+            </button>
+        </div>
+    </form>
+</ContentContainer>
+
+<script>
+    import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
+    import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
+
+    function initializePageScripts() {
+        const form = document.getElementById('profile-form') as HTMLFormElement | null;
+
+        if (form) {
+            const nameInput = document.getElementById('name') as HTMLInputElement;
+            const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
+            const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
+            const emailInput = document.getElementById('email') as HTMLInputElement;
+            const phoneInput = document.getElementById('phone') as HTMLInputElement;
+            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+            const formError = document.getElementById('form-error') as HTMLDivElement;
+
+            // Habilita el botón de envío una vez que el script se ha cargado.
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+
+            const showError = (input: HTMLInputElement, message: string) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = message;
+                }
+                // Cambia el color del borde del input a rojo
+                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
+                input.classList.add('outline-red-500', 'focus:outline-red-500');
+            }
+
+            const clearError = (input: HTMLInputElement) => {
+                const errorContainer = document.getElementById(`${input.id}-error-container`);
+                if (errorContainer) {
+                    errorContainer.textContent = '';
+                }
+                // Restaura el color del borde del input
+                input.classList.remove('outline-red-500', 'focus:outline-red-500');
+                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                // Limpia errores previos
+                clearError(nameInput);
+                clearError(lastnameInput);
+                clearError(birthdayInput);
+                clearError(emailInput);
+                clearError(phoneInput);
+                if (formError) {
+                    formError.textContent = '';
+                }
+
+                const name = nameInput.value;
+                const lastname = lastnameInput.value;
+                const birthday = birthdayInput.value;
+                const email = emailInput.value;
+                const phone = phoneInput.value;
+
+                let isValid = true;
+
+                // Validaciones
+                if (!name) {
+                    showError(nameInput, 'El nombre es obligatorio');
+                    isValid = false;
+                } else if (name.length < 3) {
+                    showError(nameInput, 'El nombre debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
+                
+                if (!lastname) {
+                    showError(lastnameInput, 'El apellido es obligatorio');
+                    isValid = false;
+                } else if (lastname.length < 3) {
+                    showError(lastnameInput, 'El apellido debe tener al menos 3 caracteres');
+                    isValid = false;
+                }
+
+                if (!birthday) {
+                    showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
+                    isValid = false;
+                }
+
+                if (!email) {
+                    showError(emailInput, 'El correo es obligatorio');
+                    isValid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError(emailInput, 'Por favor, introduce un correo válido');
+                    isValid = false;
+                }
+
+                if (!phone) {
+                    showError(phoneInput, 'El teléfono es obligatoria');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    submitButton.disabled = true;
+
+                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), form.dataset.roleId!);
+
+                    submitButton.textContent = 'Actualizando perfil...';
+
+                    try {
+                        const response = await updateMyProfile(resource);
+                        if (response.success) {
+                            window.location.href = '/app/home';
+                        } else {
+                            formError.textContent = response.errorMessage ?? 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
+                        }
+                    } catch (error) {
+                        console.error('Error al actualizar perfil:', error);
+                        formError.textContent = 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Guardar cambios';
+                    }
+                }
+            });
+        }
+
+        // --- Lógica para el botón de eliminar ---
+        const openDialogButton = document.getElementById('open-delete-dialog-button');
+        // Dialog in delete-pet-dialog.component.astro
+        const dialog = document.getElementById('delete-dialog');
+        const toggleDialog = (show: boolean) => {
+            dialog?.classList.toggle('hidden', !show);
+        }
+
+        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+    }
+
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
+    document.addEventListener('astro:page-load', initializePageScripts);
+
+</script>

@@ -17,6 +17,7 @@ export class RolesRepository {
         const rolData = snapshot.val();
 
         const resource = RoleResource.fromModel(rolData);
+        resource.id = roleId;
         return resource;
     }
 }

@@ -72,7 +72,6 @@ const profileInputs = [
 
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
-    // import { updateProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
 
     function initializePageScripts() {
@@ -117,7 +116,7 @@ const profileInputs = [
 
             // form.addEventListener('submit', async (event) => {
             submitButton.addEventListener('click', async (event) => {
-                console.log('clicked')
+                // console.log('clicked')
                 event.preventDefault();
 
                 // Limpia errores previos
@@ -176,7 +175,7 @@ const profileInputs = [
                 if (isValid) {
                     submitButton.disabled = true;
                     
-                    const resource = new SaveProfileResource(name, lastname, form.dataset.ownerRoleId!, phone, new Date(birthday));
+                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), form.dataset.ownerRoleId!);
 
                     if (isNewOwner) {
                         submitButton.textContent = 'Agregando dueño...';

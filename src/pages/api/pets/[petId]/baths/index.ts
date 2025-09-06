@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-        console.log(error)
+        // console.log(error)
         return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
     }
 };

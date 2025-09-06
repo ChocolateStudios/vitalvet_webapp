@@ -2,20 +2,21 @@ import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/r
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
-export async function createProfile(body: any, userId?: string): Promise<UsecaseResult<any>> {
+export async function createMyProfile(resource: SaveProfileResource, userId?: string): Promise<UsecaseResult<any>> {
     if (!userId) {
         throw new Error('No se encontró user Id.');
     }
 
-    const saveResource = new SaveProfileResource(
-        body.name,
-        body.lastname,
-        body.roleId,
-        body.phone,
-        new Date(body.birthday)
-    );
+    const newProfile = await ProfilesRepository.createMyProfile(userId, resource);
 
-    const newProfile = await ProfilesRepository.createProfile(userId, saveResource);
+    return {
+        data: newProfile,
+        success: true,
+    };
+}
+
+export async function createProfile(resource: SaveProfileResource): Promise<UsecaseResult<any>> {
+    const newProfile = await ProfilesRepository.createProfile(resource);
 
     return {
         data: newProfile,
