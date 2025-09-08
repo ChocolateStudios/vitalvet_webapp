@@ -32,7 +32,7 @@ export async function updateMyProfile(saveResource: SaveProfileResource): Promis
     }
 }
 
-export async function updateProfile(saveResource: SaveProfileResource, profileId?: string): Promise<UsecaseResult<any>> {
+export async function updateProfile(saveResource: SaveProfileResource, profileId: string): Promise<UsecaseResult<any>> {
     try {
         const response = await fetch(`/api/profiles/${profileId}`, {
             method: 'PUT',

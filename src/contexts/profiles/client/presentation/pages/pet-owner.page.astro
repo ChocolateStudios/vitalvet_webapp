@@ -226,7 +226,7 @@ const profileInputs = [
                         submitButton.textContent = 'Actualizando dueño...';
 
                         try {
-                            const response = await updateProfile(resource);
+                            const response = await updateProfile(resource, form.dataset.ownerId!);
                             if (response.success) {
                                 window.location.href = '/app/owners';
                             } else {

@@ -7,6 +7,7 @@ export class ProfileResource extends AuditableModel {
     public email: string = "";
     public phone: string = "";
     public birthday: Date = new Date();
+    public petsCount: number = 0;
     public userId: string = "";
     public roleId: string = "";
     public roleName: string = "";
@@ -24,6 +25,7 @@ export class ProfileResource extends AuditableModel {
         resource.email = model.email;
         resource.phone = model.phone;
         resource.birthday = model.birthday;
+        resource.petsCount = 0;
         resource.userId = model.userId;
         resource.roleId = model.roleId;
         resource.createdAt = model.createdAt;

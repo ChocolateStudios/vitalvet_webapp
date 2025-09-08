@@ -196,11 +196,11 @@ const detailInputs = [
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {
                 detailInputs.map(input => {
-                    if (input.type === 'switch') {
-                        return <BaseSwitch {...input} />;
-                    } else if (input.type === 'combobox') {
-                        return <BaseCombobox {...input as ComboboxProps} />;
-                    }
+                    // if (input.type === 'switch') {
+                    //     return <BaseSwitch {...input} />;
+                    // } else if (input.type === 'combobox') {
+                    //     return <BaseCombobox {...input as ComboboxProps} />;
+                    // }
                     return <BaseTextInput {...input} />;
                 })
             }

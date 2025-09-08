@@ -1,9 +1,10 @@
-import { get, push, ref, remove, set, update } from "firebase/database";
+import { get, push, ref, remove, runTransaction, set, update } from "firebase/database";
 import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import type { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
 import { db } from "@/firebase/client";
 import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
+import { PROFILES_PATH } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 
 export const PETS_PATH = 'pets';
 
@@ -33,6 +34,12 @@ export class PetsRepository {
         };
 
         await set(newPetRef, dataToSave);
+        
+        // Incrementa el contador de mascotas para el dueño usando una transacción
+        const ownerCounterRef = ref(db, `${PROFILES_PATH}/${data.ownerProfileId}/petsCount`);
+        await runTransaction(ownerCounterRef, (currentCount) => {
+            return (currentCount || 0) + 1;
+        });
 
         return PetResource.fromModel(newPet);
     }
@@ -51,13 +58,36 @@ export class PetsRepository {
         
         await update(petRef, dataToUpdate);
 
+        // TODO: validar que sea el mismo owner, sino DECREMENTA el contador de mascotas para el dueño usando una transacción
+        // const ownerCounterRef = ref(db, `${PROFILES_PATH}/${data.ownerProfileId}/petsCount`);
+        // await runTransaction(ownerCounterRef, (currentCount) => {
+        //     return (currentCount || 0) + 1;
+        // });
+
         return this.getPet(petId);
     }
 
     static async deletePet(petId: string): Promise<PetResource> {
         const petToDelete = await this.getPet(petId); // Obtenemos el objeto antes de borrarlo para poder devolverlo
         const petRef = ref(db, `${PETS_PATH}/${petId}`);
+
+        // get ownerProfileId
+        const snapshot = await get(petRef);
+        if (!snapshot.exists()) {
+            throw new Error(`Mascota no encontrada con el id ${petId}`);
+        }
+
+        const data = snapshot.val();
+        const ownerProfileId = data.ownerProfileId;
+
         await remove(petRef);
+
+        // Decrementa el contador de mascotas para el dueño usando una transacción
+        const ownerCounterRef = ref(db, `${PROFILES_PATH}/${ownerProfileId}/petsCount`);
+        await runTransaction(ownerCounterRef, (currentCount) => {
+            return (currentCount || 0) > 0 ? currentCount - 1 : 0;
+        });
+
         return petToDelete;
     }
 

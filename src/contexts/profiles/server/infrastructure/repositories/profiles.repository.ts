@@ -4,7 +4,7 @@ import { equalTo, get, orderByChild, push, query, ref, set, update } from "fireb
 import type { Profile } from "@/contexts/profiles/server/models/profile.model";
 import type { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
 
-const PROFILES_PATH = 'profiles';
+export const PROFILES_PATH = 'profiles';
 
 export class ProfilesRepository {
     
@@ -24,6 +24,7 @@ export class ProfilesRepository {
         const dataToSave = {
             ...saveResource,
             userId,
+            petsCount: 0,
             birthday: newProfile.birthday.toISOString(),
             createdAt: newProfile.createdAt.toISOString(),
             updatedAt: newProfile.updatedAt.toISOString(),
@@ -49,6 +50,7 @@ export class ProfilesRepository {
         const dataToSave = {
             ...saveResource,
             userId: 'undefined',
+            petsCount: 0,
             birthday: newProfile.birthday.toISOString(),
             createdAt: newProfile.createdAt.toISOString(),
             updatedAt: newProfile.updatedAt.toISOString(),
@@ -214,7 +216,9 @@ export class ProfilesRepository {
                 createdAt: new Date(profileData.createdAt),
                 updatedAt: new Date(profileData.updatedAt),
             };
-            return ProfileResource.fromModel(profileModel);
+            const resource = ProfileResource.fromModel(profileModel);
+            resource.petsCount = profileData.petsCount ?? 0;
+            return resource;
         });
     }
 }
