@@ -1,5 +1,5 @@
 ---
-import type { EventListItemInfo } from "../../../../../usecases/getall-events.usecase";
+import type { EventListItemInfo } from "@/contexts/calendar/server/application/usecases/getall-events.usecase";
 
 const { data } = Astro.props;
 const { selectedDate, events } = data;
@@ -19,7 +19,7 @@ const threeDays = Array.from({ length: 3 }, (_, i) => {
     };
 });
 
-const timeSlots = Array.from({ length: 13 }, (_, i) => `${i + 8}:00`); // 8am to 8pm
+const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00`);
 ---
 
 <div class="border rounded-lg">
