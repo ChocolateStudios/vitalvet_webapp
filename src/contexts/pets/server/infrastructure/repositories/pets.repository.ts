@@ -137,4 +137,19 @@ export class PetsRepository {
             return resource;
         });
     }
+
+    static async getAllPetsByIds(petIds: string[]): Promise<PetResource[]> {
+        const settledPromises = await Promise.allSettled(
+            petIds.map(id => this.getPet(id))
+        );
+
+        return settledPromises
+            .filter(result => {
+                if (result.status === 'rejected') {
+                    console.warn(`Could not get pet:`, result.reason);
+                }
+                return result.status === 'fulfilled';
+            })
+            .map(result => (result as PromiseFulfilledResult<PetResource>).value);
+    }
 }

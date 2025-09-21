@@ -1,0 +1,18 @@
+---
+import MiniMonthView from "../shared/mini-month-view.astro";
+
+const { data } = Astro.props;
+const { selectedDate } = data;
+
+const year = selectedDate.getFullYear();
+const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+---
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    {monthNames.map((monthName, index) => (
+        <div class="border rounded-lg p-2">
+            <h3 class="text-center font-semibold text-sm mb-2">{monthName}</h3>
+            <MiniMonthView year={year} month={index} />
+        </div>
+    ))}
+</div>

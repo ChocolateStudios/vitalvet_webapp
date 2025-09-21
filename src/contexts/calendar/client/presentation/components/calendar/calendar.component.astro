@@ -1,0 +1,73 @@
+---
+import CalendarHeader from "@/contexts/calendar/client/presentation/components/calendar/shared/calendar-header.astro";
+import ViewSwitcher from "@/contexts/calendar/client/presentation/components/calendar/shared/view-switcher.astro";
+import MonthView from "@/contexts/calendar/client/presentation/components/calendar/views/month-view.astro";
+import DayView from "@/contexts/calendar/client/presentation/components/calendar/views/day-view.astro";
+import WeekView from "@/contexts/calendar/client/presentation/components/calendar/views/week-view.astro";
+import YearView from "@/contexts/calendar/client/presentation/components/calendar/views/year-view.astro";
+import ThreeDaysView from "@/contexts/calendar/client/presentation/components/calendar/views/three-days-view.astro";
+
+const { data } = Astro.props;
+---
+
+<div id="calendar-wrapper" class="bg-white p-6 rounded-lg shadow-lg flex flex-col h-full">
+    <div class="flex justify-between items-center mb-4">
+        <CalendarHeader {data} />
+        <ViewSwitcher />
+    </div>
+
+    <!-- Vistas del Calendario -->
+    <div id="calendar-views">
+        <div id="month-view" class="hidden">
+            <MonthView {data} />
+        </div>
+        <div id="year-view" class="hidden">
+            <YearView {data} />
+        </div>
+        <div id="week-view" class="hidden">
+            <WeekView {data} />
+        </div>
+        <div id="three-days-view" class="hidden">
+            <ThreeDaysView {data} />
+        </div>
+        <div id="day-view" class="hidden">
+            <DayView {data} />
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const calendarWrapper = document.getElementById('calendar-wrapper');
+        if (!calendarWrapper || calendarWrapper.dataset.initialized) return;
+        calendarWrapper.dataset.initialized = 'true';
+
+        const views: { [key: string]: HTMLElement | null } = {
+            month: document.getElementById('month-view'),
+            year: document.getElementById('year-view'),
+            week: document.getElementById('week-view'),
+            threeDays: document.getElementById('three-days-view'),
+            day: document.getElementById('day-view'),
+        };
+
+        function switchView(viewName: string) {
+            // Ocultar todas las vistas
+            Object.values(views).forEach(view => view?.classList.add('hidden'));
+            // Mostrar la vista seleccionada
+            if (views[viewName]) {
+                views[viewName]?.classList.remove('hidden');
+            }
+        }
+
+        // 1. Establecer la vista inicial al cargar la página
+        const initialView = localStorage.getItem('calendar_view') || 'week';
+        switchView(initialView);
+
+        // 2. Escuchar cambios de vista desde el combobox
+        calendarWrapper.addEventListener('view-change', ((event: CustomEvent) => {
+            if (event.detail && event.detail.view) {
+                switchView(event.detail.view);
+            }
+        }) as EventListener);
+    });
+</script>

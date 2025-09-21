@@ -19,21 +19,22 @@ export interface Props {
   class?: string;
   visible?: boolean;
   readonly?: boolean;
+  editable?: boolean; // Nuevo parámetro
 }
 
 const {
   id,
-  name, // Usado para el input oculto que guarda el valor real (ID)
+  name,
   label,
-  options = [], // Espera un array de objetos: [{ id, name }]
+  options = [],
   actions = [],
-  value = "", // El ID de la opción seleccionada inicialmente
+  value = "",
   class: className = "",
   visible = true,
   readonly = false,
+  editable = true, // Valor por defecto
 } = Astro.props as Props;
 
-// Busca el nombre a mostrar a partir del ID inicial proporcionado
 const selectedOption = options.find((opt) => String(opt.id) === String(value));
 const initialDisplayName = selectedOption ? selectedOption.name : "";
 ---
@@ -45,11 +46,10 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     { hidden: !visible },
   ]}
   data-options={JSON.stringify(options)}
+  data-editable={editable}
 >
-  <!-- Input oculto que almacena el valor real (ID) para el formulario -->
   <input type="hidden" {name} id={`${id}-value`} value={value} />
 
-  <!-- Input visible para la interacción del usuario -->
   <input
     type="text"
     role="combobox"
@@ -65,10 +65,10 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       "focus:outline-none focus:ring-0 focus:border-2",
       { "bg-gray-100 focus:border-gray-300 cursor-not-allowed": readonly },
       { "bg-white focus:border-[#6faab5]": !readonly },
+      { "caret-transparent": !editable },
     ]}
   />
 
-  <!-- Etiqueta flotante -->
   <label
     for={id}
     class:list={[
@@ -78,13 +78,12 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       "peer-not-placeholder-shown:-translate-y-3 peer-not-placeholder-shown:scale-75",
       "peer-autofill:-translate-y-3 peer-autofill:scale-75",
       { "peer-focus:text-[#6faab5]": !readonly },
-      { "-translate-y-3 scale-75": initialDisplayName }, // Asegura que la etiqueta esté arriba si hay valor inicial
+      { "-translate-y-3 scale-75": initialDisplayName },
     ]}
   >
     {label}
   </label>
 
-  <!-- Icono de flecha para abrir/cerrar -->
   <div
     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500"
   >
@@ -101,21 +100,17 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     </svg>
   </div>
 
-  <!-- Contenedor del desplegable (lista + acciones) -->
   <div
     id={`${id}-listbox-wrapper`}
     class="absolute z-20 mt-1 w-full rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
   >
-    <!-- Lista de opciones scrolleable -->
     <ul
       id={`${id}-listbox`}
       role="listbox"
       class="max-h-60 w-full overflow-auto py-1 sm:text-sm"
     >
-      <!-- Las opciones se renderizarán aquí con JS -->
     </ul>
 
-    <!-- Acciones fijas en la parte inferior -->
     {actions.length > 0 && (
       <div class="border-t border-gray-200 p-1">
         {actions.map(action => (
@@ -130,13 +125,10 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     )}
   </div>
 
-  <!-- Contenedor de errores -->
   <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4"></div>
 </div>
 
 <script>
-  // Declara una propiedad global para almacenar las instancias de los combobox
-  // y evitar errores de TypeScript.
   declare global {
     interface Window {
       comboboxInstances: { [key: string]: Combobox };
@@ -156,7 +148,8 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     hiddenInput: HTMLInputElement | null;
     listbox: HTMLUListElement | null;
     options: Option[];
-    isReadonly: boolean | undefined;
+    isReadonly: boolean;
+    isEditable: boolean;
     filteredOptions: Option[];
     highlightedIndex: number;
     isOpen: boolean;
@@ -168,14 +161,14 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       this.hiddenInput = container.querySelector('input[type="hidden"]');
       this.listbox = container.querySelector('ul[role="listbox"]');
       this.options = JSON.parse(container.dataset.options || "[]");
-      this.isReadonly = this.input?.hasAttribute("readonly");
+      this.isReadonly = this.input?.hasAttribute("readonly") || false;
+      this.isEditable = container.dataset.editable === 'true';
 
       this.filteredOptions = [];
       this.highlightedIndex = -1;
       this.isOpen = false;
 
       this.addEventListeners();
-      // Almacena la instancia en el objeto global para poder acceder a ella desde fuera
       if (this.input) {
         window.comboboxInstances[this.input.id] = this;
       }
@@ -193,7 +186,7 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     }
 
     filterOptions(query: string) {
-      if (!query) {
+      if (!this.isEditable || !query) {
         this.filteredOptions = this.options;
       } else {
         this.filteredOptions = this.options.filter((option) =>
@@ -220,7 +213,6 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
           li.className =
             "relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-[#6faab5] hover:text-white";
           li.addEventListener("mousedown", (e) => {
-            // Mousedown para que se dispare antes del blur
             e.preventDefault();
             this.selectOption(option);
           });
@@ -241,20 +233,14 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     addOptionAndSelect(newOption: any) {
         if (!this.input || !this.hiddenInput) return;
 
-        // Verifica si la opción ya existe por ID para no duplicarla
         const exists = this.options.some(opt => String(opt.id) === String(newOption.id));
         if (!exists) {
             this.options.push(newOption);
         }
 
-        // Actualiza los inputs visible y oculto con el nuevo valor
         this.input.value = newOption.name;
         this.hiddenInput.value = newOption.id.toString();
-
-        // Dispara un evento de cambio en el input oculto por si otros scripts dependen de él
         this.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-        // Cierra el desplegable si estaba abierto
         this.close();
     }
 
@@ -276,12 +262,17 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     }
 
     onInput() {
+      if (!this.isEditable) return;
       if (!this.input) return;
       this.filterOptions(this.input.value);
       this.open();
     }
 
     onKeydown(e: KeyboardEvent) {
+      if (!this.isEditable && e.key.length === 1) {
+        e.preventDefault();
+      }
+
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
@@ -314,7 +305,6 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
       if (!this.input) return;
       if (!this.container.contains(e.relatedTarget as Node)) {
         this.close();
-        // Si el texto no coincide con una opción, limpiar
         if (!this.input || !this.listbox || !this.hiddenInput) return;
 
         const currentOption = this.options.find(
@@ -351,7 +341,6 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     document.querySelectorAll(".combobox-container").forEach((container) => {
       const htmlContainer = container as HTMLElement;
 
-      // Para evitar doble inicialización con Astro View Transitions
       if (!htmlContainer.dataset.initialized) {
         htmlContainer.dataset.initialized = "true";
         new Combobox(htmlContainer);

@@ -1,0 +1,75 @@
+---
+import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
+
+const viewOptions = [
+  { id: 'day', name: 'Día' },
+  { id: 'threeDays', name: '3 días' },
+  { id: 'week', name: 'Semana' },
+  { id: 'month', name: 'Mes' },
+  { id: 'year', name: 'Año' },
+];
+---
+
+<div id="view-switcher-wrapper" class="w-48">
+    <BaseCombobox
+        id="calendar-view-switcher"
+        name="calendar_view"
+        label="Vista"
+        options={viewOptions}
+        editable={false}
+    />
+</div>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const wrapper = document.getElementById('view-switcher-wrapper');
+        if (!wrapper || wrapper.dataset.initialized) return;
+        wrapper.dataset.initialized = 'true';
+
+        const combobox = wrapper.querySelector('.combobox-container');
+        const hiddenInput = combobox?.querySelector('input[type="hidden"]') as HTMLInputElement | null;
+        const comboboxInstance = window.comboboxInstances?.['calendar-view-switcher'];
+
+        if (!hiddenInput || !comboboxInstance) return;
+
+        // 1. Establecer el valor inicial desde localStorage o por defecto
+        const savedView = localStorage.getItem('calendar_view') || 'week';
+        const initialOption = viewOptions.find(opt => opt.id === savedView);
+        if (initialOption) {
+            // Usamos el método de la instancia para seleccionar la opción inicial
+            // Esto asegura que tanto el input visible como el oculto se actualicen
+            comboboxInstance.addOptionAndSelect(initialOption);
+        }
+
+        // 2. Escuchar cambios y actuar
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    const newView = hiddenInput.value;
+                    
+                    // Guardar en localStorage
+                    localStorage.setItem('calendar_view', newView);
+
+                    // Despachar evento para que el componente padre reaccione
+                    const event = new CustomEvent('view-change', { 
+                        bubbles: true, // Permitir que el evento suba por el DOM
+                        composed: true, // Permitir que cruce los límites del Shadow DOM (si aplica)
+                        detail: { view: newView }
+                    });
+                    wrapper.dispatchEvent(event);
+                }
+            }
+        });
+
+        observer.observe(hiddenInput, { attributes: true });
+    });
+
+    // Definir el tipo de las opciones de vista para el script
+    const viewOptions = [
+      { id: 'day', name: 'Día' },
+      { id: 'threeDays', name: '3 días' },
+      { id: 'week', name: 'Semana' },
+      { id: 'month', name: 'Mes' },
+      { id: 'year', name: 'Año' },
+    ];
+</script>

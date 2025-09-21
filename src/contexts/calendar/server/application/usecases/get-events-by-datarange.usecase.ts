@@ -13,14 +13,21 @@ export interface EventListItemInfo {
     petName: string;
 }
 
-export async function getAllEvents(): Promise<UsecaseResult<EventListItemInfo[]>> {
-    const events = await EventsRepository.getAll();
+export async function getEventsByDateRange(startDate: Date, endDate: Date): Promise<UsecaseResult<EventListItemInfo[]>> {
+    const events = await EventsRepository.getAllByDateRange(startDate, endDate);
+
+    if (events.length === 0) {
+        return {
+            data: [],
+            success: true,
+        };
+    }
 
     const uniqueDoctorProfileIds = [...new Set(events.map(event => event.doctorProfileId as string))];
     const uniquePetIds = [...new Set(events.map(event => event.petId as string))];
 
     const doctors = await ProfilesRepository.getAllProfilesByIds(uniqueDoctorProfileIds);
-    const pets = await PetsRepository.getAllPetsByIds(uniquePetIds); // Assuming there is no getAllPetsByIds, so fetching all and filtering locally
+    const pets = await PetsRepository.getAllPetsByIds(uniquePetIds);
     
     const eventsInfo = events.map((event: EventResource) => {
         const doctor = doctors.find(doc => doc.id === event.doctorProfileId);

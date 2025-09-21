@@ -1,0 +1,50 @@
+---
+const { year, month } = Astro.props; // month is 0-indexed
+
+interface CalendarDay {
+    day: number,
+    isCurrentMonth: boolean,
+};
+
+const weekStartDay = 1; // Lunes
+const daysOfWeekNames = ["L", "M", "X", "J", "V", "S", "D"]; // Nombres cortos
+
+const firstDayOfMonth = new Date(year, month, 1);
+const daysInMonth = new Date(year, month + 1, 0).getDate();
+const startDayOfWeek = (firstDayOfMonth.getDay() - weekStartDay + 7) % 7;
+
+const calendarDays: CalendarDay[] = [];
+
+// Días del mes anterior
+const daysInPrevMonth = new Date(year, month, 0).getDate();
+for (let i = startDayOfWeek; i > 0; i--) {
+    calendarDays.push({ day: daysInPrevMonth - i + 1, isCurrentMonth: false });
+}
+
+// Días del mes actual
+for (let i = 1; i <= daysInMonth; i++) {
+    calendarDays.push({ day: i, isCurrentMonth: true });
+}
+
+// Días del mes siguiente
+const gridCells = 42; // 6x7
+const remainingCells = gridCells - calendarDays.length;
+for (let i = 1; i <= remainingCells; i++) {
+    calendarDays.push({ day: i, isCurrentMonth: false });
+}
+---
+
+<div class="grid grid-cols-7 gap-1 text-center text-xs">
+    <!-- Encabezados de día -->
+    {daysOfWeekNames.map(day => <div class="font-semibold text-gray-500">{day}</div>)}
+
+    <!-- Días -->
+    {calendarDays.map(dayInfo => (
+        <div class:list={[
+            "flex items-center justify-center h-6 w-6 rounded-full",
+            dayInfo.isCurrentMonth ? 'text-gray-700' : 'text-gray-300',
+        ]}>
+            {dayInfo.day}
+        </div>
+    ))}
+</div>
