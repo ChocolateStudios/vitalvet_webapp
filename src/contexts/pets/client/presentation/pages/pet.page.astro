@@ -2,7 +2,8 @@
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 // import BaseSwitch from "@/contexts/_shared/client/presentation/components/base-switch.component.astro";
 import DeletePetDialog from "@/contexts/pets/client/presentation/components/delete-pet-dialog.component.astro";
 import EditIcon from "@/contexts/_shared/client/presentation/components/icons/EditIcon.astro";
@@ -187,7 +188,7 @@ const detailInputs = [
                     <EditIcon />
                 </button>
             </div>
-            <BaseTextInput {...profileInput} class="w-full" />
+            <DynamicInput {...profileInput} class="w-full" />
         </div>
 
         <!-- Card de Detalles (Derecha) -->
@@ -201,7 +202,7 @@ const detailInputs = [
                     // } else if (input.type === 'combobox') {
                     //     return <BaseCombobox {...input as ComboboxProps} />;
                     // }
-                    return <BaseTextInput {...input} />;
+                    return <DynamicInput {...input} />;
                 })
             }
             </div>

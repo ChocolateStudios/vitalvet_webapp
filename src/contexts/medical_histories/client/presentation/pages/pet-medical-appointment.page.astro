@@ -1,9 +1,10 @@
 ---
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
-import BaseTextArea from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
-import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+// import BaseTextArea from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
+// import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
 import DeletePetMedicalAppointmentDialog from "@/contexts/medical_histories/client/presentation/components/delete-pet-medical-appointment-dialog.component.astro";
 import { getMedicalAppointment, type MedicalAppointmentInfo } from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
@@ -183,7 +184,7 @@ const medicalAppointmentSections = [
                         <div class="flex flex-col w-full">
                         {
                             profileInputs.map(profileInput => 
-                                <BaseTextInput {...profileInput} readonly />
+                                <DynamicInput {...profileInput} readonly />
                             )
                         }
                         </div>
@@ -195,9 +196,9 @@ const medicalAppointmentSections = [
                     {
                         medicalAppointmentInfoInputs.map(infoInput => 
                             (infoInput.type === "combobox") ? 
-                                <BaseCombobox {...infoInput} />
+                                <DynamicInput {...infoInput} />
                                 :
-                                <BaseTextInput {...infoInput} />
+                                <DynamicInput {...infoInput} />
                         )
                     }
                     </div>
@@ -215,12 +216,12 @@ const medicalAppointmentSections = [
                                         <div class="flex gap-4">
                                         {
                                             child.map(input => 
-                                                <BaseTextInput {...input} />
+                                                <DynamicInput {...input} />
                                             )
                                         }
                                         </div>
                                         : 
-                                        <BaseTextArea {...child} />
+                                        <DynamicInput {...child} />
                                 )
                             }
                             </div>

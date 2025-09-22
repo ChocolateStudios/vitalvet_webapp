@@ -1,6 +1,7 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro"
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
 import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
@@ -73,7 +74,7 @@ const profileInputs = [
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
-                    <BaseTextInput {...input} />
+                    <DynamicInput {...input} />
                 )
             }
             <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">

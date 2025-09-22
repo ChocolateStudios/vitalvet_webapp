@@ -1,0 +1,30 @@
+---
+// src/contexts/_shared/client/presentation/components/dynamic-input.astro
+import BaseTextInput from "@/contexts/_shared/client/presentation/components/inputs/simple-text-input.component.astro";
+import TextareaInput from "@/contexts/_shared/client/presentation/components/inputs/textarea-input.component.astro";
+import SwitchInput from "@/contexts/_shared/client/presentation/components/inputs/switch-input.component.astro";
+import ComboboxInput from "@/contexts/_shared/client/presentation/components/inputs/combobox-input.component.astro";
+import type { Props as SimpleTextProps } from "@/contexts/_shared/client/presentation/components/inputs/simple-text-input.component.astro";
+import type { Props as TextareaProps } from "@/contexts/_shared/client/presentation/components/inputs/textarea-input.component.astro";
+import type { Props as SwitchProps } from "@/contexts/_shared/client/presentation/components/inputs/switch-input.component.astro";
+import type { Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/inputs/combobox-input.component.astro";
+
+type ComponentMap = {
+  [key: string]: any; 
+};
+
+export type Props = SimpleTextProps | TextareaProps | SwitchProps | ComboboxProps;
+
+const { type = "text", ...props } = Astro.props as any;
+
+const inputComponents: ComponentMap = {
+  textarea: TextareaInput,
+  switch: SwitchInput,
+  combobox: ComboboxInput,
+};
+
+// Por defecto, usamos BaseTextInput para todos los tipos de input estándar
+const Component = inputComponents[type] || BaseTextInput;
+---
+
+<Component {...props} type={type} />

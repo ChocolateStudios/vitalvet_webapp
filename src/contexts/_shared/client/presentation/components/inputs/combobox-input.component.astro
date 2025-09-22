@@ -1,0 +1,354 @@
+---
+interface Option {
+  id: string | number;
+  name: string;
+}
+
+interface Action {
+  label: string;
+  onClick: string;
+}
+
+export interface Props {
+  id: string;
+  name: string;
+  label: string;
+  options?: Option[];
+  value?: string | number;
+  actions?: Action[];
+  class?: string;
+  visible?: boolean;
+  readonly?: boolean;
+  editable?: boolean; // Nuevo parámetro
+}
+
+const {
+  id,
+  name,
+  label,
+  options = [],
+  actions = [],
+  value = "",
+  class: className = "",
+  visible = true,
+  readonly = false,
+  editable = true, // Valor por defecto
+} = Astro.props as Props;
+
+const selectedOption = options.find((opt) => String(opt.id) === String(value));
+const initialDisplayName = selectedOption ? selectedOption.name : "";
+---
+
+<div
+  class:list={[
+    "combobox-container relative w-full",
+    className,
+    { hidden: !visible },
+  ]}
+  data-options={JSON.stringify(options)}
+  data-editable={editable}
+>
+  <input type="hidden" {name} id={`${id}-value`} value={value} />
+
+  <input
+    type="text"
+    role="combobox"
+    aria-controls={`${id}-listbox`}
+    aria-expanded="false"
+    id={id}
+    value={initialDisplayName}
+    placeholder=""
+    autocomplete="off"
+    readonly={readonly}
+    class:list={[
+      "peer block w-full rounded-md border border-gray-300 px-3.5 pb-2.5 pt-5 text-base text-gray-900 pr-10",
+      "focus:outline-none focus:ring-0 focus:border-2",
+      { "bg-gray-100 focus:border-gray-300 cursor-not-allowed": readonly },
+      { "bg-white focus:border-[#6faab5]": !readonly },
+      { "caret-transparent": !editable },
+    ]}
+  />
+
+  <label
+    for={id}
+    class:list={[
+      "pointer-events-none absolute top-4 left-3.5 z-10 origin-[0] transform text-base text-gray-500 duration-300",
+      "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100",
+      "peer-focus:-translate-y-3 peer-focus:scale-75",
+      "peer-not-placeholder-shown:-translate-y-3 peer-not-placeholder-shown:scale-75",
+      "peer-autofill:-translate-y-3 peer-autofill:scale-75",
+      { "peer-focus:text-[#6faab5]": !readonly },
+      { "-translate-y-3 scale-75": initialDisplayName },
+    ]}
+  >
+    {label}
+  </label>
+
+  <div
+    class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+        clip-rule="evenodd"></path>
+    </svg>
+  </div>
+
+  <div
+    id={`${id}-listbox-wrapper`}
+    class="absolute z-20 mt-1 w-full rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
+  >
+    <ul
+      id={`${id}-listbox`}
+      role="listbox"
+      class="max-h-60 w-full overflow-auto py-1 sm:text-sm"
+    >
+    </ul>
+
+    {actions.length > 0 && (
+      <div class="border-t border-gray-200 p-1">
+        {actions.map(action => (
+          <button
+            type="button"
+            class="relative w-full text-left cursor-pointer select-none rounded-md py-2 px-3 text-sm text-gray-700 hover:bg-[#6faab5] hover:text-white"
+            onclick={action.onClick}
+            set:html={action.label}
+          ></button>
+        ))}
+      </div>
+    )}
+  </div>
+
+  <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4"></div>
+</div>
+
+<script>
+  declare global {
+    interface Window {
+      comboboxInstances: { [key: string]: Combobox };
+    }
+  }
+  window.comboboxInstances = window.comboboxInstances || {};
+
+  interface Option {
+    id: string | number;
+    name: string;
+  }
+
+  class Combobox {
+    container: HTMLElement;
+    input: HTMLInputElement | null;
+    listboxWrapper: HTMLDivElement | null;
+    hiddenInput: HTMLInputElement | null;
+    listbox: HTMLUListElement | null;
+    options: Option[];
+    isReadonly: boolean;
+    isEditable: boolean;
+    filteredOptions: Option[];
+    highlightedIndex: number;
+    isOpen: boolean;
+
+    constructor(container: HTMLElement) {
+      this.container = container;
+      this.input = container.querySelector('input[role="combobox"]');
+      this.listboxWrapper = container.querySelector(`#${this.input?.id}-listbox-wrapper`);
+      this.hiddenInput = container.querySelector('input[type="hidden"]');
+      this.listbox = container.querySelector('ul[role="listbox"]');
+      this.options = JSON.parse(container.dataset.options || "[]");
+      this.isReadonly = this.input?.hasAttribute("readonly") || false;
+      this.isEditable = container.dataset.editable === 'true';
+
+      this.filteredOptions = [];
+      this.highlightedIndex = -1;
+      this.isOpen = false;
+
+      this.addEventListeners();
+      if (this.input) {
+        window.comboboxInstances[this.input.id] = this;
+      }
+    }
+
+    addEventListeners() {
+      if (this.isReadonly) return;
+
+      if (this.input) {
+        this.input.addEventListener("input", () => this.onInput());
+        this.input.addEventListener("click", () => this.toggle());
+        this.input.addEventListener("keydown", (e) => this.onKeydown(e));
+      }
+      this.container.addEventListener("focusout", (e) => this.onBlur(e));
+    }
+
+    filterOptions(query: string) {
+      if (!this.isEditable || !query) {
+        this.filteredOptions = this.options;
+      } else {
+        this.filteredOptions = this.options.filter((option) =>
+          option.name.toLowerCase().includes(query.toLowerCase()),
+        );
+      }
+      this.renderOptions();
+    }
+
+    renderOptions() {
+      if (!this.listbox || !this.input) return;
+
+      this.listbox.innerHTML = "";
+      if (this.filteredOptions.length === 0) {
+        this.listbox.innerHTML = `<li class="px-4 py-2 text-gray-500">No se encontraron resultados</li>`;
+      } else {
+        this.filteredOptions.forEach((option, index) => {
+          const li = document.createElement("li");
+          li.id = `${this.input?.id}-option-${index}`;
+          li.textContent = option.name;
+          li.dataset.value = option.id?.toString();
+          li.setAttribute("role", "option");
+          li.setAttribute("aria-selected", "false");
+          li.className =
+            "relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-[#6faab5] hover:text-white";
+          li.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            this.selectOption(option);
+          });
+          this.listbox?.appendChild(li);
+        });
+      }
+      this.highlightOption(0);
+    }
+
+    selectOption(option: Option) {
+      if (!this.input || !this.hiddenInput) return;
+
+      this.input.value = option.name;
+      this.hiddenInput.value = option.id.toString();
+      this.close();
+    }
+
+    addOptionAndSelect(newOption: any) {
+        if (!this.input || !this.hiddenInput) return;
+
+        const exists = this.options.some(opt => String(opt.id) === String(newOption.id));
+        if (!exists) {
+            this.options.push(newOption);
+        }
+
+        this.input.value = newOption.name;
+        this.hiddenInput.value = newOption.id.toString();
+        this.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        this.close();
+    }
+
+    highlightOption(index: number) {
+      if (!this.listbox || !this.input) return;
+
+      this.listbox.querySelectorAll('li[role="option"]').forEach((li, i) => {
+        if (i === index) {
+          li.classList.add("bg-[#6faab5]", "text-white");
+          li.setAttribute("aria-selected", "true");
+          this.input?.setAttribute("aria-activedescendant", li.id);
+          li.scrollIntoView({ block: "nearest" });
+        } else {
+          li.classList.remove("bg-[#6faab5]", "text-white");
+          li.setAttribute("aria-selected", "false");
+        }
+      });
+      this.highlightedIndex = index;
+    }
+
+    onInput() {
+      if (!this.isEditable) return;
+      if (!this.input) return;
+      this.filterOptions(this.input.value);
+      this.open();
+    }
+
+    onKeydown(e: KeyboardEvent) {
+      if (!this.isEditable && e.key.length === 1) {
+        e.preventDefault();
+      }
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          if (!this.isOpen) this.open();
+          this.highlightOption(
+            (this.highlightedIndex + 1) % this.filteredOptions.length,
+          );
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          if (!this.isOpen) this.open();
+          this.highlightOption(
+            (this.highlightedIndex - 1 + this.filteredOptions.length) %
+              this.filteredOptions.length,
+          );
+          break;
+        case "Enter":
+          e.preventDefault();
+          if (this.isOpen && this.highlightedIndex >= 0) {
+            this.selectOption(this.filteredOptions[this.highlightedIndex]);
+          }
+          break;
+        case "Escape":
+          this.close();
+          break;
+      }
+    }
+
+    onBlur(e: FocusEvent) {
+      if (!this.input) return;
+      if (!this.container.contains(e.relatedTarget as Node)) {
+        this.close();
+        if (!this.input || !this.listbox || !this.hiddenInput) return;
+
+        const currentOption = this.options.find(
+          (opt) => opt.name === this.input?.value,
+        );
+        if (!currentOption) {
+          this.input.value = "";
+          this.hiddenInput.value = "";
+        }
+      }
+    }
+
+    toggle() {
+      this.isOpen ? this.close() : this.open();
+    }
+    open() {
+      if (!this.input || !this.listboxWrapper) return;
+      this.filterOptions(this.input.value);
+      this.listboxWrapper.classList.remove("hidden");
+      this.input.setAttribute("aria-expanded", "true");
+      this.isOpen = true;
+    }
+    close() {
+      if (!this.input || !this.listboxWrapper) return;
+      this.listboxWrapper.classList.add("hidden");
+      this.input.setAttribute("aria-expanded", "false");
+      this.input.removeAttribute("aria-activedescendant");
+      this.highlightedIndex = -1;
+      this.isOpen = false;
+    }
+  }
+
+  function initializeComboboxes() {
+    document.querySelectorAll(".combobox-container").forEach((container) => {
+      const htmlContainer = container as HTMLElement;
+
+      if (!htmlContainer.dataset.initialized) {
+        htmlContainer.dataset.initialized = "true";
+        new Combobox(htmlContainer);
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    initializeComboboxes();
+  });
+</script>

@@ -1,6 +1,7 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 import { getEvent, type EventInfo } from "@/contexts/calendar/server/application/usecases/get-event.usecase";
 import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-pets.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
@@ -96,7 +97,7 @@ const detailInputs = [
 
     <form id="event-form" class="bg-white rounded-xl shadow-lg p-8" data-event-id={event?.id} novalidate>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-            {detailInputs.map(input => <BaseTextInput {...input} />)}
+            {detailInputs.map(input => <DynamicInput {...input} />)}
         </div>
 
         <div id="form-error" class="mt-4 text-red-600"></div>

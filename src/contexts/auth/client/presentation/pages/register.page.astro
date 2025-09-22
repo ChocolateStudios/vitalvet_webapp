@@ -1,7 +1,10 @@
 ---
 import AuthContainer from "@/contexts/auth/client/presentation/components/auth-container.component.astro"
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
 import DogCat from "@/assets/dogcat.png"
+
+const veterinarianRoleId = import.meta.env.VETERINARIAN_ROLE_ID;
 
 const inputFields = [
     {
@@ -49,19 +52,19 @@ const inputFields = [
     <div class="flex flex-col z-20 m-12 gap-6 p-8 sm:p-12 w-full max-w-lg">
         <h1 class="font-bold text-3xl">Registro</h1>
         <p class="text-base text-slate-600">¿Ya tienes cuenta? <a href="/app/login" class="text-[#6faab5] hover:text-[#5f9ea8] font-bold">Inicia sesión</a></p>
-        <form id="register-form" class="flex flex-col w-full gap-5" novalidate>
+        <form id="register-form" class="flex flex-col w-full gap-5" novalidate data-veterinarian-role-id={veterinarianRoleId}>
             {
                 inputFields.map((inputField) => 
                 inputField.asRow ? 
                     <div class="flex flex-row gap-5">
                         {
                             inputField.children.map((child) => 
-                                <BaseTextInput {...child} class="w-full flex-1" />
+                                <DynamicInput {...child} class="w-full flex-1" />
                             )
                         }
                     </div> 
                     : 
-                    <BaseTextInput {...inputField} class="w-full" />
+                    <DynamicInput {...inputField} class="w-full" />
                 )
             }
             <div id="form-error" class="text-red-600 text-sm font-semibold"></div>
@@ -152,7 +155,7 @@ const inputFields = [
                     submitButton.disabled = true;
                     submitButton.textContent = 'Registrando...';
 
-                    const saveProfileResource = new SaveProfileResource(name, lastname, '1', '+51 999 999 999', new Date());
+                    const saveProfileResource = new SaveProfileResource(name, lastname, email, '+51 999 999 999', new Date(), form.dataset.veterinarianRoleId!);
 
                     try {
                         const userResponse = await registerUser(new SaveUserResource(email, password));

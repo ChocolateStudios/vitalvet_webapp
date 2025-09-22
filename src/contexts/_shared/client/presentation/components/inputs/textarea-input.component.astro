@@ -1,0 +1,59 @@
+---
+export interface Props {
+  id: string;
+  name: string;
+  label: string;
+  value?: any;
+  error?: string;
+  class?: string;
+  visible?: boolean;
+  readonly?: boolean;
+  rows?: number;
+}
+
+const {
+  id,
+  name,
+  label,
+  value,
+  error,
+  class: className,
+  visible = true,
+  readonly = false,
+  rows = 3,
+} = Astro.props as Props;
+---
+
+<div class:list={["relative w-full group", className, { hidden: !visible }]}>
+  <textarea
+    {id}
+    {name}
+    {rows}
+    {readonly}
+    placeholder=" "
+    class:list={[
+      "peer block w-full rounded-md border border-gray-300 px-3.5 pb-2.5 pt-5 text-base text-gray-900",
+      "focus:outline-none focus:ring-0 focus:border-2",
+      { "bg-gray-100 focus:border-gray-300 cursor-not-allowed": readonly },
+      { "bg-white focus:border-[#6faab5]": !readonly },
+      { "border-red-600 focus:border-red-600": error },
+    ]}
+  >{value}</textarea>
+  <label
+    for={id}
+    class:list={[
+      "pointer-events-none absolute top-4 left-3.5 z-10 origin-[0] transform text-base text-gray-500 duration-300",
+      "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100",
+      "peer-focus:-translate-y-3 peer-focus:scale-75",
+      "peer-not-placeholder-shown:-translate-y-3 peer-not-placeholder-shown:scale-75",
+      "peer-autofill:-translate-y-3 peer-autofill:scale-75",
+      { "peer-focus:text-[#6faab5]": !readonly },
+      { "text-red-600 peer-focus:text-red-600": error },
+    ]}
+  >
+    {label}
+  </label>
+  <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4">
+    {error}
+  </div>
+</div>

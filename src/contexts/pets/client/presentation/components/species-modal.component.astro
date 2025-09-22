@@ -1,6 +1,7 @@
 ---
 import BaseModal from "@/contexts/_shared/client/presentation/components/base-modal.component.astro";
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 
 const profileInputs = [
     {
@@ -16,7 +17,7 @@ const profileInputs = [
     <form slot="body" id="species-form" novalidate>
         {
             profileInputs.map(input => 
-                <BaseTextInput {...input} />
+                <DynamicInput {...input} />
             )
         }
     </form>

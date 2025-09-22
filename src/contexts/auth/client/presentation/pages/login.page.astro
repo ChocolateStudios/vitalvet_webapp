@@ -1,6 +1,7 @@
 ---
 import AuthContainer from "@/contexts/auth/client/presentation/components/auth-container.component.astro"
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
 import DogCat from "@/assets/dogcat.png"
 
 const inputFields = [
@@ -35,7 +36,7 @@ const inputFields = [
         <form id="login-form" class="flex flex-col w-full items-end gap-5" novalidate>
             {
                 inputFields.map((inputField) => 
-                    <BaseTextInput {...inputField} class="w-full" />
+                    <DynamicInput {...inputField} class="w-full" />
                 )
             }
             <div id="form-error" class="text-red-600 text-sm font-semibold"></div>

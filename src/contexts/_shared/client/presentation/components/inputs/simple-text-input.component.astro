@@ -1,0 +1,109 @@
+---
+import SearchIcon from "@/contexts/_shared/client/presentation/components/icons/SearchIcon.astro";
+
+export interface Props {
+  type?: string;
+  id: string;
+  name: string;
+  label: string;
+  value?: any;
+  error?: string;
+  class?: string;
+  visible?: boolean;
+  readonly?: boolean;
+  tooltip?: string;
+  autocomplete?: string;
+}
+
+const {
+  type = "text",
+  id,
+  name,
+  label,
+  value,
+  error,
+  class: className,
+  visible = true,
+  readonly = false,
+  tooltip,
+  autocomplete,
+} = Astro.props as Props;
+
+const hasIconLeft = Astro.slots.has("icon-left");
+const hasIconRight = Astro.slots.has("icon-right");
+---
+
+<div class:list={["relative w-full group", className, { hidden: !visible }]}>
+  {type === "search" && (
+    <div
+      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500"
+    >
+      <SearchIcon />
+    </div>
+  )}
+  {hasIconLeft && (
+    <div
+      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-500"
+    >
+      <slot name="icon-left" />
+    </div>
+  )}
+  {hasIconRight && (
+    <div
+      class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500"
+    >
+      <slot name="icon-right" />
+    </div>
+  )}
+
+  <input
+    {id}
+    {name}
+    type={type as "text" | "email" | "password" | "number" | "date" | "search"}
+    {autocomplete}
+    {value}
+    {readonly}
+    placeholder=" "
+    class:list={[
+      "peer block w-full rounded-md border border-gray-300 px-3.5 pb-2.5 pt-5 text-base text-gray-900",
+      "focus:outline-none focus:ring-0 focus:border-2",
+      { "pl-10": hasIconLeft || type === "search" },
+      { "pr-10": hasIconRight },
+      { "bg-gray-100 focus:border-gray-300 cursor-not-allowed": readonly },
+      { "bg-white focus:border-[#6faab5]": !readonly },
+      { "border-red-600 focus:border-red-600": error },
+    ]}
+  />
+  <label
+    for={id}
+    class:list={[
+      "pointer-events-none absolute top-4 z-10 origin-[0] transform text-base text-gray-500 duration-300",
+      "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100",
+      "peer-focus:-translate-y-3 peer-not-placeholder-shown:scale-75",
+      "peer-not-placeholder-shown:-translate-y-3 peer-not-placeholder-shown:scale-75",
+      "peer-autofill:scale-75 peer-autofill:-translate-y-3",
+      { "peer-focus:text-[#6faab5]": !readonly },
+      { "left-10": hasIconLeft || type === "search" },
+      { "left-3.5": !hasIconLeft && type !== "search" },
+      { "text-red-600 peer-focus:text-red-600": error },
+    ]}
+  >
+    {label}
+  </label>
+
+  <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4">
+    {error}
+  </div>
+
+  {tooltip && (
+    <div
+      role="tooltip"
+      class="absolute z-20 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-xs pointer-events-none"
+    >
+      {tooltip}
+      <div
+        class="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900"
+      ></div>
+    </div>
+  )}
+</div>

@@ -1,9 +1,10 @@
 ---
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
-import BaseTextArea, { type Props as TextAreaProps } from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
-import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+// import BaseTextArea, { type Props as TextAreaProps } from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
+// import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
 import DeletePetBathDialog from "@/contexts/baths/client/presentation/components/delete-pet-bath-dialog.component.astro";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
@@ -164,7 +165,7 @@ const bathSections = [
                         <div class="flex flex-col w-full">
                         {
                             profileInputs.map(profileInput => 
-                                <BaseTextInput {...profileInput} readonly />
+                                <DynamicInput {...profileInput} readonly />
                             )
                         }
                         </div>
@@ -175,10 +176,10 @@ const bathSections = [
                     <div class="flex flex-col items-center w-full">
                     {
                         bathInfoInputs.map(infoInput => 
-                            (infoInput.type === "combobox") ? 
-                                <BaseCombobox {...infoInput} />
-                                :
-                                <BaseTextInput {...infoInput} />
+                            // (infoInput.type === "combobox") ? 
+                            //     <DynamicInput {...infoInput} />
+                            //     :
+                                <DynamicInput {...infoInput} />
                         )
                     }
                     </div>
@@ -199,15 +200,15 @@ const bathSections = [
                                         <div class="flex gap-4">
                                         {
                                             child.map(input => 
-                                                <BaseTextInput {...input} />
+                                                <DynamicInput {...input} />
                                             )
                                         }
                                         </div>
                                         : 
-                                        (child.type === "textarea") ?
-                                            <BaseTextArea {...child} />
-                                            :
-                                            <BaseTextInput {...child} />
+                                        // (child.type === "textarea") ?
+                                        //     <BaseTextArea {...child} />
+                                        //     :
+                                            <DynamicInput {...child} />
                                         // <BaseTextArea {...child} />
                                 )
                             }
