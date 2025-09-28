@@ -122,10 +122,22 @@ const detailInputs = [
     import { SaveEventResource } from "@/contexts/calendar/server/interfaces/api/resources/save-event.resource";
     import { createEvent } from "@/contexts/calendar/client/usecases/create-event.usecase";
     import { updateEvent } from "@/contexts/calendar/client/usecases/update-event.usecase";
+import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
 
     function initializePageScripts() {
-        const form = document.getElementById('event-form');
-        if (!form) return;
+        const form = document.getElementById('event-form') as HTMLFormElement;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        if (!form || !submitButton) return;
+
+        const isEditMode = !!form.dataset.eventId;
+
+        if (isEditMode) {
+            const formStateManager = new FormStateManager(form, submitButton);
+            formStateManager.initialize();
+        } else {
+            // En modo creación, el botón debe estar habilitado por defecto
+            submitButton.disabled = false;
+        }
 
         const titleInput = document.getElementById('title') as HTMLInputElement;
         const petIdInput = document.getElementById('petId-value') as HTMLInputElement;
@@ -134,7 +146,6 @@ const detailInputs = [
         const endDateTimeInput = document.getElementById('endDateTime') as HTMLInputElement;
         const descriptionInput = document.getElementById('description') as HTMLInputElement;
         
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
         const formError = document.getElementById('form-error') as HTMLDivElement;
         const isNewEvent = !form.dataset.eventId;
 

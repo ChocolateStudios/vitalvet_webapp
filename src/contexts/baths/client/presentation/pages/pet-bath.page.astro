@@ -244,21 +244,27 @@ const bathSections = [
     import { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
     import { createBath } from "@/contexts/baths/client/usecases/create-bath.usecase";
     import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
 
     function initializePageScripts() {
         const form = document.getElementById('bath-form') as HTMLFormElement | null;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
-        if (form) {
+        if (form && submitButton) {
+            const isEditMode = !!form.dataset.bathId;
+
+            if (isEditMode) {
+                const formStateManager = new FormStateManager(form, submitButton);
+                formStateManager.initialize();
+            } else {
+                // En modo creación, el botón debe estar habilitado por defecto
+                submitButton.disabled = false;
+            }
+
             const doctorInput = document.getElementById('doctor-value') as HTMLInputElement;
             const dateInput = document.getElementById('date') as HTMLInputElement;
             const observationsInput = document.getElementById('observations') as HTMLInputElement;
-            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-            
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
             
             const isNewBath = !form.dataset.bathId;
 

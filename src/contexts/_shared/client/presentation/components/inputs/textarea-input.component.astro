@@ -26,6 +26,7 @@ const {
 
 <div class:list={["relative w-full group", className, { hidden: !visible }]}>
   <textarea
+    data-textarea-input
     {id}
     {name}
     {rows}
@@ -58,22 +59,28 @@ const {
   </div>
 </div>
 <script>
-    const { id, name, readonly } = Astro.props;
-    document.addEventListener('astro:page-load', () => {
-        const textareaElement = document.getElementById(id) as HTMLTextAreaElement;
+    function setupTextAreaInputs() {
+        document.querySelectorAll('textarea[data-textarea-input]').forEach(input => {
+          const inputElement = input as HTMLInputElement;
 
-        if (textareaElement && !readonly) {
-            textareaElement.addEventListener('input', () => {
-                const event = new CustomEvent('form:input', {
-                    bubbles: true, 
-                    composed: true,
-                    detail: {
-                        name: name,
-                        value: textareaElement.value
-                    }
-                });
-                textareaElement.dispatchEvent(event);
-            });
-        }
-    });
+          if (inputElement.dataset.textAreaInputInitialized) return;
+          inputElement.dataset.textAreaInputInitialized = 'true';
+
+          if (!inputElement.readOnly) {
+              inputElement.addEventListener('input', () => {
+                  const event = new CustomEvent('form:input', {
+                      bubbles: true,
+                      composed: true,
+                      detail: {
+                          name: inputElement.name,
+                          value: inputElement.value
+                      }
+                  });
+                  inputElement.dispatchEvent(event);
+              });
+          }
+        });
+    }
+
+    document.addEventListener('astro:page-load', setupTextAreaInputs);
 </script>

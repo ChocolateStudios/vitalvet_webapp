@@ -85,7 +85,7 @@ const profileInputs = [
                 )
             }
             <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4 w-full">
-                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+                <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     { profile ? "Guardar cambios" : "Crear dueño" }
                 </button>
                 { profile &&
@@ -105,23 +105,29 @@ const profileInputs = [
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
 
     function initializePageScripts() {
-        const form = document.getElementById('profile-form') as HTMLFormElement | null;
+        const form = document.getElementById('profile-form') as HTMLFormElement;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
-        if (form) {
+        if (form && submitButton) {
+            const isEditMode = !!form.dataset.ownerId;
+
+            if (isEditMode) {
+                const formStateManager = new FormStateManager(form, submitButton);
+                formStateManager.initialize();
+            } else {
+                // En modo creación, el botón debe estar habilitado por defecto
+                submitButton.disabled = false;
+            }
+
             const nameInput = document.getElementById('name') as HTMLInputElement;
             const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
             const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
             const emailInput = document.getElementById('email') as HTMLInputElement;
             const phoneInput = document.getElementById('phone') as HTMLInputElement;
-            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
             
             const isNewOwner = !form.dataset.ownerId;
 

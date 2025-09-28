@@ -256,24 +256,30 @@ const medicalAppointmentSections = [
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
 
     function initializePageScripts() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
-        if (form) {
+        if (form && submitButton) {
+            const isEditMode = !!form.dataset.medicalAppointmentId;
+
+            if (isEditMode) {
+                const formStateManager = new FormStateManager(form, submitButton);
+                formStateManager.initialize();
+            } else {
+                // En modo creación, el botón debe estar habilitado por defecto
+                submitButton.disabled = false;
+            }
+
             const weightInput = document.getElementById('weight') as HTMLInputElement;
             // const detailsInput = document.getElementById('details') as HTMLInputElement;
             const observationsInput = document.getElementById('observations') as HTMLInputElement;
             const prescriptionInput = document.getElementById('prescription') as HTMLInputElement;
             const doctorInput = document.getElementById('doctor-value') as HTMLInputElement;
             const dateInput = document.getElementById('date') as HTMLInputElement;
-            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-            
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
             
             const isNewMedicalAppointment = !form.dataset.medicalAppointmentId;
 

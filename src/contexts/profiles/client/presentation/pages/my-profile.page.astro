@@ -70,14 +70,14 @@ const profileInputs = [
 
 <ContentContainer>
     <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">Perfil</h1>
-    <form id="profile-form" class="flex justify-center" data-role-id={profile?.roleId} novalidate>
+    <form id="profile-form" class="flex justify-center" data-profile-id={profile?.id} data-role-id={profile?.roleId} novalidate>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
                     <DynamicInput {...input} />
                 )
             }
-            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer">
+            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 Guardar cambios
             </button>
         </div>
@@ -87,23 +87,29 @@ const profileInputs = [
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
 
     function initializePageScripts() {
-        const form = document.getElementById('profile-form') as HTMLFormElement | null;
+        const form = document.getElementById('profile-form') as HTMLFormElement;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
-        if (form) {
+        if (form && submitButton) {
+            const isEditMode = !!form.dataset.profileId;
+
+            if (isEditMode) {
+                const formStateManager = new FormStateManager(form, submitButton);
+                formStateManager.initialize();
+            } else {
+                // En modo creación, el botón debe estar habilitado por defecto
+                submitButton.disabled = false;
+            }
+
             const nameInput = document.getElementById('name') as HTMLInputElement;
             const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
             const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
             const emailInput = document.getElementById('email') as HTMLInputElement;
             const phoneInput = document.getElementById('phone') as HTMLInputElement;
-            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const errorContainer = document.getElementById(`${input.id}-error-container`);

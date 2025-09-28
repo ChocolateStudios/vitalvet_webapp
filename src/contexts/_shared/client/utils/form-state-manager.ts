@@ -11,7 +11,7 @@ export class FormStateManager {
         this.currentState = { ...this.initialState };
 
         // El botón empieza deshabilitado en modo edición.
-        this.submitButton.disabled = true; 
+        this.submitButton.disabled = true;
     }
 
     private getFormData(): Record<string, any> {
@@ -24,7 +24,6 @@ export class FormStateManager {
     }
 
     private handleInput(event: CustomEvent) {
-        console.log('eventazo')
         const { name, value } = event.detail;
         if (name) {
             this.currentState[name] = value;
@@ -34,8 +33,6 @@ export class FormStateManager {
 
     private checkState() {
         const isDirty = JSON.stringify(this.initialState) !== JSON.stringify(this.currentState);
-        console.log('initial: ', this.initialState)
-        console.log('current: ' + this.currentState)
         this.submitButton.disabled = !isDirty;
     }
 
