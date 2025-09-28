@@ -11,6 +11,7 @@ import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/u
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import { getBath, type BathInfo } from "@/contexts/baths/server/application/usecases/get-bath.usecase";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 const { petId, bathId } = Astro.props;
@@ -223,16 +224,23 @@ const bathSections = [
             </div>
         </div>
         <div class="flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4">
-            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-6 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <!-- <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-6 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 {
                     bath ? "Guardar cambios" : "Crear baño"
                 }
-            </button>
+            </button> -->
+            
+            <ActionButton id="submit-button" type="submit" disabled>
+                { bath ? "Guardar cambios" : "Crear baño" }
+            </ActionButton>
             { bath &&
                 <>
-                    <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer">
+                    {/* <button id="open-delete-dialog-button" type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 cursor-pointer">
                         Eliminar
-                    </button>
+                    </button> */}
+                    <ActionButton id="open-delete-dialog-button" type="danger">
+                        Eliminar
+                    </ActionButton>
                     <DeletePetBathDialog />
                 </>
             }

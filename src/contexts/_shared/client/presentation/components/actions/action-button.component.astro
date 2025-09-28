@@ -1,0 +1,64 @@
+---
+import { actionStyles, DISABLED_SUBMIT_TOOLTIP_MESSAGE } from '@/contexts/_shared/client/presentation/components/actions/_action-constants';
+
+export interface Props {
+  type?: 'submit' | 'danger' | 'default';
+  id: string;
+  disabled?: boolean;
+  tooltip?: string;
+}
+
+const {
+  type = "default",
+  id,
+  disabled = false,
+  tooltip,
+} = Astro.props as Props;
+
+const buttonType = type === "submit" ? "submit" : "button";
+---
+
+<div class="relative group">
+    <button 
+        id={id} 
+        type={buttonType} 
+        class:list={actionStyles(type)} 
+        disabled={disabled}
+    >
+        <slot />
+    </button>
+
+    {tooltip && (
+        <div
+            role="tooltip"
+            class="custom-tooltip absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-xs pointer-events-none"
+        >
+            {tooltip}
+            <div class="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900"></div>
+        </div>
+    )}
+
+    {type === 'submit' && (
+        <div
+            role="tooltip"
+            class="default-tooltip absolute z-20 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-xs pointer-events-none"
+        >
+            {DISABLED_SUBMIT_TOOLTIP_MESSAGE}
+            <div class="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900"></div>
+        </div>
+    )}
+</div>
+
+<style>
+    /* Show custom tooltip on hover if button is NOT disabled */
+    .group:not(:has(button:disabled)):hover .custom-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    /* Show default tooltip on hover if button IS disabled */
+    .group:has(button:disabled):hover .default-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>

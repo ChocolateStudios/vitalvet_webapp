@@ -1,5 +1,6 @@
 ---
-import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
+// import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 
 const viewOptions = [
   { id: 'day', name: 'Día' },
@@ -11,8 +12,9 @@ const viewOptions = [
 ---
 
 <div id="view-switcher-wrapper" class="w-48">
-    <BaseCombobox
+    <DynamicInput
         id="calendar-view-switcher"
+        type="combobox"
         name="calendar_view"
         label="Vista"
         options={viewOptions}

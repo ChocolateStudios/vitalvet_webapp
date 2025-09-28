@@ -1,5 +1,5 @@
 ---
-import BaseCombobox, { type Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
+// import BaseCombobox, { type Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
 import BaseModal from "@/contexts/_shared/client/presentation/components/base-modal.component.astro";
 // import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
@@ -27,12 +27,15 @@ const speciesInputs = [
 <BaseModal id="subspecies-modal" title="Agregar nuevo raza">
     <form slot="body" id="subspecies-form" novalidate>
         {
-            speciesInputs.map(input => {
-                if (input.type === 'combobox') {
-                    return <BaseCombobox {...input as ComboboxProps} />;
-                }
-                return <DynamicInput {...input} />;
-            })
+            speciesInputs.map(input => 
+            // {
+                // if (input.type === 'combobox') {
+                //     return <DynamicInput {...input as ComboboxProps} />;
+                // }
+                // return <DynamicInput {...input} />;
+                <DynamicInput {...input} />
+            // }
+            )
         }
     </form>
     <div slot="footer">

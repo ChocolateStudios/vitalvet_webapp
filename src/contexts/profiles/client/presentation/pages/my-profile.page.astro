@@ -5,6 +5,7 @@ import DynamicInput from "@/contexts/_shared/client/presentation/components/inpu
 import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -77,9 +78,12 @@ const profileInputs = [
                     <DynamicInput {...input} />
                 )
             }
-            <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            <!-- <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 Guardar cambios
-            </button>
+            </button> -->
+            <ActionButton id="submit-button" type="submit">
+                { profile ? "Guardar cambios" : "Crear perfil" }
+            </ActionButton>
         </div>
     </form>
 </ContentContainer>

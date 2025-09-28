@@ -1,0 +1,26 @@
+---
+import { actionStyles } from '@/contexts/_shared/client/presentation/components/actions/_action-constants';
+
+export interface Props {
+  type?: 'submit' | 'danger' | 'default';
+  id?: string;
+  href?: string;
+  disabled?: boolean;
+}
+
+const {
+  type = "default",
+  id,
+  href,
+  disabled = false,
+} = Astro.props as Props;
+---
+
+<a 
+    id={id} 
+    href={href}
+    class:list={actionStyles(type)} 
+>
+    <slot />
+</a>
+
