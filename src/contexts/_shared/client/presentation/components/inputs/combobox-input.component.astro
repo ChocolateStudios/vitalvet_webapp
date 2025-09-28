@@ -227,6 +227,17 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
 
       this.input.value = option.name;
       this.hiddenInput.value = option.id.toString();
+
+      const event = new CustomEvent('form:input', {
+          bubbles: true,
+          composed: true,
+          detail: {
+              name: this.hiddenInput.name,
+              value: this.hiddenInput.value
+          }
+      });
+      this.hiddenInput.dispatchEvent(event);
+
       this.close();
     }
 
@@ -240,6 +251,17 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
 
         this.input.value = newOption.name;
         this.hiddenInput.value = newOption.id.toString();
+
+        const event = new CustomEvent('form:input', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                name: this.hiddenInput.name,
+                value: this.hiddenInput.value
+            }
+        });
+        this.hiddenInput.dispatchEvent(event);
+
         this.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
         this.close();
     }

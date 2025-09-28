@@ -57,3 +57,23 @@ const {
     {error}
   </div>
 </div>
+<script>
+    const { id, name, readonly } = Astro.props;
+    document.addEventListener('astro:page-load', () => {
+        const textareaElement = document.getElementById(id) as HTMLTextAreaElement;
+
+        if (textareaElement && !readonly) {
+            textareaElement.addEventListener('input', () => {
+                const event = new CustomEvent('form:input', {
+                    bubbles: true, 
+                    composed: true,
+                    detail: {
+                        name: name,
+                        value: textareaElement.value
+                    }
+                });
+                textareaElement.dispatchEvent(event);
+            });
+        }
+    });
+</script>

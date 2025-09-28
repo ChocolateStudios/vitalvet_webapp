@@ -141,7 +141,8 @@ const initialTooltipText = isDynamicTooltip
       .querySelectorAll('input[type="checkbox"].peer:not([data-initialized])')
       .forEach((switchEl) => {
         const htmlSwitchEl = switchEl as HTMLInputElement;
-        htmlSwitchEl.dataset.initialized = "true";
+        if (htmlSwitchEl.hasAttribute('data-initialized')) return;
+        htmlSwitchEl.setAttribute('data-initialized', 'true');
 
         const hiddenInput = document.getElementById(
           `${htmlSwitchEl.id}-value`,
@@ -153,7 +154,7 @@ const initialTooltipText = isDynamicTooltip
           `${htmlSwitchEl.id}-tooltip-text`,
         ) as HTMLDivElement | null;
 
-        if (!hiddenInput) return;
+        if (!hiddenInput || htmlSwitchEl.disabled) return;
 
         htmlSwitchEl.addEventListener("change", () => {
           hiddenInput.value = htmlSwitchEl.checked
@@ -173,6 +174,16 @@ const initialTooltipText = isDynamicTooltip
               ? trueTooltip
               : falseTooltip;
           }
+
+          const event = new CustomEvent('form:input', {
+              bubbles: true,
+              composed: true,
+              detail: {
+                  name: hiddenInput.name,
+                  value: hiddenInput.value
+              }
+          });
+          hiddenInput.dispatchEvent(event);
         });
       });
   }

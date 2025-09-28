@@ -241,6 +241,7 @@ const detailInputs = [
 </ContentContainer>
 
 <script>
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
@@ -252,8 +253,19 @@ const detailInputs = [
     }
     function initializePageScripts() {
         const form = document.getElementById('pet-form') as HTMLFormElement | null;
+        const submitButton = document.getElementById('submit-button') as HTMLButtonElement | null;
 
-        if (form) {
+        if (form && submitButton) {
+            const isEditMode = !!form.dataset.petId;
+
+            if (isEditMode) {
+                const formStateManager = new FormStateManager(form, submitButton);
+                formStateManager.initialize();
+            } else {
+                // En modo creación, el botón debe estar habilitado por defecto
+                submitButton.disabled = false;
+            }
+
             const petNameInput = document.getElementById('name') as HTMLInputElement;
             const petOwnerInput = document.getElementById('owner-value') as HTMLInputElement;
             const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
@@ -261,7 +273,6 @@ const detailInputs = [
             const petSubspeciesInput = document.getElementById('subspecies-value') as HTMLInputElement;
             const petAgeInput = document.getElementById('age') as HTMLInputElement;
             const petStatusInput = document.getElementById('status-value') as HTMLInputElement;
-            const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
 
             if (birthdayInput && petAgeInput) {
@@ -290,11 +301,6 @@ const detailInputs = [
                         petAgeInput.value = '';
                     }
                 });
-            }
-
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
             }
             
             const isNewPet = !form.dataset.petId;

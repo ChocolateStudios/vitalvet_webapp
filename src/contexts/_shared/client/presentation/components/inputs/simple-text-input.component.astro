@@ -57,6 +57,7 @@ const hasIconRight = Astro.slots.has("icon-right");
   )}
 
   <input
+    data-simple-input
     {id}
     {name}
     type={type as "text" | "email" | "password" | "number" | "date" | "search"}
@@ -107,3 +108,29 @@ const hasIconRight = Astro.slots.has("icon-right");
     </div>
   )}
 </div>
+<script>
+    function setupSimpleInputs() {
+        document.querySelectorAll('input[data-simple-input]').forEach(input => {
+          const inputElement = input as HTMLInputElement;
+
+          if (inputElement.dataset.simpleInputInitialized) return;
+          inputElement.dataset.simpleInputInitialized = 'true';
+
+          if (!inputElement.readOnly) {
+              inputElement.addEventListener('input', () => {
+                  const event = new CustomEvent('form:input', {
+                      bubbles: true,
+                      composed: true,
+                      detail: {
+                          name: inputElement.name,
+                          value: inputElement.value
+                      }
+                  });
+                  inputElement.dispatchEvent(event);
+              });
+          }
+        });
+    }
+
+    document.addEventListener('astro:page-load', setupSimpleInputs);
+</script>
