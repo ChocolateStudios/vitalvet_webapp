@@ -1,8 +1,9 @@
 ---
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
 import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-pets.usecase";
 import type { PetListItemInfo } from "@/contexts/pets/client/usecases/getall-pets.usecase";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 
 let pets: PetListItemInfo[] = [];
 const getPetsResult = await getAllPets();
@@ -23,7 +24,8 @@ const tableHeaders = [
 
 <ContentContainer>
     <div class="sm:flex sm:justify-between sm:items-center">
-        <h2 class="text-2xl font-bold leading-6 text-gray-900">Pacientes</h2>
+        <!-- <h2 class="text-2xl font-bold leading-6 text-gray-900">Pacientes</h2> -->
+        <ContentTop>Pacientes</ContentTop>
         <div class="flex gap-4">
             <SearchBar id="pet-search" name="pet-search" placeholder="Buscar por cualquier campo..." class="w-70" />
             <a href="/app/pets/newPet" class="block rounded-md bg-[#6faab5] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5]">

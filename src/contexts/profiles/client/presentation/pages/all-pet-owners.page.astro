@@ -1,8 +1,9 @@
 ---
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -24,7 +25,8 @@ const tableHeaders = [
 
 <ContentContainer>
     <div class="sm:flex sm:justify-between sm:items-center">
-        <h2 class="text-2xl font-bold leading-6 text-gray-900">Dueños de mascotas</h2>
+        <!-- <h2 class="text-2xl font-bold leading-6 text-gray-900">Dueños de mascotas</h2> -->
+        <ContentTop>Dueños de mascotas</ContentTop>
         <div class="flex gap-4">
             <SearchBar id="owner-search" name="owner-search" placeholder="Buscar por cualquier campo..." class="w-70" />
             <a href="/app/owners/newOwner" class="block rounded-md bg-[#6faab5] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5]">

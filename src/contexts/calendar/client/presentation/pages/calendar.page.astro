@@ -2,6 +2,7 @@
 import { getAllEvents } from "@/contexts/calendar/server/application/usecases/getall-events.usecase"
 import CalendarComponent from "@/contexts/calendar/client/presentation/components/calendar/calendar.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 
 let events: any[] = [];
 const today = new Date();
@@ -19,8 +20,10 @@ const data = {
 
 <div class="p-4 sm:p-6 lg:p-8 h-full flex flex-col">
     <div class="flex justify-between mb-5">
-        <h2 class="text-2xl font-bold">Calendario</h2>
-        <!-- <a href="/app/calendar/events/new" class="bg-blue-800 hover:bg-blue-900 text-white font-semibold rounded-md py-2.5 px-3 text-sm">Añadir Evento</a> -->
+        <!-- <h2 class="text-2xl font-bold">Calendario</h2> -->
+        <ContentTop>
+            Calendario
+        </ContentTop>
         <div class="flex gap-4">
             <SearchBar id="pet-search" name="pet-search" placeholder="Buscar por cualquier campo..." class="w-70" />
             <a href="/app/calendar/events/new" class="block rounded-md bg-[#6faab5] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5]">

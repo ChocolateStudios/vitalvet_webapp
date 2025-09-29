@@ -1,7 +1,7 @@
 ---
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 // import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 // import BaseSwitch from "@/contexts/_shared/client/presentation/components/base-switch.component.astro";
@@ -19,6 +19,7 @@ import SpeciesModal from "@/contexts/pets/client/presentation/components/species
 import SubspeciesModal from "@/contexts/pets/client/presentation/components/subspecies-modal.component.astro";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -159,24 +160,29 @@ const detailInputs = [
 ]
 
 ---
-<!-- TODO: Reconocer si se han hecho cambios en cada input y según eso habilitar o deshabilitar el botón "Guardar cambios" 
- y si es que se navega a otra página, mostrar una alerta indicando que se van a perder los datos -->
-<!-- Si existe pet mostrar datos y opciones para editar o eliminar -->
-<!-- Si no existe pet entonces mostrar vacio como para crear un pet -->
+
 <ContentContainer class="h-full">
-    <div class="mb-8 flex items-start gap-4">
-        <a href="/app/home" class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
+    <!-- <div class="mb-8 flex items-start gap-4"> -->
+        <!-- <a href="/app/home" class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-        </a>
-        <div>
+        </a> -->
+        <!-- <div>
             <h2 class="text-2xl font-bold leading-tight text-gray-900">
                 { pet ? "Datos de la mascota" : "Nueva mascota" }
             </h2>
             { pet && <p class="mt-1 text-md text-gray-600">Revisa y actualiza la información de {pet.name}.</p> }
-        </div>
-    </div>
+        </div> -->
+    <!-- </div> -->
+    <ContentTop backHref="/app/home">
+        { pet ? "Datos de la mascota" : "Nueva mascota" }
+        { pet && 
+            <p slot="subtitle" class="mt-1 text-md text-gray-600">
+                Revisa y actualiza la información de {pet.name}.
+            </p> 
+        }
+    </ContentTop>
     <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate>
         <!-- Card de Perfil (Izquierda) -->
         <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>

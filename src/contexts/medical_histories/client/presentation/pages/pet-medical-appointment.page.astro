@@ -1,6 +1,6 @@
 ---
 import petProfilePhoto from "@/assets/petProfilePhoto.png";
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 // import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 // import BaseTextArea from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
@@ -12,6 +12,7 @@ import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/u
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 const { petId, medicalAppointmentId } = Astro.props;
@@ -147,7 +148,7 @@ const medicalAppointmentSections = [
 ---
 
 <ContentContainer class="h-full">
-    <div class="mb-8 flex items-start gap-4">
+    <!-- <div class="mb-8 flex items-start gap-4">
         <a href={`/app/pets/${petId}/medical-history`} class="p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5] -mt-1" aria-label="Volver a la página de inicio">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -161,7 +162,15 @@ const medicalAppointmentSections = [
                     "Nueva cita médica"
             }
         </h2>
-    </div>
+    </div> -->
+    <ContentTop backHref={`/app/pets/${petId}/medical-history`}>
+        {
+            medicalAppointment ? 
+                `Cita médica N° ${medicalAppointment?.appointmentNumber}`
+                :
+                "Nueva cita médica"
+        }
+    </ContentTop>
     <form id="medicalappointment-form" data-pet-id={pet?.id} data-medical-appointment-id={medicalAppointment?.id} novalidate>
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center">
             <div class="lg:col-span-2 flex flex-col gap-6">

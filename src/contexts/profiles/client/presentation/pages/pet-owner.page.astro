@@ -1,5 +1,5 @@
 ---
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content-container.component.astro"
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro"
 // import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
@@ -7,6 +7,7 @@ import { getProfileById } from "@/contexts/profiles/server/application/usecases/
 import { getRoleById } from "@/contexts/profiles/server/application/usecases/get-role.usecase";
 import DeleteProfileDialog from "@/contexts/profiles/client/presentation/components/delete-profile-dialog.component.astro";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 
 const { ownerId } = Astro.props;
 
@@ -77,7 +78,15 @@ const profileInputs = [
 ---
 
 <ContentContainer>
-    <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">{ profile ? "Datos del dueño" : "Nuevo dueño" }</h1>
+    <!-- <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">{ profile ? "Datos del dueño" : "Nuevo dueño" }</h1> -->
+    <ContentTop backHref="/app/owners">
+        { profile ? "Datos del dueño" : "Nuevo dueño" }
+        { profile && 
+            <p slot="subtitle" class="mt-1 text-md text-gray-600">
+                Revisa y actualiza la información de {profile.name}.
+            </p> 
+        }
+    </ContentTop>
     <form id="profile-form" class="flex justify-center" data-owner-id={profile?.id} data-role-id={profile ? profile.roleId : role.id} novalidate>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
