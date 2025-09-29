@@ -10,6 +10,7 @@ import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
+import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
 
 const { petId } = Astro.props;
 
@@ -95,52 +96,22 @@ const tableHeaders = [
             <div class="flow-root bg-white rounded-xl shadow-lg p-8">
                 <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                        <table class="min-w-full divide-y divide-gray-300">
-                            <thead>
-                                <tr>
-                                    {
-                                        tableHeaders.map((header, index) => 
-                                            <th scope="col" class:list={[
-                                                "px-3 py-3.5 text-sm font-semibold text-gray-900",
-                                                index > 0 ? "text-left" : "text-center"
-                                            ]}>
-                                                {header}
-                                            </th>
-                                        )
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                {
-                                    medicalHistory && medicalHistory.length > 0 &&
-                                        medicalHistory?.map(medicalAppointment => 
-                                            <tr class="relative hover:bg-gray-50 cursor-pointer">
-                                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-center text-gray-900 sm:pl-0">
-                                                    <a href={`/app/pets/${petId}/medical-history/${medicalAppointment.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de la cita número ${medicalAppointment.appointmentNumber} de ${medicalAppointment.doctorName}`}>
-                                                        <span class="relative z-10">{medicalAppointment.appointmentNumber}</span>
-                                                    </a>
-                                                </td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{formatDateToDdMmYyyyHhMm(medicalAppointment.appointmentDate)}</td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{medicalAppointment.doctorName}</td>
-                                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{medicalAppointment.weight} kg</td>
-                                            </tr>
-                                        )
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr class="border-t border-gray-200">
-                                    <td colspan="4" class="px-3 py-4 text-sm font-semibold text-gray-900 text-center">
-                                        Total de citas médicas: {medicalHistory.length}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                        {
-                            !medicalHistory || medicalHistory.length === 0 &&
-                                <div class="py-4 text-center">
-                                    <p class="text-sm text-gray-500">No hay citas médicas registradas.</p>
-                                </div>
-                        }
+                        <SimpleTable id="medicalhistory-table" headers={tableHeaders} items={medicalHistory} itemsName="citas médicas" noItemsMessage="No hay citas médicas registradas.">
+                            {
+                                medicalHistory?.map(medicalAppointment => 
+                                    <tr class="relative hover:bg-gray-50 cursor-pointer">
+                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-center text-gray-900 sm:pl-0">
+                                            <a href={`/app/pets/${petId}/medical-history/${medicalAppointment.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de la cita número ${medicalAppointment.appointmentNumber} de ${medicalAppointment.doctorName}`}>
+                                                <span class="relative z-10">{medicalAppointment.appointmentNumber}</span>
+                                            </a>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{formatDateToDdMmYyyyHhMm(medicalAppointment.appointmentDate)}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{medicalAppointment.doctorName}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{medicalAppointment.weight} kg</td>
+                                    </tr>
+                                )
+                            }
+                        </SimpleTable>
                     </div>
                 </div>
             </div>

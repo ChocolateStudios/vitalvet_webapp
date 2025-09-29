@@ -1,0 +1,47 @@
+---
+export interface Props {
+    id?: string;
+    headers?: string[];
+    items?: any[];
+    itemsName?: string;
+    noItemsMessage?: string;
+}
+
+const {
+    id,
+    headers,
+    items,
+    itemsName,
+    noItemsMessage,
+} = Astro.props as Props;
+
+---
+
+<table id={id} class="min-w-full divide-y divide-gray-300">
+    <thead>
+        <tr>
+            {
+                headers?.map(header => 
+                    <th scope="col" class="px-3 py-3.5 text-left text-base font-semibold text-gray-900">{header}</th>
+                )
+            }
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+        <slot/>
+    </tbody>
+    {(items && items.length > 0) && (
+        <tfoot>
+            <tr class="border-t border-gray-200">
+                <td colspan={headers?.length || 0} class="px-3 py-4 text-sm font-semibold text-gray-900 text-center">
+                    Total de {itemsName || 'items'}: {items?.length}
+                </td>
+            </tr>
+        </tfoot>
+    )}
+</table>
+{(items && items.length === 0) && (
+    <div class="py-4 text-center">
+        <p class="text-sm text-gray-500">{noItemsMessage || 'No hay items para mostrar.'}</p>
+    </div>
+)}

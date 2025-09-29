@@ -5,6 +5,7 @@ import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-p
 import type { PetListItemInfo } from "@/contexts/pets/client/usecases/getall-pets.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
+import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
 
 let pets: PetListItemInfo[] = [];
 const getPetsResult = await getAllPets();
@@ -36,34 +37,23 @@ const tableHeaders = [
     <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <table id="pets-table" class="min-w-full divide-y divide-gray-300">
-                    <thead>
-                        <tr>
-                            {
-                                tableHeaders.map(header => 
-                                <th scope="col" class="px-3 py-3.5 text-left text-base font-semibold text-gray-900">{header}</th>
-                                )
-                            }
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        {
-                            pets.map(pet => 
-                                <tr class="relative hover:bg-gray-50 cursor-pointer">
-                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500 font-medium">
-                                        <a href={`/app/pets/${pet.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de ${pet.name}`}>
-                                            <span class="relative z-10">{pet.name} ({pet.owner ?? "Jhon Doe"}) {pet.isDead ? "*" : ""}</span>
-                                        </a>
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.species}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.subspecies}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.medicalAppointmentsCount}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.bathsCount}</td>
-                                </tr>
-                            )
-                        }
-                    </tbody>
-                </table>
+                <SimpleTable id="pets-table" headers={tableHeaders} items={pets} itemsName="mascotas" noItemsMessage="No hay mascotas registradas.">
+                    {
+                        pets.map(pet => 
+                            <tr class="relative hover:bg-gray-50 cursor-pointer">
+                                <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500 font-medium">
+                                    <a href={`/app/pets/${pet.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de ${pet.name}`}>
+                                        <span class="relative z-10">{pet.name} ({pet.owner ?? "Jhon Doe"}) {pet.isDead ? "*" : ""}</span>
+                                    </a>
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.species}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.subspecies}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.medicalAppointmentsCount}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-base text-gray-500">{pet.bathsCount}</td>
+                            </tr>
+                        )
+                    }
+                </SimpleTable>
             </div>
         </div>
     </div>
