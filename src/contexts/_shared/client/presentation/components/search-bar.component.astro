@@ -1,9 +1,9 @@
 ---
 import SearchIcon from "@/contexts/_shared/client/presentation/components/icons/SearchIcon.astro";
 
-const { id, name, placeholder = "Buscar...", class: className } = Astro.props;
+const { id, name, placeholder = "Buscar por cualquier campo...", class: className } = Astro.props;
 ---
-<div class:list={["relative", className]}>
+<div class:list={["relative w-70", className]}>
     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
         <SearchIcon class="h-5 w-5 text-gray-400" />
     </div>

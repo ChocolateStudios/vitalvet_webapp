@@ -2,14 +2,14 @@
 import { actionStyles } from '@/contexts/_shared/client/presentation/components/actions/_action-constants';
 
 export interface Props {
-  type?: 'submit' | 'danger' | 'default';
+  style?: 'submit' | 'danger' | 'default';
   id?: string;
   href?: string;
   disabled?: boolean;
 }
 
 const {
-  type = "default",
+  style = "default",
   id,
   href,
   disabled = false,
@@ -19,7 +19,7 @@ const {
 <a 
     id={id} 
     href={href}
-    class:list={actionStyles(type)} 
+    class:list={actionStyles(style)} 
 >
     <slot />
 </a>

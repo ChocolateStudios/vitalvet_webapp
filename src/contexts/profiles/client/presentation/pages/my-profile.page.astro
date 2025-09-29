@@ -71,7 +71,6 @@ const profileInputs = [
 ---
 
 <ContentContainer>
-    <!-- <h1 class="text-2xl font-bold leading-tight text-gray-900 mb-8">Perfil</h1> -->
     <ContentTop>Perfil</ContentTop>
     <form id="profile-form" class="flex justify-center" data-profile-id={profile?.id} data-role-id={profile?.roleId} novalidate>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
@@ -80,9 +79,6 @@ const profileInputs = [
                     <DynamicInput {...input} />
                 )
             }
-            <!-- <button id="submit-button" type="submit" class="rounded-md bg-[#6faab5] px-4 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                Guardar cambios
-            </button> -->
             <ActionButton id="submit-button" type="submit">
                 { profile ? "Guardar cambios" : "Crear perfil" }
             </ActionButton>

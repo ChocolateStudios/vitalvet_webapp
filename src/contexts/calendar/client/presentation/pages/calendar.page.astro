@@ -3,6 +3,8 @@ import { getAllEvents } from "@/contexts/calendar/server/application/usecases/ge
 import CalendarComponent from "@/contexts/calendar/client/presentation/components/calendar/calendar.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 
 let events: any[] = [];
 const today = new Date();
@@ -18,18 +20,15 @@ const data = {
 };
 ---
 
-<div class="p-4 sm:p-6 lg:p-8 h-full flex flex-col">
-    <div class="flex justify-between mb-5">
-        <!-- <h2 class="text-2xl font-bold">Calendario</h2> -->
-        <ContentTop>
-            Calendario
-        </ContentTop>
-        <div class="flex gap-4">
-            <SearchBar id="pet-search" name="pet-search" placeholder="Buscar por cualquier campo..." class="w-70" />
-            <a href="/app/calendar/events/new" class="block rounded-md bg-[#6faab5] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5]">
-                Añadir Evento
-            </a>
+<ContentContainer>
+    <ContentTop>
+        Calendario <!-- MainTitle -->
+        <div slot="right" class="flex gap-4">
+            <SearchBar id="calendar-search" name="calendar-search" />
+            <ActionLink href={`/app/calendar/events/new`} style="submit">
+                Añadir evento
+            </ActionLink>
         </div>
-    </div>
+    </ContentTop>
     <CalendarComponent {data} />
-</div>
+</ContentContainer>

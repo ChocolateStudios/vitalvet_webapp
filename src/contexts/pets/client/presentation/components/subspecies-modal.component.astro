@@ -28,13 +28,7 @@ const speciesInputs = [
     <form slot="body" id="subspecies-form" novalidate>
         {
             speciesInputs.map(input => 
-            // {
-                // if (input.type === 'combobox') {
-                //     return <DynamicInput {...input as ComboboxProps} />;
-                // }
-                // return <DynamicInput {...input} />;
                 <DynamicInput {...input} />
-            // }
             )
         }
     </form>

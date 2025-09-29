@@ -4,6 +4,7 @@ import SearchBar from "@/contexts/_shared/client/presentation/components/search-
 import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-pets.usecase";
 import type { PetListItemInfo } from "@/contexts/pets/client/usecases/getall-pets.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 
 let pets: PetListItemInfo[] = [];
 const getPetsResult = await getAllPets();
@@ -23,16 +24,15 @@ const tableHeaders = [
 ---
 
 <ContentContainer>
-    <div class="sm:flex sm:justify-between sm:items-center">
-        <!-- <h2 class="text-2xl font-bold leading-6 text-gray-900">Pacientes</h2> -->
-        <ContentTop>Pacientes</ContentTop>
-        <div class="flex gap-4">
-            <SearchBar id="pet-search" name="pet-search" placeholder="Buscar por cualquier campo..." class="w-70" />
-            <a href="/app/pets/newPet" class="block rounded-md bg-[#6faab5] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6faab5]">
-                Añadir Mascota
-            </a>
+    <ContentTop>
+        Pacientes <!-- MainTitle -->
+        <div slot="right" class="flex gap-4">
+            <SearchBar id="pet-search" name="pet-search" />
+            <ActionLink href="/app/pets/newPet" style="submit">
+                Añadir mascota
+            </ActionLink>
         </div>
-    </div>
+    </ContentTop>
     <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
