@@ -1,0 +1,15 @@
+---
+export interface Props {
+    id?: string;
+    dataset?: any;
+}
+
+const {
+    id,
+    dataset,
+} = Astro.props as Props;
+---
+
+<form id={id} class="flex justify-center" data-form-data={JSON.stringify(dataset)} novalidate>
+    <slot/>
+</form>

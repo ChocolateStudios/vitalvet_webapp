@@ -9,6 +9,7 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 import DeleteEventDialog from '@/contexts/calendar/client/presentation/components/delete-event-dialog.component.astro';
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 const { eventId } = Astro.props;
@@ -92,7 +93,8 @@ const detailInputs = [
         }
     </ContentTop>
 
-    <form id="event-form" class="bg-white rounded-xl shadow-lg p-8" data-event-id={event?.id} novalidate>
+    <!-- <form id="event-form" class="bg-white rounded-xl shadow-lg p-8" data-event-id={event?.id} novalidate> -->
+    <SimpleForm id="event-form" dataset={{ eventId: event?.id }}>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {detailInputs.map(input => <DynamicInput {...input} />)}
         </div>
@@ -112,21 +114,25 @@ const detailInputs = [
                 </>
             }
         </div>
-    </form>
+    </SimpleForm>
+    <!-- </form> -->
 </ContentContainer>
 
 <script>
     import { SaveEventResource } from "@/contexts/calendar/server/interfaces/api/resources/save-event.resource";
     import { createEvent } from "@/contexts/calendar/client/usecases/create-event.usecase";
     import { updateEvent } from "@/contexts/calendar/client/usecases/update-event.usecase";
-import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('event-form') as HTMLFormElement;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
         if (!form || !submitButton) return;
 
-        const isEditMode = !!form.dataset.eventId;
+        const formDataObj = getFormDataObj(form);
+
+        const isEditMode = !!formDataObj.eventId;
 
         if (isEditMode) {
             const formStateManager = new FormStateManager(form, submitButton);
@@ -144,7 +150,7 @@ import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-man
         const descriptionInput = document.getElementById('description') as HTMLInputElement;
         
         const formError = document.getElementById('form-error') as HTMLDivElement;
-        const isNewEvent = !form.dataset.eventId;
+        const isNewEvent = !formDataObj.eventId;
 
         const showError = (input: HTMLInputElement, message: string) => {
             const isHiddenValueInput = input.id.endsWith('-value');
@@ -238,7 +244,7 @@ import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-man
             try {
                 const response = isNewEvent
                     ? await createEvent(resource)
-                    : await updateEvent(form.dataset.eventId!, resource);
+                    : await updateEvent(formDataObj.eventId!, resource);
 
                 if (response.success) {
                     window.location.href = '/app/calendar';

@@ -7,6 +7,7 @@ import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profil
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -72,7 +73,7 @@ const profileInputs = [
 
 <ContentContainer>
     <ContentTop>Perfil</ContentTop>
-    <form id="profile-form" class="flex justify-center" data-profile-id={profile?.id} data-role-id={profile?.roleId} novalidate>
+     <SimpleForm id="profile-form" dataset={{ profileId: profile?.id, roleId: profile?.roleId }}>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
@@ -83,20 +84,23 @@ const profileInputs = [
                 { profile ? "Guardar cambios" : "Crear perfil" }
             </ActionButton>
         </div>
-    </form>
+    </SimpleForm>
 </ContentContainer>
 
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('profile-form') as HTMLFormElement;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
         if (form && submitButton) {
-            const isEditMode = !!form.dataset.profileId;
+            const formDataObj = getFormDataObj(form);
+            
+            const isEditMode = !!formDataObj.profileId;
 
             if (isEditMode) {
                 const formStateManager = new FormStateManager(form, submitButton);
@@ -192,7 +196,7 @@ const profileInputs = [
                 if (isValid) {
                     submitButton.disabled = true;
 
-                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), form.dataset.roleId!);
+                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), formDataObj.roleId!);
 
                     submitButton.textContent = 'Actualizando perfil...';
 

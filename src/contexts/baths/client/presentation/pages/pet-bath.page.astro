@@ -13,6 +13,7 @@ import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import { getBath, type BathInfo } from "@/contexts/baths/server/application/usecases/get-bath.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 const { petId, bathId } = Astro.props;
@@ -137,7 +138,8 @@ const bathSections = [
                 "Nuevo baño"
         }
     </ContentTop>
-    <form id="bath-form" data-pet-id={pet?.id} data-bath-id={bath?.id} novalidate>
+    <!-- <form id="bath-form" data-pet-id={pet?.id} data-bath-id={bath?.id} novalidate> -->
+    <SimpleForm id="bath-form" dataset={{ petId: pet?.id, bathId: bath?.id }}>
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center">
             <div class="lg:col-span-2 flex flex-col gap-6">
                 <div class="bg-gray-200 rounded-xl shadow-lg p-7 text-left" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
@@ -217,7 +219,8 @@ const bathSections = [
                 </>
             }
         </div>
-    </form>
+    </SimpleForm>
+    <!-- </form> -->
 </ContentContainer>
 
 <script>
@@ -225,13 +228,16 @@ const bathSections = [
     import { createBath } from "@/contexts/baths/client/usecases/create-bath.usecase";
     import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('bath-form') as HTMLFormElement | null;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
         if (form && submitButton) {
-            const isEditMode = !!form.dataset.bathId;
+            const formDataObj = getFormDataObj(form);
+
+            const isEditMode = !!formDataObj.bathId;
 
             if (isEditMode) {
                 const formStateManager = new FormStateManager(form, submitButton);
@@ -246,7 +252,7 @@ const bathSections = [
             const observationsInput = document.getElementById('observations') as HTMLInputElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
             
-            const isNewBath = !form.dataset.bathId;
+            const isNewBath = !formDataObj.bathId;
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const errorContainer = document.getElementById(`${input.id}-error-container`);
@@ -312,9 +318,9 @@ const bathSections = [
                         submitButton.textContent = 'Creando baño...';
 
                         try {
-                            const response = await createBath(form.dataset.petId!, resource);
+                            const response = await createBath(formDataObj.petId!, resource);
                             if (response.success) {
-                                window.location.href = `/app/pets/${form.dataset.petId!}/baths-history`;
+                                window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
                             } else {
                                 formError.textContent = response.errorMessage ?? 'Error al crear baño. Por favor, inténtalo de nuevo.';
                             }
@@ -329,10 +335,10 @@ const bathSections = [
                         submitButton.textContent = 'Actualizando baño...';
 
                         try {
-                            const response = await updateBath(form.dataset.petId!, form.dataset.bathId!, resource);
+                            const response = await updateBath(formDataObj.petId!, formDataObj.bathId!, resource);
                             if (response.success) {
                                 // window.location.reload();
-                                window.location.href = `/app/pets/${form.dataset.petId!}/baths-history`;
+                                window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
                             } else {
                                 formError.textContent = response.errorMessage ?? 'Error al actualizar el baño. Por favor, inténtalo de nuevo.';
                             }

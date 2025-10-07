@@ -11,6 +11,7 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const { petId } = Astro.props;
 
@@ -65,7 +66,8 @@ const tableHeaders = [
             </ActionLink>
         </div>
     </ContentTop>
-    <form class="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center" novalidate>
+    <!-- <form class="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center" novalidate> -->
+    <SimpleForm>
         <div class="lg:col-span-2 bg-gray-200 rounded-xl shadow-lg p-7 text-left" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="flex flex-row items-center justify-between mb-3">
                 <h3 class="font-semibold">Datos de la mascota</h3>
@@ -116,5 +118,6 @@ const tableHeaders = [
                 </div>
             </div>
         </div>
-    </form>
+    </SimpleForm>
+    <!-- </form> -->
 </ContentContainer>

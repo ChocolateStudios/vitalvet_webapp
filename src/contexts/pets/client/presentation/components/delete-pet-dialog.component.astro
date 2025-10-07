@@ -39,6 +39,7 @@ const { petName } = Astro.props;
 
 <script>
     import { deletePet } from "@/contexts/pets/client/usecases/delete-pet.usecase";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('pet-form') as HTMLFormElement | null;
@@ -60,7 +61,8 @@ const { petName } = Astro.props;
             cancelButton?.addEventListener('click', () => toggleDialog(false));
 
             confirmButton?.addEventListener('click', async () => {
-                const petId = form?.dataset.petId;
+                const formDataObj = getFormDataObj(form);
+                const petId = formDataObj.petId;
                 if (!petId) return;
 
                 confirmButton.textContent = "Eliminando...";

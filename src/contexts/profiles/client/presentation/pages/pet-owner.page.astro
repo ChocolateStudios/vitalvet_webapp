@@ -7,6 +7,7 @@ import { getRoleById } from "@/contexts/profiles/server/application/usecases/get
 import DeleteProfileDialog from "@/contexts/profiles/client/presentation/components/delete-profile-dialog.component.astro";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const { ownerId } = Astro.props;
 
@@ -85,7 +86,7 @@ const profileInputs = [
             </p> 
         }
     </ContentTop>
-    <form id="profile-form" class="flex justify-center" data-owner-id={profile?.id} data-role-id={profile ? profile.roleId : role.id} novalidate>
+    <SimpleForm id="profile-form" dataset={{ ownerId: profile?.id, roleId: profile ? profile.roleId : role.id }}>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
@@ -106,7 +107,7 @@ const profileInputs = [
                 }
             </div>
         </div>
-    </form>
+    </SimpleForm>
 </ContentContainer>
 
 <script>
@@ -114,13 +115,16 @@ const profileInputs = [
     import { updateProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('profile-form') as HTMLFormElement;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
         if (form && submitButton) {
-            const isEditMode = !!form.dataset.ownerId;
+            const formDataObj = getFormDataObj(form);
+
+            const isEditMode = !!formDataObj.ownerId;
 
             if (isEditMode) {
                 const formStateManager = new FormStateManager(form, submitButton);
@@ -137,7 +141,7 @@ const profileInputs = [
             const phoneInput = document.getElementById('phone') as HTMLInputElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
             
-            const isNewOwner = !form.dataset.ownerId;
+            const isNewOwner = !formDataObj.ownerId;
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const errorContainer = document.getElementById(`${input.id}-error-container`);
@@ -217,7 +221,7 @@ const profileInputs = [
 
                 if (isValid) {
                     submitButton.disabled = true;
-                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), form.dataset.roleId!);
+                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), formDataObj.roleId!);
 
                     if (isNewOwner) {
                         submitButton.textContent = 'Creando dueño...';
@@ -241,7 +245,7 @@ const profileInputs = [
                         submitButton.textContent = 'Actualizando dueño...';
 
                         try {
-                            const response = await updateProfile(resource, form.dataset.ownerId!);
+                            const response = await updateProfile(resource, formDataObj.ownerId!);
                             if (response.success) {
                                 window.location.href = '/app/owners';
                             } else {

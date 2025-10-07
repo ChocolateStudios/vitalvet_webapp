@@ -37,7 +37,8 @@
     
 
 <script>
-    import { deleteMedicalAppointment } from "@/contexts/medical_histories/client/usecases/delete-medicalappointment.usecase";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+import { deleteMedicalAppointment } from "@/contexts/medical_histories/client/usecases/delete-medicalappointment.usecase";
 
     function initializePageScripts() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
@@ -54,9 +55,10 @@
             cancelButton?.addEventListener('click', () => toggleDialog(false));
 
             confirmButton?.addEventListener('click', async () => {
-                const medicalAppointmentId = form?.dataset.medicalAppointmentId;
+                const formDataObj = getFormDataObj(form);
+                const medicalAppointmentId = formDataObj.medicalAppointmentId;
                 if (!medicalAppointmentId) return;
-                const petId = form?.dataset.petId;
+                const petId = formDataObj.petId;
                 if (!petId) return;
 
                 confirmButton.textContent = "Eliminando...";

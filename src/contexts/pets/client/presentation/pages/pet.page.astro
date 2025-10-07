@@ -20,6 +20,7 @@ import SubspeciesModal from "@/contexts/pets/client/presentation/components/subs
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -170,7 +171,8 @@ const detailInputs = [
             </p> 
         }
     </ContentTop>
-    <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate>
+    <!-- <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate> -->
+    <SimpleForm id="pet-form" dataset={{ petId: pet?.id }}>
         <!-- Card de Perfil (Izquierda) -->
         <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">
@@ -220,7 +222,8 @@ const detailInputs = [
                 }
             </div>
         </div>
-    </form>
+    </SimpleForm>
+    <!-- </form> -->
     <PetOwnerModal />
     <SpeciesModal />
     <SubspeciesModal {allSpecies} />
@@ -232,6 +235,7 @@ const detailInputs = [
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     declare global {
         interface Window {
@@ -243,7 +247,9 @@ const detailInputs = [
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement | null;
 
         if (form && submitButton) {
-            const isEditMode = !!form.dataset.petId;
+            const formDataObj = getFormDataObj(form);
+
+            const isEditMode = !!formDataObj.petId;
 
             if (isEditMode) {
                 const formStateManager = new FormStateManager(form, submitButton);
@@ -290,7 +296,7 @@ const detailInputs = [
                 });
             }
             
-            const isNewPet = !form.dataset.petId;
+            const isNewPet = !formDataObj.petId;
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const isHiddenValueInput = input.id.endsWith('-value');
@@ -411,7 +417,7 @@ const detailInputs = [
                         submitButton.textContent = 'Actualizando mascota...';
 
                         try {
-                            const response = await updatePet(form.dataset.petId!, resource);
+                            const response = await updatePet(formDataObj.petId!, resource);
                             if (response.success) {
                                 // window.location.reload();
                                 window.location.href = '/app/home';

@@ -38,12 +38,15 @@ const { profileName } = Astro.props;
     
 
 <script>
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { deleteProfile } from "@/contexts/profiles/client/usecases/delete-profile.usecase";
 
     function initializePageScripts() {
         const form = document.getElementById('profile-form') as HTMLFormElement | null;
 
         if (form) {
+            const formDataObj = getFormDataObj(form);
+
             const dialog = document.getElementById('delete-dialog');
             const cancelButton = document.getElementById('cancel-delete-button') as HTMLButtonElement;
             const confirmButton = document.getElementById('confirm-delete-button') as HTMLButtonElement;
@@ -60,7 +63,7 @@ const { profileName } = Astro.props;
             cancelButton?.addEventListener('click', () => toggleDialog(false));
 
             confirmButton?.addEventListener('click', async () => {
-                const profileId = form?.dataset.profileId;
+                const profileId = formDataObj.profileId;
                 if (!profileId) return;
 
                 confirmButton.textContent = "Eliminando...";

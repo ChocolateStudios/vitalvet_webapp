@@ -13,6 +13,7 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 const { petId, medicalAppointmentId } = Astro.props;
@@ -156,7 +157,8 @@ const medicalAppointmentSections = [
                 "Nueva cita médica"
         }
     </ContentTop>
-    <form id="medicalappointment-form" data-pet-id={pet?.id} data-medical-appointment-id={medicalAppointment?.id} novalidate>
+    <!-- <form id="medicalappointment-form" data-pet-id={pet?.id} data-medical-appointment-id={medicalAppointment?.id} novalidate> -->
+    <SimpleForm id="medicalappointment-form" dataset={{ petId: pet?.id, medicalAppointmentId: medicalAppointment?.id }}>
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center">
             <div class="lg:col-span-2 flex flex-col gap-6">
                 <div class="bg-gray-200 rounded-xl shadow-lg p-7 text-left" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
@@ -239,7 +241,8 @@ const medicalAppointmentSections = [
                 </>
             }
         </div>
-    </form>
+    </SimpleForm>
+    <!-- </form> -->
 </ContentContainer>
 
 <script>
@@ -247,13 +250,16 @@ const medicalAppointmentSections = [
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
         const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
 
         if (form && submitButton) {
-            const isEditMode = !!form.dataset.medicalAppointmentId;
+            const formDataObj = getFormDataObj(form);
+
+            const isEditMode = !!formDataObj.medicalAppointmentId;
 
             if (isEditMode) {
                 const formStateManager = new FormStateManager(form, submitButton);
@@ -271,7 +277,7 @@ const medicalAppointmentSections = [
             const dateInput = document.getElementById('date') as HTMLInputElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
             
-            const isNewMedicalAppointment = !form.dataset.medicalAppointmentId;
+            const isNewMedicalAppointment = !formDataObj.medicalAppointmentId;
 
             const showError = (input: HTMLInputElement, message: string) => {
                 const errorContainer = document.getElementById(`${input.id}-error-container`);
@@ -359,9 +365,9 @@ const medicalAppointmentSections = [
                         submitButton.textContent = 'Creando cita médica...';
 
                         try {
-                            const response = await createMedicalAppointment(form.dataset.petId!, resource);
+                            const response = await createMedicalAppointment(formDataObj.petId!, resource);
                             if (response.success) {
-                                window.location.href = `/app/pets/${form.dataset.petId!}/medical-history`;
+                                window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
                             } else {
                                 formError.textContent = response.errorMessage ?? 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
                             }
@@ -376,10 +382,10 @@ const medicalAppointmentSections = [
                         submitButton.textContent = 'Actualizando cita médica...';
 
                         try {
-                            const response = await updateMedicalAppointment(form.dataset.petId!, form.dataset.medicalAppointmentId!, resource);
+                            const response = await updateMedicalAppointment(formDataObj.petId!, formDataObj.medicalAppointmentId!, resource);
                             if (response.success) {
                                 // window.location.reload();
-                                window.location.href = `/app/pets/${form.dataset.petId!}/medical-history`;
+                                window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
                             } else {
                                 formError.textContent = response.errorMessage ?? 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
                             }
