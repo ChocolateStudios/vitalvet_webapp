@@ -124,7 +124,7 @@ const eventInputs = [
     import { createEvent } from "@/contexts/calendar/client/usecases/create-event.usecase";
     import { updateEvent } from "@/contexts/calendar/client/usecases/update-event.usecase";
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('event-form') as HTMLFormElement;
@@ -153,34 +153,6 @@ const eventInputs = [
         const formError = document.getElementById('form-error') as HTMLDivElement;
         const isNewEvent = !formDataObj.eventId;
 
-        const showError = (input: HTMLInputElement, message: string) => {
-            const isHiddenValueInput = input.id.endsWith('-value');
-            const baseId = isHiddenValueInput ? input.id.slice(0, -6) : input.id;
-            const errorContainer = document.getElementById(`${baseId}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = message;
-            }
-            const visibleInput = isHiddenValueInput ? document.getElementById(baseId) : input;
-            if (visibleInput) {
-                visibleInput.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                visibleInput.classList.add('outline-red-500', 'focus:outline-red-500');
-            }
-        }
-
-        const clearError = (input: HTMLInputElement) => {
-            const isHiddenValueInput = input.id.endsWith('-value');
-            const baseId = isHiddenValueInput ? input.id.slice(0, -6) : input.id;
-            const errorContainer = document.getElementById(`${baseId}-error-container`);
-            if (errorContainer) {
-                errorContainer.textContent = '';
-            }
-            const visibleInput = isHiddenValueInput ? document.getElementById(baseId) : input;
-            if (visibleInput) {
-                visibleInput.classList.remove('outline-red-500', 'focus:outline-red-500');
-                visibleInput.classList.add('outline-gray-300', 'focus:outline-blue-800');
-            }
-        }
-
         submitButton.addEventListener('click', async (e) => {
         // form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -203,44 +175,36 @@ const eventInputs = [
 
             let isValid = true;
             if (!title) {
-                showError(titleInput, 'Title is required');
+                showError(titleInput, 'El título es obligatorio');
                 isValid = false;
             }
             if (!petId) {
-                showError(petIdInput, 'Pet is required');
+                showError(petIdInput, 'El paciente es obligatorio');
                 isValid = false;
             }
             if (!doctorProfileId) {
-                showError(doctorProfileIdInput, 'Doctor is required');
+                showError(doctorProfileIdInput, 'El veterinario es obligatorio');
                 isValid = false;
             }
             if (!startDateTime) {
-                showError(startDateTimeInput, 'Start time is required');
+                showError(startDateTimeInput, 'La fecha y hora de inicio son obligatorias');
                 isValid = false;
             }
             if (!endDateTime) {
-                showError(endDateTimeInput, 'End time is required');
+                showError(endDateTimeInput, 'La fecha y hora de fin son obligatorias');
                 isValid = false;
             }
             if (startDateTime && endDateTime && new Date(startDateTime) >= new Date(endDateTime)) {
-                showError(endDateTimeInput, 'End time must be after start time');
+                showError(endDateTimeInput, 'La fecha y hora de fin debe ser posterior a la fecha y hora de inicio');
                 isValid = false;
             }
 
             if (!isValid) return;
 
             submitButton.disabled = true;
-            submitButton.textContent = isNewEvent ? 'Creating...' : 'Saving...';
+            submitButton.textContent = isNewEvent ? 'Creando evento...' : 'Actualizando evento...';
 
-            const resource = new SaveEventResource();
-            resource.title = title;
-            resource.petId = petId;
-            resource.doctorProfileId = doctorProfileId;
-            resource.startDateTime = new Date(startDateTime);
-            resource.endDateTime = new Date(endDateTime);
-            resource.description = description;
-            // Assuming a default eventTypeId, or you could add a field for it.
-            resource.eventTypeId = 'default-event-type';
+            const resource = new SaveEventResource(title, new Date(startDateTime), new Date(endDateTime), description, doctorProfileId, petId, 'default-event-type');
 
             try {
                 const response = isNewEvent
@@ -250,10 +214,10 @@ const eventInputs = [
                 if (response.success) {
                     window.location.href = '/app/calendar';
                 } else {
-                    formError.textContent = response.errorMessage || 'An error occurred.';
+                    formError.textContent = response.errorMessage || 'Ha ocurrido un error. Por favor, inténtalo de nuevo.';
                 }
             } catch (error) {
-                formError.textContent = 'An unexpected error occurred.';
+                formError.textContent = 'Ha ocurrido un error. Por favor, inténtalo de nuevo.';
             } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = isNewEvent ? 'Crear evento' : 'Guardar cambios';

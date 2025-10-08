@@ -1,7 +1,7 @@
 ---
 import AuthContainer from "@/contexts/auth/client/presentation/components/auth-container.component.astro"
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
+import type { Props as SimpleTextProps } from "@/contexts/_shared/client/presentation/components/inputs/simple-text-input.component.astro";
 import DogCat from "@/assets/dogcat.png"
 
 const veterinarianRoleId = import.meta.env.VETERINARIAN_ROLE_ID;
@@ -55,16 +55,16 @@ const inputFields = [
         <form id="register-form" class="flex flex-col w-full gap-5" novalidate data-veterinarian-role-id={veterinarianRoleId}>
             {
                 inputFields.map((inputField) => 
-                inputField.asRow ? 
-                    <div class="flex flex-row gap-5">
-                        {
-                            inputField.children.map((child) => 
-                                <DynamicInput {...child} class="w-full flex-1" />
-                            )
-                        }
-                    </div> 
-                    : 
-                    <DynamicInput {...inputField} class="w-full" />
+                    inputField.asRow ? 
+                        <div class="flex flex-row gap-5">
+                            {
+                                inputField.children.map((child) => 
+                                    <DynamicInput {...child} class="w-full flex-1" />
+                                )
+                            }
+                        </div> 
+                        : 
+                        <DynamicInput {...inputField as SimpleTextProps} class="w-full" />
                 )
             }
             <div id="form-error" class="text-red-600 text-sm font-semibold"></div>
@@ -78,6 +78,7 @@ const inputFields = [
     import { registerUser } from "@/contexts/auth/client/usecases/register-user.usecase";
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+    import { clearError, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('register-form') as HTMLFormElement | null;
@@ -89,24 +90,6 @@ const inputFields = [
             const passwordInput = document.getElementById('password') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-
-            const showError = (input: HTMLInputElement, message: string) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = message;
-                }
-                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                input.classList.add('outline-red-500', 'focus:outline-red-500');
-            }
-
-            const clearError = (input: HTMLInputElement) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = '';
-                }
-                input.classList.remove('outline-red-500', 'focus:outline-red-500');
-                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-            }
 
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();

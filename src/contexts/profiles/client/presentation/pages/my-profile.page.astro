@@ -91,7 +91,7 @@ const profileInputs = [
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('profile-form') as HTMLFormElement;
@@ -116,26 +116,6 @@ const profileInputs = [
             const emailInput = document.getElementById('email') as HTMLInputElement;
             const phoneInput = document.getElementById('phone') as HTMLInputElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-
-            const showError = (input: HTMLInputElement, message: string) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = message;
-                }
-                // Cambia el color del borde del input a rojo
-                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                input.classList.add('outline-red-500', 'focus:outline-red-500');
-            }
-
-            const clearError = (input: HTMLInputElement) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = '';
-                }
-                // Restaura el color del borde del input
-                input.classList.remove('outline-red-500', 'focus:outline-red-500');
-                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-            }
 
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -218,13 +198,11 @@ const profileInputs = [
             });
         }
 
-        // --- Lógica para el botón de eliminar ---
+
+        // Delete dialog logic
         const openDialogButton = document.getElementById('open-delete-dialog-button');
-        // Dialog in delete-pet-dialog.component.astro
         const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
+        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
 
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }

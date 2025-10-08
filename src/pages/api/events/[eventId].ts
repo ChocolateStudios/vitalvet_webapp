@@ -12,14 +12,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
 
     try {
         const body = await request.json();
-        const resource = new SaveEventResource();
-        resource.title = body.title;
-        resource.description = body.description;
-        resource.startDateTime = new Date(body.startDateTime);
-        resource.endDateTime = new Date(body.endDateTime);
-        resource.petId = body.petId;
-        resource.doctorProfileId = body.doctorProfileId;
-        resource.eventTypeId = body.eventTypeId;
+        const resource = new SaveEventResource(body.title, new Date(body.startDateTime), new Date(body.endDateTime), body.description, body.doctorProfileId, body.petId, body.eventTypeId);
 
         const updatedEvent = await EventsRepository.update(eventId, resource);
         return new Response(JSON.stringify(updatedEvent), {

@@ -48,6 +48,7 @@ const inputFields = [
 <script>
     import { SaveUserResource } from "@/contexts/auth/server/interfaces/api/resources/save-user.resource";
     import { loginUser } from "@/contexts/auth/client/usecases/login-user.usecase";
+    import { clearError, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         const form = document.getElementById('login-form') as HTMLFormElement | null;
@@ -57,24 +58,6 @@ const inputFields = [
             const passwordInput = document.getElementById('password') as HTMLInputElement;
             const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
             const formError = document.getElementById('form-error') as HTMLDivElement;
-
-            const showError = (input: HTMLInputElement, message: string) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = message;
-                }
-                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                input.classList.add('outline-red-500', 'focus:outline-red-500');
-            }
-
-            const clearError = (input: HTMLInputElement) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = '';
-                }
-                input.classList.remove('outline-red-500', 'focus:outline-red-500');
-                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-            }
 
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();

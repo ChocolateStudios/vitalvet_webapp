@@ -3,15 +3,12 @@ import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
-// import BaseSwitch from "@/contexts/_shared/client/presentation/components/base-switch.component.astro";
 import DeletePetDialog from "@/contexts/pets/client/presentation/components/delete-pet-dialog.component.astro";
 import EditIcon from "@/contexts/_shared/client/presentation/components/icons/EditIcon.astro";
 import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-// import BaseCombobox, { type Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/base-combobox.component.astro";
 import ModalManager from "@/contexts/_shared/client/presentation/components/modal-manager.component.astro";
 import PetOwnerModal from "@/contexts/pets/client/presentation/components/petowner-modal.component.astro";
 import { getAllSpecies, getAllSubspecies } from "@/contexts/pets/server/application/usecases/getall-species-subspecies.usecase";
@@ -195,7 +192,7 @@ const detailInputs = [
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {
                 detailInputs.map(input => {
-                    return <DynamicInput {...input} />;
+                    return <DynamicInput {...input as any} />;
                 })
             }
             </div>
@@ -237,7 +234,7 @@ const detailInputs = [
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
-    import { getFormDataObj } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     declare global {
         interface Window {
@@ -299,36 +296,6 @@ const detailInputs = [
             }
             
             const isNewPet = !formDataObj.petId;
-
-            const showError = (input: HTMLInputElement, message: string) => {
-                const isHiddenValueInput = input.id.endsWith('-value');
-                const baseId = isHiddenValueInput ? input.id.slice(0, -6) : input.id;
-                const errorContainer = document.getElementById(`${baseId}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = message;
-                }
-                // Aplica estilos al input visible, no al oculto.
-                const visibleInput = isHiddenValueInput ? document.getElementById(baseId) as HTMLInputElement : input;
-                if (visibleInput) {
-                    visibleInput.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                    visibleInput.classList.add('outline-red-500', 'focus:outline-red-500');
-                }
-            }
-
-            const clearError = (input: HTMLInputElement) => {
-                const isHiddenValueInput = input.id.endsWith('-value');
-                const baseId = isHiddenValueInput ? input.id.slice(0, -6) : input.id;
-                const errorContainer = document.getElementById(`${baseId}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = '';
-                }
-                // Restaura estilos en el input visible.
-                const visibleInput = isHiddenValueInput ? document.getElementById(baseId) as HTMLInputElement : input;
-                if (visibleInput) {
-                    visibleInput.classList.remove('outline-red-500', 'focus:outline-red-500');
-                    visibleInput.classList.add('outline-gray-300', 'focus:outline-blue-800');
-                }
-            }
 
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -438,13 +405,11 @@ const detailInputs = [
             });
         }
 
-        // --- Lógica para el botón de eliminar ---
+
+        // Delete dialog logic
         const openDialogButton = document.getElementById('open-delete-dialog-button');
-        // Dialog in delete-pet-dialog.component.astro
         const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
+        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
 
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }

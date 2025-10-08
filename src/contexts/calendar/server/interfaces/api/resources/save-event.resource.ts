@@ -9,6 +9,16 @@ export class SaveEventResource {
     public petId: number | string = 0;
     public eventTypeId: number | string = 0;
 
+    constructor(title: string, startDateTime: Date, endDateTime: Date, description: string, doctorProfileId: number | string, petId: number | string, eventTypeId: number | string) {
+        this.title = title;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.description = description;
+        this.doctorProfileId = doctorProfileId;
+        this.petId = petId;
+        this.eventTypeId = eventTypeId;
+    }
+
     public toModel(): Event {
         return {
             ...this,
