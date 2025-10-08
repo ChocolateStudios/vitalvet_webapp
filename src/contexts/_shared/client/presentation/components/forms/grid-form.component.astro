@@ -1,0 +1,27 @@
+---
+export interface Props {
+    id?: string;
+    dataset?: any;
+    cols?: number;
+    lgCols?: number;
+    smCols?: number;
+}
+
+const {
+    id,
+    dataset,
+    cols = 1,
+    lgCols = 1,
+    smCols = 1,
+} = Astro.props as Props;
+
+---
+
+<form 
+    id={id} 
+    class={`grid gap-8 items-center grid-cols-${cols} lg:grid-cols-${lgCols} sm:grid-cols-${smCols}`} 
+    data-form-data={JSON.stringify(dataset)} 
+    novalidate
+>
+    <slot/>
+</form>

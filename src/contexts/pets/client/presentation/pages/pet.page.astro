@@ -21,6 +21,8 @@ import ActionButton from "@/contexts/_shared/client/presentation/components/acti
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
+import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
+import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
@@ -171,10 +173,9 @@ const detailInputs = [
             </p> 
         }
     </ContentTop>
-    <!-- <form id="pet-form" class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center" data-pet-id={pet?.id} novalidate> -->
-    <SimpleForm id="pet-form" dataset={{ petId: pet?.id }}>
+    <GridForm id="pet-form" lgCols={5} dataset={{ petId: pet?.id }}>
         <!-- Card de Perfil (Izquierda) -->
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
+        <SimpleCard lgColSpan="2" class="flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">
                 <img 
                     src={petProfilePhoto.src} 
@@ -186,10 +187,10 @@ const detailInputs = [
                 </button>
             </div>
             <DynamicInput {...profileInput} class="w-full" />
-        </div>
+        </SimpleCard>
 
         <!-- Card de Detalles (Derecha) -->
-        <div class="lg:col-span-3 bg-white rounded-xl shadow-lg p-8">
+        <SimpleCard lgColSpan="3">
             <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Información detallada</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {
@@ -198,6 +199,8 @@ const detailInputs = [
                 })
             }
             </div>
+            
+            <!-- Action Buttons -->
             <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
                 { pet &&
                     <>
@@ -221,9 +224,8 @@ const detailInputs = [
                     </>
                 }
             </div>
-        </div>
-    </SimpleForm>
-    <!-- </form> -->
+        </SimpleCard>
+    </GridForm>
     <PetOwnerModal />
     <SpeciesModal />
     <SubspeciesModal {allSpecies} />

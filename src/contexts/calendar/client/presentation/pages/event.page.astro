@@ -1,7 +1,6 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 import { getEvent, type EventInfo } from "@/contexts/calendar/server/application/usecases/get-event.usecase";
 import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-pets.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
@@ -9,7 +8,8 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 import DeleteEventDialog from '@/contexts/calendar/client/presentation/components/delete-event-dialog.component.astro';
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
-import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
+import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
+import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 const { eventId } = Astro.props;
@@ -35,7 +35,7 @@ if (getDoctorsResult.success) {
     doctors = getDoctorsResult.data?.map((d: any) => ({ id: d.id, name: `${d.name} ${d.lastname}` })) ?? [];
 }
 
-const detailInputs = [
+const eventInputs = [
     {
         id: "title",
         name: "title",
@@ -93,29 +93,30 @@ const detailInputs = [
         }
     </ContentTop>
 
-    <!-- <form id="event-form" class="bg-white rounded-xl shadow-lg p-8" data-event-id={event?.id} novalidate> -->
-    <SimpleForm id="event-form" dataset={{ eventId: event?.id }}>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-            {detailInputs.map(input => <DynamicInput {...input} />)}
-        </div>
+    <GridForm id="event-form" dataset={{ eventId: event?.id }}>
+        <SimpleCard>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                {eventInputs.map(input => <DynamicInput {...input} />)}
+            </div>
 
-        <div id="form-error" class="mt-4 text-red-600"></div>
+            <div id="form-error" class="mt-4 text-red-600"></div>
 
-        <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
-            <ActionButton id="submit-button" type="submit">
-                { event ? "Guardar cambios" : "Crear evento" }
-            </ActionButton>
-            { event &&
-                <>
-                    <ActionButton id="open-delete-dialog-button" type="danger">
-                        Eliminar
-                    </ActionButton>
-                    <DeleteEventDialog eventTitle={event?.title} />
-                </>
-            }
-        </div>
-    </SimpleForm>
-    <!-- </form> -->
+            <!-- Action Buttons -->
+            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
+                <ActionButton id="submit-button" type="submit">
+                    { event ? "Guardar cambios" : "Crear evento" }
+                </ActionButton>
+                { event &&
+                    <>
+                        <ActionButton id="open-delete-dialog-button" type="danger">
+                            Eliminar
+                        </ActionButton>
+                        <DeleteEventDialog eventTitle={event?.title} />
+                    </>
+                }
+            </div>
+        </SimpleCard>
+    </GridForm>
 </ContentContainer>
 
 <script>
