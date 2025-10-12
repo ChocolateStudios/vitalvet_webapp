@@ -1,15 +1,19 @@
 ---
+import BaseForm from '@/contexts/_shared/client/presentation/components/forms/base-form.astro';
+
 export interface Props {
     id?: string;
     dataset?: any;
+    editMode?: boolean;
 }
 
 const {
     id,
     dataset,
+    editMode,
 } = Astro.props as Props;
 ---
 
-<form id={id} class="flex justify-center" data-form-data={JSON.stringify(dataset)} novalidate>
+<BaseForm id={id} class="flex justify-center" dataset={dataset} editMode={editMode}>
     <slot/>
-</form>
+</BaseForm>

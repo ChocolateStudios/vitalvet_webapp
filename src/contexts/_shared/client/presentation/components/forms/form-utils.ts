@@ -37,3 +37,20 @@ export const clearError = (input: HTMLInputElement) => {
         visibleInput.classList.add('outline-gray-300', 'focus:outline-blue-800');
     }
 }
+
+export const validateRulesPerField = (rules: any, data: any) => {
+    const errors: any = {};
+    for (const fieldName in rules) {
+        for (const rule of rules[fieldName]) {
+            const value = data[fieldName];
+            if (!rule.validate(value)) {
+                errors[fieldName] = rule.message;
+                break; // Para en el primer error de un campo
+            }
+        }
+    }
+    return {
+        isValid: Object.keys(errors).length === 0,
+        errors
+    };
+}

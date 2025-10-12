@@ -17,7 +17,6 @@ import SubspeciesModal from "@/contexts/pets/client/presentation/components/subs
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
-import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
@@ -170,7 +169,7 @@ const detailInputs = [
             </p> 
         }
     </ContentTop>
-    <GridForm id="pet-form" lgCols={5} dataset={{ petId: pet?.id }}>
+    <GridForm id="pet-form" lgCols={5} dataset={{ petId: pet?.id }} editMode={!!pet}>
         <!-- Card de Perfil (Izquierda) -->
         <SimpleCard lgColSpan="2" class="flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">
@@ -230,183 +229,127 @@ const detailInputs = [
 </ContentContainer>
 
 <script>
-    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
-    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { getFormDataObj, showError, validateRulesPerField } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     declare global {
         interface Window {
             listenersInitialized?: boolean;
         }
     }
-    function initializePageScripts() {
+    function initializeForm() {
         const form = document.getElementById('pet-form') as HTMLFormElement | null;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement | null;
+        if (!form) return;
 
-        if (form && submitButton) {
-            const formDataObj = getFormDataObj(form);
+        /*************************************************************
+         ***** Calculate and insert years based on date of birth *****
+        **************************************************************/
+        const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
+        const petAgeInput = document.getElementById('age') as HTMLInputElement;
 
-            const isEditMode = !!formDataObj.petId;
+        if (birthdayInput && petAgeInput) {
+            birthdayInput.addEventListener('input', () => {
+                const birthDateString = birthdayInput.value;
+                if (birthDateString) {
+                    // The browser usually returns YYYY-MM-DD. Appending T00:00:00 ensures it's parsed in the local timezone
+                    // and avoids potential off-by-one day errors due to UTC conversion.
+                    const birthDate = new Date(`${birthDateString}T00:00:00`);
+                    const today = new Date();
+                    
+                    // Set hours to 0 to compare dates only
+                    today.setHours(0, 0, 0, 0);
 
-            if (isEditMode) {
-                const formStateManager = new FormStateManager(form, submitButton);
-                formStateManager.initialize();
-            } else {
-                // En modo creación, el botón debe estar habilitado por defecto
-                submitButton.disabled = false;
-            }
-
-            const petNameInput = document.getElementById('name') as HTMLInputElement;
-            const petOwnerInput = document.getElementById('owner-value') as HTMLInputElement;
-            const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
-            const petSpeciesInput = document.getElementById('species-value') as HTMLInputElement;
-            const petSubspeciesInput = document.getElementById('subspecies-value') as HTMLInputElement;
-            const petAgeInput = document.getElementById('age') as HTMLInputElement;
-            const petStatusInput = document.getElementById('status-value') as HTMLInputElement;
-            const formError = document.getElementById('form-error') as HTMLDivElement;
-
-            if (birthdayInput && petAgeInput) {
-                birthdayInput.addEventListener('input', () => {
-                    const birthDateString = birthdayInput.value;
-                    if (birthDateString) {
-                        // The browser usually returns YYYY-MM-DD. Appending T00:00:00 ensures it's parsed in the local timezone
-                        // and avoids potential off-by-one day errors due to UTC conversion.
-                        const birthDate = new Date(`${birthDateString}T00:00:00`);
-                        const today = new Date();
-                        
-                        // Set hours to 0 to compare dates only
-                        today.setHours(0, 0, 0, 0);
-
-                        if (!isNaN(birthDate.getTime()) && birthDate <= today) {
-                            let age = today.getFullYear() - birthDate.getFullYear();
-                            const m = today.getMonth() - birthDate.getMonth();
-                            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                                age--;
-                            }
-                            petAgeInput.value = age.toString();
-                        } else {
-                            petAgeInput.value = '';
+                    if (!isNaN(birthDate.getTime()) && birthDate <= today) {
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const m = today.getMonth() - birthDate.getMonth();
+                        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                            age--;
                         }
+                        petAgeInput.value = age.toString();
                     } else {
                         petAgeInput.value = '';
                     }
-                });
-            }
-            
-            const isNewPet = !formDataObj.petId;
-
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                // Limpia errores previos
-                clearError(petNameInput);
-                clearError(petOwnerInput);
-                clearError(birthdayInput);
-                clearError(petAgeInput);
-                clearError(petSpeciesInput);
-                clearError(petSubspeciesInput);
-                if (formError) {
-                    formError.textContent = '';
-                }
-
-                const petName = petNameInput.value;
-                const petOwner = petOwnerInput.value;
-                const birthday = birthdayInput.value;
-                // const petAge = petAgeInput.value;
-                const petSpecies = petSpeciesInput.value;
-                const petSubspecies = petSubspeciesInput.value;
-                const petStatus = petStatusInput.value;
-
-                let isValid = true;
-
-                // Validaciones
-                if (!petName) {
-                    showError(petNameInput, 'El nombre es obligatorio');
-                    isValid = false;
-                } else if (petName.length < 3) {
-                    showError(petNameInput, 'El nombre debe tener al menos 3 caracteres');
-                    isValid = false;
-                }
-
-                if (!petOwner) {
-                    showError(petOwnerInput, 'El dueño es obligatorio');
-                    isValid = false;
-                }
-
-                if (!birthday) {
-                    showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
-                    isValid = false;
-                }
-
-                //********************************* */
-                // No se valida ya que se autocalcula del birthday
-                //********************************* */
-                // if (!petAge) {
-                //     showError(petAgeInput, 'La edad es obligatoria');
-                //     isValid = false;
-                // } else if (isNaN(Number(petAge))) {
-                //     showError(petAgeInput, 'La edad debe ser un número válido');
-                //     isValid = false;
-                // }
-
-                if (!petSpecies) {
-                    showError(petSpeciesInput, 'La especie es obligatoria');
-                    isValid = false;
-                }
-
-                if (!petSubspecies) {
-                    showError(petSubspeciesInput, 'La raza es obligatoria');
-                    isValid = false;
-                } 
-
-                if (isValid) {
-                    submitButton.disabled = true;
-                    const resource = new SavePetResource(petName, /*petSpecies, petSubspecies,*/ "", new Date(birthday), petStatus, petOwner ?? 0, petSubspecies ?? 0);
-
-                    if (isNewPet) {
-                        submitButton.textContent = 'Creando mascota...';
-
-                        try {
-                            const response = await createPet(resource);
-                            if (response.success) {
-                                window.location.href = '/app/home';
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al crear mascota. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al crear mascota:', error);
-                            formError.textContent = 'Error al crear mascota. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Crear mascota';
-                        }
-                    } else {
-                        submitButton.textContent = 'Actualizando mascota...';
-
-                        try {
-                            const response = await updatePet(formDataObj.petId!, resource);
-                            if (response.success) {
-                                // window.location.reload();
-                                window.location.href = '/app/home';
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al crear mascota:', error);
-                            formError.textContent = 'Error al actualizar la mascota. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Guardar cambios';
-                        }
-                    }
+                } else {
+                    petAgeInput.value = '';
                 }
             });
         }
+        
+        /*****************************
+         ***** Input Validations *****
+        ******************************/
 
+        // IMPORTANT: validation name must be same as the 'name' attribute of the input
+        const validationRules = {
+            name: [
+                { validate: (value: string) => !!value, message: 'El nombre es obligatorio' },
+                { validate: (value: string) => value.length >= 3, message: 'El nombre debe tener al menos 3 caracteres' }
+            ],
+            owner: [
+                { validate: (value: string) => !!value, message: 'El dueño es obligatorio' }
+            ],
+            birthday: [
+                { validate: (value: string) => !!value, message: 'La fecha de nacimiento es obligatoria' }
+            ],
+            // age: [
+            //     { validate: (value: string) => value, message: 'La edad es obligatoria' },
+            //     { validate: (value: string) => !isNaN(Number(value)), message: 'La edad debe ser un número válido' }
+            // ],
+            species: [
+                { validate: (value: string) => !!value, message: 'La especie es obligatoria' }
+            ],
+            subspecies: [
+                { validate: (value: string) => !!value, message: 'La raza es obligatoria' }
+            ]
+        };
+        
+        form.validationRules = validationRules;
+        
+        /************************
+         ***** Submit event *****
+        *************************/
 
-        // Delete dialog logic
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        
+            /********************
+             ***** Api Call *****
+            *********************/
+
+            // If all good, REGISTER/UPDATE
+            submitButton.disabled = true;
+            submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
+
+            const resource = new SavePetResource(data.name, "", new Date(data.birthday), data.status, data.owner ?? 0, data.subspecies ?? 0);
+            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+            const badErrorMessage = `Error al ${actionMessage} mascota. Por favor, inténtalo de nuevo.`;
+
+            try {
+                const response = !isEditMode ? await createPet(resource) : await updatePet(formDataObj.petId!, resource);
+
+                if (response.success) {
+                    window.location.href = '/app/home';
+                } else {
+                    formError.textContent = response.errorMessage ?? badErrorMessage;
+                }
+            } catch (error) {
+                console.error(`Error al ${actionMessage} mascota:`, error);
+                formError.textContent = badErrorMessage;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+            }
+        });
+    }
+
+    function initializeDeleteDialog() {
+        /*******************************
+         ***** Delete dialog logic *****
+        ********************************/
+
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
@@ -474,10 +417,12 @@ const detailInputs = [
         });
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
     document.addEventListener('astro:page-load', () => {
-        initializePageScripts();
+        initializeForm();
+        initializeDeleteDialog();
         initializeListeners();
     });
 

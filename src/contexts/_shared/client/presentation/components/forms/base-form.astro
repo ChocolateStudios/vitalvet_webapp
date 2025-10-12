@@ -1,0 +1,157 @@
+--- 
+export interface Props {
+    id?: string;
+    dataset?: any;
+    class?: string | (string | Record<string, any>)[];
+    editMode?: boolean;
+}
+
+const {
+    id,
+    dataset,
+    class: className,
+    editMode,
+} = Astro.props as Props;
+---
+
+<form id={id} class:list={className} data-form-data={JSON.stringify({ ...dataset, editMode })} novalidate>
+    <slot/>
+</form>
+
+<script>
+    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
+    import { clearError, getFormDataObj, showError, validateRulesPerField } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+
+    function initializePageScripts() {
+        class BaseForm extends HTMLElement {
+            form: HTMLFormElement | null = null;
+            inputs: NodeListOf<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> | [] = [];
+            submitButton: HTMLButtonElement | null = null;
+            isEditMode: boolean = false;
+            formDataObj: any = {};
+            formError?: HTMLDivElement | null = null;
+
+            constructor() {
+                super();
+            }
+
+
+            /**************************************************
+             ***** Initialization when is inserted on DOM *****
+            ***************************************************/
+            connectedCallback() {
+                // setTimeout -> Defer the initialization to the next event loop cycle.
+                // This is a common pattern to solve race conditions where a parent element's
+                // callback fires before its children have been appended by an external script.
+                setTimeout(() => {
+                    this.form = this.querySelector('form');
+                    if (!this.form) return;
+
+                    this.inputs = this.form.querySelectorAll('input, select, textarea');
+                    this.submitButton = this.form.querySelector('button[type="submit"]');
+
+                    this.form.addEventListener('submit', this.handleSubmit.bind(this));
+
+                    // Initialize FormStateManager for forms in "edit mode" that have a submit button.
+                    if (this.submitButton) {
+                        this.formDataObj = getFormDataObj(this.form);
+                        this.isEditMode = this.formDataObj?.editMode === 'true' || this.formDataObj?.editMode === true;
+
+                        if (this.isEditMode) {
+                            const formStateManager = new FormStateManager(this.form, this.submitButton);
+                            formStateManager.initialize();
+                        } else {
+                            // For non-edit mode forms, ensure the button is enabled by default.
+                            this.submitButton.disabled = false;
+                        }
+                    }
+                }, 0);
+            }
+
+            private handleSubmit(event: Event) {
+                event.preventDefault();
+
+                /***************************************
+                 ***** Cleaning up previous errors *****
+                ****************************************/
+
+                // Limpia errores previos de todos los inputs
+                this.inputs.forEach(input => clearError(input as HTMLInputElement));
+
+                // Limpia el error general del formulario
+                this.formError = this.form?.querySelector('.form-error');
+                if (this.formError) {
+                    this.formError.textContent = '';
+                }
+
+                /**********************************************
+                 ***** Emit event for logic from the page *****
+                ***********************************************/
+                
+                const formData = new FormData(this.form!);
+                const data = Object.fromEntries(formData.entries());
+            
+                /*****************************
+                 ***** Input Validations *****
+                ******************************/
+
+                // Retrieve rules attached from the page-specific script
+                const validationRules = this.form?.validationRules;
+
+                // Only run validation if rules are provided
+                if (validationRules) {
+                    // Execute input validations
+                    const { isValid, errors } = validateRulesPerField(validationRules, data);
+
+                    if (!isValid) {
+                        const inputsMap = new Map(Array.from(this.inputs).map((i: any) => [i.name, i]));
+                        for (const fieldName in errors) {
+                            const inputElement = inputsMap.get(fieldName) as HTMLInputElement;
+                            if (inputElement) {
+                                showError(inputElement, errors[fieldName]); // show error message per input
+                            }
+                        }
+                        return; // Stop execution
+                    }
+                }
+
+                this.form?.dispatchEvent(new CustomEvent('form:submit', {
+                    bubbles: true,
+                    composed: true,
+                    detail: { data, inputs: this.inputs, submitButton: this.submitButton, isEditMode: this.isEditMode, formDataObj: this.formDataObj, },
+                }));
+            }
+
+            public getFormData() {
+                if (!this.form) return {};
+                const formData = new FormData(this.form);
+                return Object.fromEntries(formData.entries());
+            }
+        }
+
+        // Define the custom element if it hasn't been defined yet.
+        if (!customElements.get('base-form-container')) {
+            // Use a container name to avoid conflicts with the Astro component itself
+            customElements.define('base-form-container', BaseForm);
+        }
+
+        // To make this script work with Astro's View Transitions,
+        // we need to wrap our component in a custom element container.
+        // This script will run on every page load.
+        document.querySelectorAll('form').forEach(form => {
+            // Check if the wrapper has already been added
+            if (form.parentElement?.tagName !== 'BASE-FORM-CONTAINER') {
+                const wrapper = document.createElement('base-form-container');
+                wrapper.setAttribute('id', `${form.id}-container`);
+                form.before(wrapper);
+                wrapper.append(form);
+            }
+        });
+    }
+
+    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
+    // y en cada navegación del lado del cliente.
+    document.addEventListener('astro:page-load', () => {
+        initializePageScripts();
+    });
+</script>

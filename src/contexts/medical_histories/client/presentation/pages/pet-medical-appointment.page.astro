@@ -1,10 +1,6 @@
 ---
-import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
-// import BaseTextArea from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
-// import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
 import DeletePetMedicalAppointmentDialog from "@/contexts/medical_histories/client/presentation/components/delete-pet-medical-appointment-dialog.component.astro";
 import { getMedicalAppointment, type MedicalAppointmentInfo } from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
@@ -13,7 +9,6 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
-import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
@@ -45,25 +40,6 @@ if (getDoctorProfilesResult.success) {
         }));
 }
 
-const profileInputs = [
-    {
-        id: "name",
-        name: "name",
-        type: "text",
-        autocomplete: "name",
-        label: "Nombre",
-        value: pet?.name,
-    },
-    {
-        id: "owner",
-        name: "owner",
-        type: "text",
-        autocomplete: "owner",
-        label: "Propietario",
-        value: pet?.ownerName,
-    },
-];
-
 const medicalAppointmentInfoInputs = [
     {
         id: "doctor",
@@ -75,16 +51,6 @@ const medicalAppointmentInfoInputs = [
             : (doctorProfiles && doctorProfiles.length > 0) ? doctorProfiles.find(dp => dp.me === true)?.id.toString() : "",
         options: doctorProfiles ?? [],
     },
-    // {
-    //     id: "date",
-    //     name: "date",
-    //     type: "date",
-    //     autocomplete: "appointmentDate",
-    //     label: "Fecha de la cita",
-    //     value: medicalAppointment ? 
-    //         medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
-    //         : new Date().toISOString().split('T')[0],
-    // },
 ];
 
 const medicalAppointmentInputs = [
@@ -190,150 +156,94 @@ const medicalAppointmentInputs = [
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
-    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
-    function initializePageScripts() {
+    function initializeForm() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        if (!form) return;
 
-        if (form && submitButton) {
-            const formDataObj = getFormDataObj(form);
+        /*****************************
+         ***** Input Validations *****
+        ******************************/
 
-            const isEditMode = !!formDataObj.medicalAppointmentId;
+        // IMPORTANT: validation name must be same as the 'name' attribute of the input
+        const validationRules = {
+            weight: [
+                { validate: (value: string) => !!value, message: 'El peso es obligatorio' },
+                { validate: (value: string) => !isNaN(Number(value)), message: 'El peso debe ser un número' },
+                { validate: (value: string) => Number(value) > 0, message: 'El peso debe ser mayor a 0' }
+            ],
+            observations: [
+                { validate: (value: string) => !!value, message: 'Las observaciones son obligatorias' }
+            ],
+            prescription: [
+                { validate: (value: string) => !!value, message: 'La receta/tratamiento es obligatoria' }
+            ],
+            doctor: [
+                { validate: (value: string) => !!value, message: 'El veterinario es obligatorio' }
+            ],
+            date: [
+                { validate: (value: string) => !!value, message: 'La fecha de la cita es obligatoria' }
+            ]
+        };
+        
+        form.validationRules = validationRules;
 
-            if (isEditMode) {
-                const formStateManager = new FormStateManager(form, submitButton);
-                formStateManager.initialize();
-            } else {
-                // En modo creación, el botón debe estar habilitado por defecto
+        /************************
+         ***** Submit event *****
+        *************************/
+
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+
+            /********************
+             ***** Api Call *****
+            *********************/
+
+            // If all good, REGISTER/UPDATE
+            submitButton.disabled = true;
+            submitButton.textContent = !isEditMode ? 'Creando cita médica...' : 'Actualizando cita médica...';
+
+            const resource = new SaveMedicalAppointmentResource(Number(data.weight), data.observations, data.prescription, new Date(data.date), data.doctor ?? 0);
+            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+            const badErrorMessage = `Error al ${actionMessage} cita médica. Por favor, inténtalo de nuevo.`;
+
+            try {
+                const response = !isEditMode ? await createMedicalAppointment(formDataObj.petId!, resource) : 
+                                    await updateMedicalAppointment(formDataObj.petId!, formDataObj.medicalAppointmentId!, resource);
+
+                if (response.success) {
+                    window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
+                } else {
+                    formError.textContent = response.errorMessage ?? badErrorMessage;
+                }
+            } catch (error) {
+                console.error(`Error al crear ${actionMessage} médica:`, error);
+                formError.textContent = badErrorMessage;
+            } finally {
                 submitButton.disabled = false;
+                submitButton.textContent = !isEditMode ? 'Crear cita médica' : 'Guardar cambios';
             }
+        });
+    }
 
-            const weightInput = document.getElementById('weight') as HTMLInputElement;
-            // const detailsInput = document.getElementById('details') as HTMLInputElement;
-            const observationsInput = document.getElementById('observations') as HTMLInputElement;
-            const prescriptionInput = document.getElementById('prescription') as HTMLInputElement;
-            const doctorInput = document.getElementById('doctor-value') as HTMLInputElement;
-            const dateInput = document.getElementById('date') as HTMLInputElement;
-            const formError = document.getElementById('form-error') as HTMLDivElement;
-            
-            const isNewMedicalAppointment = !formDataObj.medicalAppointmentId;
+    function initializeDeleteDialog() {
+        /*******************************
+         ***** Delete dialog logic *****
+        ********************************/
 
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                // Limpia errores previos
-                // clearError(detailsInput);
-                clearError(observationsInput);
-                clearError(prescriptionInput);
-                if (formError) {
-                    formError.textContent = '';
-                }
-
-                const weight = weightInput.value;
-                // const details = detailsInput.value;
-                const observations = observationsInput.value;
-                const prescription = prescriptionInput.value;
-                const doctor = doctorInput.value;
-                const date = dateInput.value;
-
-                let isValid = true;
-
-                // Validaciones
-                if (!weight) {
-                    showError(weightInput, 'El peso es obligatorio');
-                    isValid = false;
-                } else if (isNaN(Number(weight))) {
-                    showError(weightInput, 'El peso debe ser un número');
-                    isValid = false;
-                } else if (Number(weight) <= 0) {
-                    showError(weightInput, 'El peso debe ser mayor a 0');
-                    isValid = false;
-                }
-
-                // if (!details) {
-                //     showError(detailsInput, 'Los detalles son obligatorios');
-                //     isValid = false;
-                // }
-
-                if (!observations) {
-                    showError(observationsInput, 'Las observaciones son obligatorias');
-                    isValid = false;
-                }
-
-                if (!prescription) {
-                    showError(prescriptionInput, 'La receta/tratamiento es obligatoria');
-                    isValid = false;
-                }
-
-                if (!doctor) {
-                    showError(document.getElementById('doctor') as HTMLInputElement, 'El veterinario es obligatorio');
-                    isValid = false;
-                }
-
-                if (!date) {
-                    showError(dateInput, 'La fecha de la cita es obligatoria');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    submitButton.disabled = true;
-
-                    const resource = new SaveMedicalAppointmentResource(Number(weight), /*details, */observations, prescription, new Date(date), doctor ?? 0);
-
-                    if (isNewMedicalAppointment) {
-                        submitButton.textContent = 'Creando cita médica...';
-
-                        try {
-                            const response = await createMedicalAppointment(formDataObj.petId!, resource);
-                            if (response.success) {
-                                window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al crear cita médica:', error);
-                            formError.textContent = 'Error al crear cita médica. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Crear cita médica';
-                        }
-                    } else {
-                        submitButton.textContent = 'Actualizando cita médica...';
-
-                        try {
-                            const response = await updateMedicalAppointment(formDataObj.petId!, formDataObj.medicalAppointmentId!, resource);
-                            if (response.success) {
-                                // window.location.reload();
-                                window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al actualizar la cita médica:', error);
-                            formError.textContent = 'Error al actualizar la cita médica. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Guardar cambios';
-                        }
-                    }
-                }
-            });
-        }
-
-        // --- Lógica para el botón de eliminar ---
         const openDialogButton = document.getElementById('open-delete-dialog-button');
-        // Dialog in delete-pet-dialog.component.astro
         const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
+        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
 
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializeForm();
+        initializeDeleteDialog();
+    });
 </script>

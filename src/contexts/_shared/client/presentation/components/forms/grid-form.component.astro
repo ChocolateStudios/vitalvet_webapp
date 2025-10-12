@@ -1,27 +1,43 @@
 ---
+import BaseForm from '@/contexts/_shared/client/presentation/components/forms/base-form.astro';
+
 export interface Props {
     id?: string;
     dataset?: any;
     cols?: number;
     lgCols?: number;
     smCols?: number;
+    editMode?: boolean;
 }
 
 const {
     id,
     dataset,
     cols = 1,
-    lgCols = 1,
-    smCols = 1,
+    lgCols: paramLgCols,
+    smCols: paramSmCols,
+    editMode,
 } = Astro.props as Props;
 
+const smCols = paramSmCols ?? cols;
+const lgCols = paramLgCols ?? cols;
+
+
+const classList = [
+    'grid',
+    'gap-8',
+    'items-center',
+    `grid-cols-${cols}`,
+    `lg:grid-cols-${lgCols}`,
+    `sm:grid-cols-${smCols}`,
+];
 ---
 
-<form 
+<BaseForm 
     id={id} 
-    class={`grid gap-8 items-center grid-cols-${cols} lg:grid-cols-${lgCols} sm:grid-cols-${smCols}`} 
-    data-form-data={JSON.stringify(dataset)} 
-    novalidate
+    class:list={classList} 
+    dataset={dataset}
+    editMode={editMode}
 >
     <slot/>
-</form>
+</BaseForm>
