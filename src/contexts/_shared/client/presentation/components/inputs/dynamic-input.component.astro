@@ -1,6 +1,6 @@
 ---
 // src/contexts/_shared/client/presentation/components/dynamic-input.astro
-import BaseTextInput from "@/contexts/_shared/client/presentation/components/inputs/simple-text-input.component.astro";
+import SimpleTextInput from "@/contexts/_shared/client/presentation/components/inputs/simple-text-input.component.astro";
 import TextareaInput from "@/contexts/_shared/client/presentation/components/inputs/textarea-input.component.astro";
 import SwitchInput from "@/contexts/_shared/client/presentation/components/inputs/switch-input.component.astro";
 import ComboboxInput from "@/contexts/_shared/client/presentation/components/inputs/combobox-input.component.astro";
@@ -15,7 +15,7 @@ type ComponentMap = {
 
 export type Props = SimpleTextProps | TextareaProps | SwitchProps | ComboboxProps;
 
-const { type = "text", ...props } = Astro.props as any;
+const { type = "text", validations, ...props } = Astro.props as any;
 
 const inputComponents: ComponentMap = {
   textarea: TextareaInput,
@@ -23,8 +23,13 @@ const inputComponents: ComponentMap = {
   combobox: ComboboxInput,
 };
 
-// Por defecto, usamos BaseTextInput para todos los tipos de input estándar
-const Component = inputComponents[type] || BaseTextInput;
+// Por defecto, usamos SimpleTextInput para todos los tipos de input estándar
+const Component = inputComponents[type] || SimpleTextInput;
 ---
 
-<Component {...props} type={type} />
+<!--
+  We are passing the validation object as a JSON string because 
+  we can parse it back into a JavaScript object on the <script>, allowing the
+  client-side validation logic to access and execute the validation functions.
+-->
+<Component type={type} {...props} validations={JSON.stringify(validations)} />

@@ -20,6 +20,7 @@ export interface Props {
   visible?: boolean;
   readonly?: boolean;
   editable?: boolean; // Nuevo parámetro
+  validations?: any;
 }
 
 const {
@@ -33,6 +34,7 @@ const {
   visible = true,
   readonly = false,
   editable = true, // Valor por defecto
+  validations,
 } = Astro.props as Props;
 
 const selectedOption = options.find((opt) => String(opt.id) === String(value));
@@ -48,7 +50,7 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
   data-options={JSON.stringify(options)}
   data-editable={editable}
 >
-  <input type="hidden" {name} id={`${id}-value`} value={value} />
+  <input type="hidden" {name} id={`${id}-value`} value={value} data-validations={validations} />
 
   <input
     type="text"

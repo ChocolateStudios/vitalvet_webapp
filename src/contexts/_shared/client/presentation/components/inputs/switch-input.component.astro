@@ -15,6 +15,7 @@ export interface Props {
   falseLabel?: string;
   trueTooltip?: string;
   falseTooltip?: string;
+  validations?: any;
 }
 
 const {
@@ -33,6 +34,7 @@ const {
   falseLabel,
   trueTooltip,
   falseTooltip,
+  validations,
 } = Astro.props as Props;
 
 const isChecked = value === trueValue;
@@ -96,6 +98,7 @@ const initialTooltipText = isDynamicTooltip
         {name}
         id={`${id}-value`}
         value={String(initialHiddenValue)}
+        data-validations={validations}
       />
       <label
         for={id}

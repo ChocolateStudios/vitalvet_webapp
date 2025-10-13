@@ -13,6 +13,7 @@ export interface Props {
   readonly?: boolean;
   tooltip?: string;
   autocomplete?: string;
+  validations?: any;
 }
 
 const {
@@ -27,6 +28,7 @@ const {
   readonly = false,
   tooltip,
   autocomplete,
+  validations,
 } = Astro.props as Props;
 
 const hasIconLeft = Astro.slots.has("icon-left");
@@ -65,6 +67,7 @@ const hasIconRight = Astro.slots.has("icon-right");
     {value}
     {readonly}
     placeholder=" "
+    data-validations={validations}
     class:list={[
       "peer block w-full rounded-md border border-gray-300 px-3.5 pb-2.5 pt-5 text-base text-gray-900",
       "focus:outline-none focus:ring-0 focus:border-2",

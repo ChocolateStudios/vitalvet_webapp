@@ -9,6 +9,7 @@ export interface Props {
   visible?: boolean;
   readonly?: boolean;
   rows?: number;
+  validations?: any;
 }
 
 const {
@@ -21,6 +22,7 @@ const {
   visible = true,
   readonly = false,
   rows = 3,
+  validations,
 } = Astro.props as Props;
 ---
 
@@ -32,6 +34,7 @@ const {
     {rows}
     {readonly}
     placeholder=" "
+    data-validations={validations}
     class:list={[
       "peer block w-full rounded-md border border-gray-300 px-3.5 pb-2.5 pt-5 text-base text-gray-900",
       "focus:outline-none focus:ring-0 focus:border-2",

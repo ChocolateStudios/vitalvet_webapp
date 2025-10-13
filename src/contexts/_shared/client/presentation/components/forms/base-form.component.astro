@@ -20,7 +20,7 @@ const {
 
 <script>
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { clearError, getFormDataObj, showError, validateRulesPerField } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { clearError, collectValidationRulesAndDeleteFromDOM, getFormDataObj, showError, validateRulesPerField } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
         class BaseForm extends HTMLElement {
@@ -30,15 +30,16 @@ const {
             isEditMode: boolean = false;
             formDataObj: any = {};
             formError?: HTMLDivElement | null = null;
+            validationRules: any[] = [];
 
             constructor() {
                 super();
             }
 
 
-            /**************************************************
-             ***** Initialization when is inserted on DOM *****
-            ***************************************************/
+            /*******************************************************
+             ***** Form initialization when is inserted on DOM *****
+            ********************************************************/
             connectedCallback() {
                 // setTimeout -> Defer the initialization to the next event loop cycle.
                 // This is a common pattern to solve race conditions where a parent element's
@@ -50,24 +51,39 @@ const {
                     this.inputs = this.form.querySelectorAll('input, select, textarea');
                     this.submitButton = this.form.querySelector('button[type="submit"]');
 
-                    this.form.addEventListener('submit', this.handleSubmit.bind(this));
+                    if (!this.submitButton) return;
 
-                    // Initialize FormStateManager for forms in "edit mode" that have a submit button.
-                    if (this.submitButton) {
-                        this.formDataObj = getFormDataObj(this.form);
-                        this.isEditMode = this.formDataObj?.editMode === 'true' || this.formDataObj?.editMode === true;
+                    /****************************************************************
+                     ***** Initialize FormStateManager for forms in "edit mode" *****
+                    *****************************************************************/
+                    // to enable/disable submit button when some field is changed
+                    this.formDataObj = getFormDataObj(this.form);
+                    this.isEditMode = this.formDataObj?.editMode === 'true' || this.formDataObj?.editMode === true;
 
-                        if (this.isEditMode) {
-                            const formStateManager = new FormStateManager(this.form, this.submitButton);
-                            formStateManager.initialize();
-                        } else {
-                            // For non-edit mode forms, ensure the button is enabled by default.
-                            this.submitButton.disabled = false;
-                        }
+                    if (this.isEditMode) {
+                        const formStateManager = new FormStateManager(this.form, this.submitButton);
+                        formStateManager.initialize();
+                    } else {
+                        // For non-edit mode forms, ensure the button is enabled by default.
+                        this.submitButton.disabled = false;
                     }
+
+                    /*****************************************
+                     ***** Collect form validation rules *****
+                    ******************************************/
+                    this.validationRules = collectValidationRulesAndDeleteFromDOM(this.form);
+                    console.log(this.validationRules)
+
+                    /*************************************
+                     ***** Bind submit event to form *****
+                    **************************************/
+                    this.form.addEventListener('submit', this.handleSubmit.bind(this));
                 }, 0);
             }
 
+            /********************************
+             ***** On form submit event *****
+            *********************************/
             private handleSubmit(event: Event) {
                 event.preventDefault();
 
@@ -96,12 +112,12 @@ const {
                 ******************************/
 
                 // Retrieve rules attached from the page-specific script
-                const validationRules = this.form?.validationRules;
+                // const validationRules = this.form?.validationRules;
 
                 // Only run validation if rules are provided
-                if (validationRules) {
+                if (this.validationRules) {
                     // Execute input validations
-                    const { isValid, errors } = validateRulesPerField(validationRules, data);
+                    const { isValid, errors } = validateRulesPerField(this.validationRules, data);
 
                     if (!isValid) {
                         const inputsMap = new Map(Array.from(this.inputs).map((i: any) => [i.name, i]));

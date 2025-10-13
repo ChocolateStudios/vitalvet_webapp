@@ -20,10 +20,20 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
+/****************************
+ ***** Page paramenters *****
+*****************************/
 const { petId } = Astro.props;
 
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let pet: PetInfo | null = null;
 let ownerProfiles: any[] = [];
 let allSpecies: any[] = [];
@@ -53,6 +63,9 @@ if (getSubspeciesResult.success) {
     allSubspecies = getSubspeciesResult.data ?? [];
 }
 
+/***********************
+ ***** Form inputs *****
+************************/
 const profileInput = {
     id: "name",
     name: "name",
@@ -60,6 +73,10 @@ const profileInput = {
     autocomplete: "name",
     label: "Nombre",
     value: pet?.name,
+    validations: [
+        { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
+        { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
+    ],
 };
 
 const detailInputs = [
@@ -78,6 +95,9 @@ const detailInputs = [
                 onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'petowner-modal' } }))"
             }
         ],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El dueño es obligatorio' }
+        ],
     },
     {
         id: "birthday",
@@ -86,6 +106,9 @@ const detailInputs = [
         autocomplete: "birthday",
         label: "Fecha de nacimiento",
         value: pet?.birthday ? (new Date(pet.birthday)).toISOString().split('T')[0] : "",
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
+        ],
     },
     {
         id: "species",
@@ -100,6 +123,9 @@ const detailInputs = [
                 onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'species-modal' } }))"
             }
         ],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La especie es obligatoria' }
+        ],
     },
     {
         id: "subspecies",
@@ -113,6 +139,9 @@ const detailInputs = [
                 label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva raza`,
                 onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'subspecies-modal' } }))"
             }
+        ],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La raza es obligatoria' }
         ],
     },
     {
@@ -156,7 +185,7 @@ const detailInputs = [
         trueTooltip: "El estado actual de la mascota indica que sigue con vida.",
         falseTooltip: "El estado actual de la mascota indica que ha fallecido.",
     },
-]
+];
 
 ---
 
@@ -222,6 +251,8 @@ const detailInputs = [
             </div>
         </SimpleCard>
     </GridForm>
+    
+    <!-- Modals -->
     <PetOwnerModal />
     <SpeciesModal />
     <SubspeciesModal {allSpecies} />
@@ -232,7 +263,6 @@ const detailInputs = [
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
-    import { getFormDataObj, showError, validateRulesPerField } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     declare global {
         interface Window {
@@ -276,36 +306,6 @@ const detailInputs = [
                 }
             });
         }
-        
-        /*****************************
-         ***** Input Validations *****
-        ******************************/
-
-        // IMPORTANT: validation name must be same as the 'name' attribute of the input
-        const validationRules = {
-            name: [
-                { validate: (value: string) => !!value, message: 'El nombre es obligatorio' },
-                { validate: (value: string) => value.length >= 3, message: 'El nombre debe tener al menos 3 caracteres' }
-            ],
-            owner: [
-                { validate: (value: string) => !!value, message: 'El dueño es obligatorio' }
-            ],
-            birthday: [
-                { validate: (value: string) => !!value, message: 'La fecha de nacimiento es obligatoria' }
-            ],
-            // age: [
-            //     { validate: (value: string) => value, message: 'La edad es obligatoria' },
-            //     { validate: (value: string) => !isNaN(Number(value)), message: 'La edad debe ser un número válido' }
-            // ],
-            species: [
-                { validate: (value: string) => !!value, message: 'La especie es obligatoria' }
-            ],
-            subspecies: [
-                { validate: (value: string) => !!value, message: 'La raza es obligatoria' }
-            ]
-        };
-        
-        form.validationRules = validationRules;
         
         /************************
          ***** Submit event *****
