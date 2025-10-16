@@ -1,0 +1,78 @@
+---
+export interface Props {
+    id: string;
+    title?: string;
+    message?: string;
+    confirmText?: string;
+    cancelText?: string;
+}
+
+const {
+    id,
+    title = "Confirmación",
+    message = "¿Estás seguro de que deseas continuar?",
+    confirmText = "Aceptar",
+    cancelText = "Cancelar",
+} = Astro.props;
+---
+
+<div id={id} class="fixed inset-0 bg-gray-500/75 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
+    <div class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg">
+        <!-- Contenido del diálogo -->
+        <div class="text-center">
+            <h3 class="text-2xl font-bold text-gray-800">{title}</h3>
+            <p class="mt-4 text-gray-600">{message}</p>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="mt-8 flex justify-center gap-4">
+            <button id={`${id}-cancel-button`} class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                {cancelText}
+            </button>
+            <button id={`${id}-confirm-button`} class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                {confirmText}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const dialogId = document.querySelector('[id^="confirm-dialog-"]')?.id;
+        if (!dialogId) return;
+
+        const dialog = document.getElementById(dialogId) as HTMLDivElement;
+        const confirmButton = document.getElementById(`${dialogId}-confirm-button`);
+        const cancelButton = document.getElementById(`${dialogId}-cancel-button`);
+
+        const showDialog = (show: boolean) => {
+            dialog.classList.toggle('hidden', !show);
+        };
+
+        // Evento para abrir el diálogo
+        document.addEventListener('open-confirm-dialog', (e: any) => {
+            if (e.detail.id === dialogId) {
+                showDialog(true);
+            }
+        });
+
+        // Evento para cerrar el diálogo
+        document.addEventListener('close-confirm-dialog', (e: any) => {
+            if (e.detail.id === dialogId) {
+                showDialog(false);
+            }
+        });
+
+        // Clic en el botón de cancelar
+        cancelButton?.addEventListener('click', () => {
+            showDialog(false);
+            document.dispatchEvent(new CustomEvent('dialog-cancelled', { detail: { id: dialogId } }));
+        });
+
+        // Clic en el botón de confirmar
+        confirmButton?.addEventListener('click', () => {
+            showDialog(false);
+            document.dispatchEvent(new CustomEvent('dialog-confirmed', { detail: { id: dialogId } }));
+        });
+    });
+</script>

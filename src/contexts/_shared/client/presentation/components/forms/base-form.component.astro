@@ -1,4 +1,6 @@
 --- 
+import ConfirmDialog from "@/contexts/_shared/client/presentation/components/dialogs/confirm-dialog.component.astro";
+
 export interface Props {
     id?: string;
     dataset?: any;
@@ -18,6 +20,14 @@ const {
     <slot/>
 </form>
 
+<ConfirmDialog 
+    id="confirm-dialog-unsaved-changes"
+    title="Cambios no guardados"
+    message="Tienes cambios sin guardar. ¿Estás seguro de que quieres salir? Perderás el progreso."
+    confirmText="Salir sin guardar"
+    cancelText="Permanecer"
+/>
+
 <script>
     import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
     import { clearError, collectValidationRulesAndDeleteFromDOM, getFormDataObj, showError, validateRulesPerField } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
@@ -31,6 +41,10 @@ const {
             formDataObj: any = {};
             formError?: HTMLDivElement | null = null;
             validationRules: any[] = [];
+            formStateManager: FormStateManager | null = null;
+
+            private navigationConfirmed = false;
+            private targetUrl: string | null = null;
 
             constructor() {
                 super();
@@ -60,11 +74,14 @@ const {
                     this.formDataObj = getFormDataObj(this.form);
                     this.isEditMode = this.formDataObj?.editMode === 'true' || this.formDataObj?.editMode === true;
 
-                    if (this.isEditMode) {
-                        const formStateManager = new FormStateManager(this.form, this.submitButton);
-                        formStateManager.initialize();
-                    } else {
+                    this.formStateManager = new FormStateManager(this.form, this.submitButton);
+                    
+                    if (!this.isEditMode) {
                         // For non-edit mode forms, ensure the button is enabled by default.
+                        this.formStateManager.initialize();
+                        this.submitButton.disabled = true;
+                    } else {
+                        // submit button is disable because there is no changes.
                         this.submitButton.disabled = false;
                     }
 
@@ -72,12 +89,16 @@ const {
                      ***** Collect form validation rules *****
                     ******************************************/
                     this.validationRules = collectValidationRulesAndDeleteFromDOM(this.form);
-                    console.log(this.validationRules)
 
                     /*************************************
                      ***** Bind submit event to form *****
                     **************************************/
                     this.form.addEventListener('submit', this.handleSubmit.bind(this));
+
+                    /*************************************************
+                     ***** Navigation guard for unsaved changes *****
+                    **************************************************/
+                    this.setupNavigationGuard();
                 }, 0);
             }
 
@@ -90,7 +111,6 @@ const {
                 /***************************************
                  ***** Cleaning up previous errors *****
                 ****************************************/
-
                 // Limpia errores previos de todos los inputs
                 this.inputs.forEach(input => clearError(input as HTMLInputElement));
 
@@ -110,10 +130,6 @@ const {
                 /*****************************
                  ***** Input Validations *****
                 ******************************/
-
-                // Retrieve rules attached from the page-specific script
-                // const validationRules = this.form?.validationRules;
-
                 // Only run validation if rules are provided
                 if (this.validationRules) {
                     // Execute input validations
@@ -130,12 +146,63 @@ const {
                         return; // Stop execution
                     }
                 }
-
+            
+                /****************************************
+                 ***** Dispatch event to page logic *****
+                *****************************************/
                 this.form?.dispatchEvent(new CustomEvent('form:submit', {
                     bubbles: true,
                     composed: true,
                     detail: { data, inputs: this.inputs, submitButton: this.submitButton, isEditMode: this.isEditMode, formDataObj: this.formDataObj, },
                 }));
+            
+                /**********************************************************************
+                 ***** Allow navigate to another page without show confirm dialog *****
+                ***********************************************************************/
+                this.navigationConfirmed = true;
+            }
+
+            /*************************************************
+             ***** Navigation guard for unsaved changes *****
+            **************************************************/
+            private setupNavigationGuard() {
+                // Listen for Astro's view transition navigation
+                document.addEventListener('astro:before-preparation', this.handleNavigation.bind(this) as EventListener);
+
+                // Listen for clicks on any link
+                document.addEventListener('click', this.handleLinkClick.bind(this), true); // Use capture phase
+
+                // Listen for dialog confirmation
+                document.addEventListener('dialog-confirmed', this.handleDialogConfirm.bind(this) as EventListener);
+            }
+
+            private handleLinkClick(event: MouseEvent) {
+                const target = (event.target as HTMLElement).closest('a');
+                if (!target || target.href === window.location.href) return;
+
+                // Create a mock navigation event to reuse the handler
+                const mockNavEvent = {
+                    preventDefault: () => event.preventDefault(),
+                    detail: { to: target.href }
+                };
+                this.handleNavigation(mockNavEvent as any);
+            }
+
+            private handleNavigation(event: CustomEvent & { detail: { to: string } }) {
+                if (this.navigationConfirmed) return;
+
+                if (this.formStateManager?.isDirty()) {
+                    event.preventDefault();
+                    this.targetUrl = event.detail.to;
+                    document.dispatchEvent(new CustomEvent('open-confirm-dialog', { detail: { id: 'confirm-dialog-unsaved-changes' } }));
+                }
+            }
+
+            private handleDialogConfirm(event: CustomEvent) {
+                if (event.detail.id === 'confirm-dialog-unsaved-changes' && this.targetUrl) {
+                    this.navigationConfirmed = true;
+                    window.location.href = this.targetUrl;
+                }
             }
 
             public getFormData() {
@@ -145,6 +212,9 @@ const {
             }
         }
 
+        /*******************************************************
+         ***** Create <base-form-container> wraper element *****
+        ********************************************************/
         // Define the custom element if it hasn't been defined yet.
         if (!customElements.get('base-form-container')) {
             // Use a container name to avoid conflicts with the Astro component itself

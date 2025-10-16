@@ -53,8 +53,16 @@ export class FormStateManager {
      * Si los estados son iguales, el botón se deshabilita.
      */
     private checkState() {
-        const isDirty = JSON.stringify(this.initialState) !== JSON.stringify(this.currentState);
+        const isDirty = this.isDirty();
         this.submitButton.disabled = !isDirty;
+    }
+
+    /**
+     * Compara el estado inicial y actual para determinar si el formulario ha cambiado.
+     * @returns {boolean} - `true` si el formulario tiene cambios, `false` en caso contrario.
+     */
+    public isDirty(): boolean {
+        return JSON.stringify(this.initialState) !== JSON.stringify(this.currentState);
     }
 
     /**
