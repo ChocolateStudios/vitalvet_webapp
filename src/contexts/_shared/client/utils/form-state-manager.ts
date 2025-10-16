@@ -1,27 +1,22 @@
 /**
  * Gestiona el estado de un formulario para determinar si algún campo ha cambiado.
  * Su propósito principal es comparar el estado inicial del formulario con su estado actual
- * y habilitar o deshabilitar un botón de envío (actualizar) basado en si hay cambios.
+ * para notificar a otros componentes si hay cambios.
  * Esto es útil en los formularios de "edición" para evitar que los usuarios envíen datos sin haber realizado ninguna modificación.
  */
 export class FormStateManager {
     private form: HTMLFormElement;
-    private submitButton: HTMLButtonElement;
     // Almacena los valores del formulario cuando se inicializa la clase.
     private initialState: Record<string, any>;
     // Almacena los valores actuales del formulario a medida que el usuario interactúa.
     private currentState: Record<string, any>;
 
-    constructor(form: HTMLFormElement, submitButton: HTMLButtonElement) {
+    constructor(form: HTMLFormElement) {
         this.form = form;
-        this.submitButton = submitButton;
         
         // Captura el estado inicial del formulario al momento de la creación.
         this.initialState = this.getFormData();
         this.currentState = { ...this.initialState };
-
-        // El botón de "actualizar" comienza deshabilitado, ya que no hay cambios.
-        this.submitButton.disabled = true;
     }
 
     /**
@@ -44,17 +39,18 @@ export class FormStateManager {
         if (name) {
             this.currentState[name] = value;
         }
-        this.checkState();
+        this.dispatchDirtyState();
     }
 
     /**
-     * Compara el estado inicial y actual del formulario.
-     * Si los estados son diferentes (el formulario está "sucio"), el botón de envío se habilita.
-     * Si los estados son iguales, el botón se deshabilita.
+     * Lanza un evento con el estado "dirty" actual del formulario.
      */
-    private checkState() {
-        const isDirty = this.isDirty();
-        this.submitButton.disabled = !isDirty;
+    private dispatchDirtyState() {
+        this.form.dispatchEvent(new CustomEvent('form:dirty-state-change', {
+            bubbles: true,
+            composed: true,
+            detail: { isDirty: this.isDirty() }
+        }));
     }
 
     /**

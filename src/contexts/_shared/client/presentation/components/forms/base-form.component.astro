@@ -74,15 +74,20 @@ const {
                     this.formDataObj = getFormDataObj(this.form);
                     this.isEditMode = this.formDataObj?.editMode === 'true' || this.formDataObj?.editMode === true;
 
-                    this.formStateManager = new FormStateManager(this.form, this.submitButton);
+                    this.formStateManager = new FormStateManager(this.form);
+                    this.formStateManager.initialize();
                     
-                    if (!this.isEditMode) {
+                    if (!this.isEditMode) { // NEW
                         // For non-edit mode forms, ensure the button is enabled by default.
-                        this.formStateManager.initialize();
-                        this.submitButton.disabled = true;
+                        this.submitButton.disabled = false;
                     } else {
                         // submit button is disable because there is no changes.
-                        this.submitButton.disabled = false;
+                        this.submitButton.disabled = true;
+
+                        /*******************************************************************
+                         ***** Listen for dirty state changes to enable/disable button *****
+                        ********************************************************************/
+                        this.form.addEventListener('form:dirty-state-change', this.handleDirtyStateChange.bind(this) as EventListener);
                     }
 
                     /*****************************************
@@ -100,6 +105,15 @@ const {
                     **************************************************/
                     this.setupNavigationGuard();
                 }, 0);
+            }
+
+            /*****************************************************
+             ***** Enable/disable button on dirty state change *****
+            ******************************************************/
+            private handleDirtyStateChange(event: CustomEvent) {
+                if (this.isEditMode && this.submitButton) {
+                    this.submitButton.disabled = !event.detail.isDirty;
+                }
             }
 
             /********************************
