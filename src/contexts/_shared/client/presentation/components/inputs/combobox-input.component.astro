@@ -21,6 +21,7 @@ export interface Props {
   readonly?: boolean;
   editable?: boolean; // Nuevo parámetro
   validations?: any;
+  showMandatory?: boolean;
 }
 
 const {
@@ -35,6 +36,7 @@ const {
   readonly = false,
   editable = true, // Valor por defecto
   validations,
+  showMandatory = false,
 } = Astro.props as Props;
 
 const selectedOption = options.find((opt) => String(opt.id) === String(value));
@@ -84,6 +86,7 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     ]}
   >
     {label}
+    {showMandatory && <span class="text-red-500">*</span>}
   </label>
 
   <div

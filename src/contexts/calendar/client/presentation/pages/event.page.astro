@@ -59,6 +59,7 @@ const eventInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El título es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "petId",
@@ -70,6 +71,7 @@ const eventInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El paciente es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "doctorProfileId",
@@ -81,6 +83,7 @@ const eventInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "startDateTime",
@@ -91,6 +94,7 @@ const eventInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La fecha de inicio es obligatoria' }
         ],
+        showMandatory: true,
     },
     {
         id: "endDateTime",
@@ -101,6 +105,7 @@ const eventInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La fecha de fin es obligatoria' }
         ],
+        showMandatory: true,
     },
     {
         id: "description",
@@ -111,6 +116,7 @@ const eventInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La descripción es obligatoria' }
         ],
+        showMandatory: true,
     },
 ];
 ---

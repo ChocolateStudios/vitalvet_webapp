@@ -43,6 +43,7 @@ const profileInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "lastname",
@@ -54,6 +55,7 @@ const profileInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El apellido es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "birthday",
@@ -65,6 +67,7 @@ const profileInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
         ],
+        showMandatory: true,
     },
     {
         id: "email",
@@ -77,6 +80,7 @@ const profileInputs = [
             { validate: ((value: any) => !!value).toString(), message: 'El correo electrónico es obligatorio' },
             { validate: ((value: any) => value.includes('@')).toString(), message: 'El correo electrónico debe contener un @' }
         ],
+        showMandatory: true,
     },
     {
         id: "phone",
@@ -88,6 +92,7 @@ const profileInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El teléfono es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "role",

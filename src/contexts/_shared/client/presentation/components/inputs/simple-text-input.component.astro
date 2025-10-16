@@ -14,6 +14,7 @@ export interface Props {
   tooltip?: string;
   autocomplete?: string;
   validations?: any;
+  showMandatory?: boolean;
 }
 
 const {
@@ -29,6 +30,7 @@ const {
   tooltip,
   autocomplete,
   validations,
+  showMandatory = false,
 } = Astro.props as Props;
 
 const hasIconLeft = Astro.slots.has("icon-left");
@@ -93,6 +95,7 @@ const hasIconRight = Astro.slots.has("icon-right");
     ]}
   >
     {label}
+    {showMandatory && <span class="text-red-500">*</span>}
   </label>
 
   <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4">

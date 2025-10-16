@@ -15,7 +15,11 @@ type ComponentMap = {
 
 export type Props = SimpleTextProps | TextareaProps | SwitchProps | ComboboxProps;
 
-const { type = "text", validations, ...props } = Astro.props as any;
+const { 
+  type = "text", 
+  validations,
+  ...props
+} = Astro.props as any;
 
 const inputComponents: ComponentMap = {
   textarea: TextareaInput,

@@ -67,6 +67,7 @@ const medicalAppointmentInfoInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
         ],
+        showMandatory: true,
     },
 ];
 
@@ -84,6 +85,7 @@ const medicalAppointmentInputs = [
                 { validate: ((value: any) => !isNaN(Number(value))).toString(), message: 'El peso debe ser un número' },
                 { validate: ((value: any) => Number(value) > 0).toString(), message: 'El peso debe ser mayor a 0' }
             ],
+            showMandatory: true,
         },
         {
             id: "date",
@@ -97,6 +99,7 @@ const medicalAppointmentInputs = [
             validations: [
                 { validate: ((value: any) => !!value).toString(), message: 'La fecha de la cita es obligatoria' }
             ],
+            showMandatory: true,
         },
     ],
     {
@@ -107,6 +110,7 @@ const medicalAppointmentInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' }
         ],
+            showMandatory: true,
     },
     {
         id: "prescription",
@@ -116,6 +120,7 @@ const medicalAppointmentInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La receta/tratamiento es obligatoria' }
         ],
+            showMandatory: true,
     },
 ];
 

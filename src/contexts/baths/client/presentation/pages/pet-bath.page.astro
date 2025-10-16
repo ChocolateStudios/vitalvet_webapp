@@ -67,6 +67,7 @@ const bathInfoInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
         ],
+        showMandatory: true,
     },
 ];
 
@@ -80,6 +81,7 @@ const bathInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La fecha es obligatoria' }
         ],
+        showMandatory: true,
     },
     {
         id: "observations",
@@ -90,6 +92,7 @@ const bathInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' }
         ],
+        showMandatory: true,
     },
 ];
 
