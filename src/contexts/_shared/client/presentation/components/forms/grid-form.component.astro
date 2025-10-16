@@ -1,5 +1,6 @@
 ---
 import BaseForm from '@/contexts/_shared/client/presentation/components/forms/base-form.component.astro';
+import { getGridClasses } from '@/contexts/_shared/client/utils/tailwind-helpers';
 
 export interface Props {
     id?: string;
@@ -13,24 +14,13 @@ export interface Props {
 const {
     id,
     dataset,
-    cols = 1,
-    lgCols: paramLgCols,
-    smCols: paramSmCols,
+    cols,
+    lgCols,
+    smCols,
     editMode,
 } = Astro.props as Props;
 
-const smCols = paramSmCols ?? cols;
-const lgCols = paramLgCols ?? cols;
-
-
-const classList = [
-    'grid',
-    'gap-8',
-    'items-center',
-    `grid-cols-${cols}`,
-    `lg:grid-cols-${lgCols}`,
-    `sm:grid-cols-${smCols}`,
-];
+const classList = getGridClasses({ cols, smCols, lgCols });
 ---
 
 <BaseForm 
