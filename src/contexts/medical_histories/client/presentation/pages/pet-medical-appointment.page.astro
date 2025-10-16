@@ -13,9 +13,20 @@ import GridForm from "@/contexts/_shared/client/presentation/components/forms/gr
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+
+/****************************
+ ***** Page paramenters *****
+*****************************/
 const { petId, medicalAppointmentId } = Astro.props;
 
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let pet: PetInfo | null = null;
 let medicalAppointment: MedicalAppointmentInfo | null = null;
 let doctorProfiles: any[] = [];
@@ -40,6 +51,9 @@ if (getDoctorProfilesResult.success) {
         }));
 }
 
+/***********************
+ ***** Form inputs *****
+************************/
 const medicalAppointmentInfoInputs = [
     {
         id: "doctor",
@@ -50,6 +64,9 @@ const medicalAppointmentInfoInputs = [
             medicalAppointment?.doctorProfileId.toString()
             : (doctorProfiles && doctorProfiles.length > 0) ? doctorProfiles.find(dp => dp.me === true)?.id.toString() : "",
         options: doctorProfiles ?? [],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
+        ],
     },
 ];
 
@@ -62,6 +79,11 @@ const medicalAppointmentInputs = [
             autocomplete: "weight",
             label: "Peso (kg)",
             value: medicalAppointment?.weight,
+            validations: [
+                { validate: ((value: any) => !!value).toString(), message: 'El peso es obligatorio' },
+                { validate: ((value: any) => !isNaN(Number(value))).toString(), message: 'El peso debe ser un número' },
+                { validate: ((value: any) => Number(value) > 0).toString(), message: 'El peso debe ser mayor a 0' }
+            ],
         },
         {
             id: "date",
@@ -72,6 +94,9 @@ const medicalAppointmentInputs = [
             value: medicalAppointment ? 
                 medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
                 : new Date().toISOString().split('T')[0],
+            validations: [
+                { validate: ((value: any) => !!value).toString(), message: 'La fecha de la cita es obligatoria' }
+            ],
         },
     ],
     {
@@ -79,18 +104,27 @@ const medicalAppointmentInputs = [
         name: "observations",
         label: "Observaciones",
         value: medicalAppointment?.observations,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' }
+        ],
     },
     {
         id: "prescription",
         name: "prescription",
         label: "Receta / Tratamiento",
         value: medicalAppointment?.prescription,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La receta/tratamiento es obligatoria' }
+        ],
     },
 ];
 
 ---
 
 <ContentContainer class="h-full">
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop backHref={`/app/pets/${petId}/medical-history`}>
         {
             // Main Title
@@ -100,9 +134,18 @@ const medicalAppointmentInputs = [
                 "Nueva cita médica"
         }
     </ContentTop>
-    <GridForm id="medicalappointment-form" lgCols={6} dataset={{ petId: pet?.id, medicalAppointmentId: medicalAppointment?.id }}>
+
+    <!-- ------------------
+    ------ Main form ------
+    ------------------- -->
+    <!-- (Important to set editMode) -->
+    <GridForm id="medicalappointment-form" editMode={!!medicalAppointment} lgCols={6} dataset={{ petId: pet?.id, medicalAppointmentId: medicalAppointment?.id }}>
         <!-- Left Side -->
         <div class="lg:col-span-2 flex flex-col gap-6">
+
+            <!-- ----------------------------------
+            ------ 🐶 Pet mini profiled card ------
+            ----------------------------------- -->
             <PetMiniprofileCard pet={pet} />
             <div class="bg-white rounded-xl shadow-lg p-7 text-left">
                 <h3 class="font-semibold mb-3">Información de la cita</h3>
@@ -116,7 +159,9 @@ const medicalAppointmentInputs = [
             </div>
         </div>
 
-        <!-- Right Card -->
+        <!-- -----------------------
+        ------ Details card ------
+        ------------------------ -->
         <SimpleCard lgColSpan="4">
             <h4 class="mb-4">Detalles de la cita</h4>
             {
@@ -135,7 +180,9 @@ const medicalAppointmentInputs = [
             }
         </SimpleCard>
 
-        <!-- Action Buttons -->
+        <!-- -----------------------
+        ------ Action buttons ------
+        ------------------------ -->
         <div class="col-span-full flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4">
             <ActionButton id="submit-button" type="submit" disabled>
                 { medicalAppointment ? "Guardar cambios" : "Crear cita médica" }
@@ -160,33 +207,6 @@ const medicalAppointmentInputs = [
     function initializeForm() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
         if (!form) return;
-
-        /*****************************
-         ***** Input Validations *****
-        ******************************/
-
-        // IMPORTANT: validation name must be same as the 'name' attribute of the input
-        const validationRules = {
-            weight: [
-                { validate: (value: string) => !!value, message: 'El peso es obligatorio' },
-                { validate: (value: string) => !isNaN(Number(value)), message: 'El peso debe ser un número' },
-                { validate: (value: string) => Number(value) > 0, message: 'El peso debe ser mayor a 0' }
-            ],
-            observations: [
-                { validate: (value: string) => !!value, message: 'Las observaciones son obligatorias' }
-            ],
-            prescription: [
-                { validate: (value: string) => !!value, message: 'La receta/tratamiento es obligatoria' }
-            ],
-            doctor: [
-                { validate: (value: string) => !!value, message: 'El veterinario es obligatorio' }
-            ],
-            date: [
-                { validate: (value: string) => !!value, message: 'La fecha de la cita es obligatoria' }
-            ]
-        };
-        
-        form.validationRules = validationRules;
 
         /************************
          ***** Submit event *****
@@ -218,7 +238,7 @@ const medicalAppointmentInputs = [
                     formError.textContent = response.errorMessage ?? badErrorMessage;
                 }
             } catch (error) {
-                console.error(`Error al crear ${actionMessage} médica:`, error);
+                console.error(`Error al ${actionMessage} cita médica:`, error);
                 formError.textContent = badErrorMessage;
             } finally {
                 submitButton.disabled = false;

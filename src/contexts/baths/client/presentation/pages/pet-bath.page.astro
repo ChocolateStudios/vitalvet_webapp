@@ -1,10 +1,6 @@
 ---
-import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
-// import BaseTextArea, { type Props as TextAreaProps } from "@/contexts/_shared/client/presentation/components/(old)base-text-area.component.astro";
-// import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
 import DeletePetBathDialog from "@/contexts/baths/client/presentation/components/delete-pet-bath-dialog.component.astro";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
@@ -13,14 +9,24 @@ import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import { getBath, type BathInfo } from "@/contexts/baths/server/application/usecases/get-bath.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
-import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+
+/****************************
+ ***** Page paramenters *****
+*****************************/
 const { petId, bathId } = Astro.props;
 
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let pet: PetInfo | null = null;
 let bath: BathInfo | null = null;
 let doctorProfiles: any[] = [];
@@ -45,25 +51,9 @@ if (getDoctorProfilesResult.success) {
         }));
 }
 
-const profileInputs = [
-    {
-        id: "name",
-        name: "name",
-        type: "text",
-        autocomplete: "name",
-        label: "Nombre",
-        value: pet?.name,
-    },
-    {
-        id: "owner",
-        name: "owner",
-        type: "text",
-        autocomplete: "owner",
-        label: "Propietario",
-        value: pet?.ownerName,
-    },
-];
-
+/***********************
+ ***** Form inputs *****
+************************/
 const bathInfoInputs = [
     {
         id: "doctor",
@@ -74,6 +64,9 @@ const bathInfoInputs = [
             bath?.doctorProfileId.toString()
             : (doctorProfiles && doctorProfiles.length > 0) ? doctorProfiles.find(dp => dp.me === true)?.id.toString() : "",
         options: doctorProfiles ?? [],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
+        ],
     },
 ];
 
@@ -84,6 +77,9 @@ const bathInputs = [
         type: "date",
         label: "Fecha",
         value: bath ? (new Date(bath.bathDate)).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La fecha es obligatoria' }
+        ],
     },
     {
         id: "observations",
@@ -91,12 +87,18 @@ const bathInputs = [
         type: "textarea",
         label: "Observaciones",
         value: bath?.observations,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' }
+        ],
     },
 ];
 
 ---
 
 <ContentContainer class="h-full">
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop backHref={`/app/pets/${petId}/baths-history`}>
         {
             // Main Title
@@ -107,9 +109,17 @@ const bathInputs = [
         }
     </ContentTop>
 
-    <GridForm id="bath-form" lgCols={6} dataset={{ petId: pet?.id, bathId: bath?.id }}>
+    <!-- ------------------
+    ------ Main form ------
+    ------------------- -->
+    <!-- (Important to set editMode) -->
+    <GridForm id="bath-form" editMode={!!bath} lgCols={6} dataset={{ petId: pet?.id, bathId: bath?.id }}>
         <!-- Left Side -->
         <div class="lg:col-span-2 flex flex-col gap-6">
+
+            <!-- ----------------------------------
+            ------ 🐶 Pet mini profiled card ------
+            ----------------------------------- -->
             <PetMiniprofileCard pet={pet} />
             <div class="bg-white rounded-xl shadow-lg p-7 text-left">
                 <h3 class="font-semibold mb-3">Información del baño</h3>
@@ -123,7 +133,10 @@ const bathInputs = [
             </div>
         </div>
 
-        <!-- Right Card -->
+
+        <!-- -----------------------
+        ------ Details card ------
+        ------------------------ -->
         <SimpleCard lgColSpan="4">
             <h4 class="mb-4">Datos del baño</h4>
             {
@@ -133,7 +146,9 @@ const bathInputs = [
             }
         </SimpleCard>
 
-        <!-- Action Buttons -->
+        <!-- -----------------------
+        ------ Action buttons ------
+        ------------------------ -->
         <div class="col-span-full flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4">
             <ActionButton id="submit-button" type="submit" disabled>
                 { bath ? "Guardar cambios" : "Crear baño" }
@@ -154,125 +169,67 @@ const bathInputs = [
     import { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
     import { createBath } from "@/contexts/baths/client/usecases/create-bath.usecase";
     import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
-    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
-    function initializePageScripts() {
+    function initializeForm() {
         const form = document.getElementById('bath-form') as HTMLFormElement | null;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        if (!form) return;
 
-        if (form && submitButton) {
-            const formDataObj = getFormDataObj(form);
+        /************************
+         ***** Submit event *****
+        *************************/
 
-            const isEditMode = !!formDataObj.bathId;
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
-            if (isEditMode) {
-                const formStateManager = new FormStateManager(form, submitButton);
-                formStateManager.initialize();
-            } else {
-                // En modo creación, el botón debe estar habilitado por defecto
+            /********************
+             ***** Api Call *****
+            *********************/
+
+            // If all good, REGISTER/UPDATE
+            submitButton.disabled = true;
+            submitButton.textContent = !isEditMode ? 'Creando baño...' : 'Actualizando baño...';
+
+            const resource = new SaveBathResource(new Date(data.date), data.observations, data.doctor ?? 0);
+            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+            const badErrorMessage = `Error al ${actionMessage} baño. Por favor, inténtalo de nuevo.`;
+
+            try {
+                const response = !isEditMode ? await createBath(formDataObj.petId!, resource) : 
+                                    await updateBath(formDataObj.petId!, formDataObj.bathId!, resource);
+
+                if (response.success) {
+                    window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
+                } else {
+                    formError.textContent = response.errorMessage ?? badErrorMessage;
+                }
+            } catch (error) {
+                console.error(`Error al ${actionMessage} baño:`, error);
+                formError.textContent = badErrorMessage;
+            } finally {
                 submitButton.disabled = false;
+                submitButton.textContent = !isEditMode ? 'Crear baño' : 'Guardar cambios';
             }
+        });
+    }
 
-            const doctorInput = document.getElementById('doctor-value') as HTMLInputElement;
-            const dateInput = document.getElementById('date') as HTMLInputElement;
-            const observationsInput = document.getElementById('observations') as HTMLInputElement;
-            const formError = document.getElementById('form-error') as HTMLDivElement;
-            
-            const isNewBath = !formDataObj.bathId;
+    function initializeDeleteDialog() {
+        /*******************************
+         ***** Delete dialog logic *****
+        ********************************/
 
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                
-                clearError(dateInput);
-                clearError(observationsInput);
-                clearError(doctorInput);
-
-                // Limpia errores previos
-                if (formError) {
-                    formError.textContent = '';
-                }
-                              
-
-                const doctor = doctorInput.value;
-                const date = dateInput.value;
-                const observations = observationsInput.value;
-
-                let isValid = true;
-
-                // Validaciones
-                if (!doctor) {
-                    showError(document.getElementById('doctor') as HTMLInputElement, 'El veterinario es obligatorio');
-                    isValid = false;
-                }
-
-                if (!date) {
-                    showError(dateInput, 'La fecha de la cita es obligatoria');
-                    isValid = false;
-                }
-
-                if (!observations) {
-                    showError(observationsInput, 'Las observaciones son obligatorias');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    submitButton.disabled = true;
-
-                    const resource = new SaveBathResource(new Date(date), observations, doctor ?? 0);
-
-                    if (isNewBath) {
-                        submitButton.textContent = 'Creando baño...';
-
-                        try {
-                            const response = await createBath(formDataObj.petId!, resource);
-                            if (response.success) {
-                                window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al crear baño. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al crear baño:', error);
-                            formError.textContent = 'Error al crear baño. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Crear baño';
-                        }
-                    } else {
-                        submitButton.textContent = 'Actualizando baño...';
-
-                        try {
-                            const response = await updateBath(formDataObj.petId!, formDataObj.bathId!, resource);
-                            if (response.success) {
-                                // window.location.reload();
-                                window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al actualizar el baño. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al actualizar el baño:', error);
-                            formError.textContent = 'Error al actualizar el baño. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Guardar cambios';
-                        }
-                    }
-                }
-            });
-        }
-
-        // --- Lógica para el botón de eliminar ---
         const openDialogButton = document.getElementById('open-delete-dialog-button');
-        // Dialog in delete-pet-dialog.component.astro
         const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
+        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
 
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializeForm();
+        initializeDeleteDialog();
+    });
 </script>

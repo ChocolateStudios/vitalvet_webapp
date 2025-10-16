@@ -11,9 +11,20 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+
+/****************************
+ ***** Page paramenters *****
+*****************************/
 const { eventId } = Astro.props;
 
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let event: EventInfo | null = null;
 let pets: any[] = [];
 let doctors: any[] = [];
@@ -35,6 +46,9 @@ if (getDoctorsResult.success) {
     doctors = getDoctorsResult.data?.map((d: any) => ({ id: d.id, name: `${d.name} ${d.lastname}` })) ?? [];
 }
 
+/***********************
+ ***** Form inputs *****
+************************/
 const eventInputs = [
     {
         id: "title",
@@ -42,6 +56,9 @@ const eventInputs = [
         type: "text",
         label: "Título",
         value: event?.title ?? '',
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El título es obligatorio' }
+        ],
     },
     {
         id: "petId",
@@ -50,6 +67,9 @@ const eventInputs = [
         label: "Paciente",
         value: event?.petId?.toString(),
         options: pets,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El paciente es obligatorio' }
+        ],
     },
     {
         id: "doctorProfileId",
@@ -58,20 +78,29 @@ const eventInputs = [
         label: "Veterinario",
         value: event?.doctorProfileId?.toString(),
         options: doctors,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
+        ],
     },
     {
         id: "startDateTime",
         name: "startDateTime",
         type: "datetime-local",
         label: "Inicio",
-        value: event?.startDateTime ? new Date(event.startDateTime).toISOString().substring(0, 16) : ''
+        value: event?.startDateTime ? new Date(event.startDateTime).toISOString().substring(0, 16) : '',
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La fecha de inicio es obligatoria' }
+        ],
     },
     {
         id: "endDateTime",
         name: "endDateTime",
         type: "datetime-local",
         label: "Fin",
-        value: event?.endDateTime ? new Date(event.endDateTime).toISOString().substring(0, 16) : ''
+        value: event?.endDateTime ? new Date(event.endDateTime).toISOString().substring(0, 16) : '',
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La fecha de fin es obligatoria' }
+        ],
     },
     {
         id: "description",
@@ -79,11 +108,17 @@ const eventInputs = [
         type: "textarea",
         label: "Descripción",
         value: event?.description ?? '',
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La descripción es obligatoria' }
+        ],
     },
 ];
 ---
 
 <ContentContainer class="h-full">
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop backHref="/app/calendar">
         { event ? "Detalles del evento" : "Nuevo evento" }
         { event && 
@@ -93,7 +128,11 @@ const eventInputs = [
         }
     </ContentTop>
 
-    <GridForm id="event-form" dataset={{ eventId: event?.id }}>
+    <!-- ------------------
+    ------ Main form ------
+    ------------------- -->
+    <!-- (Important to set editMode) -->
+    <GridForm id="event-form" editMode={!!event} dataset={{ eventId: event?.id }}>
         <SimpleCard>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 {eventInputs.map(input => <DynamicInput {...input} />)}
@@ -101,7 +140,9 @@ const eventInputs = [
 
             <div id="form-error" class="mt-4 text-red-600"></div>
 
-            <!-- Action Buttons -->
+            <!-- -----------------------
+            ------ Action buttons ------
+            ------------------------ -->
             <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
                 <ActionButton id="submit-button" type="submit">
                     { event ? "Guardar cambios" : "Crear evento" }
@@ -123,108 +164,56 @@ const eventInputs = [
     import { SaveEventResource } from "@/contexts/calendar/server/interfaces/api/resources/save-event.resource";
     import { createEvent } from "@/contexts/calendar/client/usecases/create-event.usecase";
     import { updateEvent } from "@/contexts/calendar/client/usecases/update-event.usecase";
-    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
-    function initializePageScripts() {
+    function initializeForm() {
         const form = document.getElementById('event-form') as HTMLFormElement;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
-        if (!form || !submitButton) return;
+        if (!form) return;
 
-        const formDataObj = getFormDataObj(form);
+        /************************
+         ***** Submit event *****
+        *************************/
 
-        const isEditMode = !!formDataObj.eventId;
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
-        if (isEditMode) {
-            const formStateManager = new FormStateManager(form, submitButton);
-            formStateManager.initialize();
-        } else {
-            // En modo creación, el botón debe estar habilitado por defecto
-            submitButton.disabled = false;
-        }
+            /********************
+             ***** Api Call *****
+            *********************/
 
-        const titleInput = document.getElementById('title') as HTMLInputElement;
-        const petIdInput = document.getElementById('petId-value') as HTMLInputElement;
-        const doctorProfileIdInput = document.getElementById('doctorProfileId-value') as HTMLInputElement;
-        const startDateTimeInput = document.getElementById('startDateTime') as HTMLInputElement;
-        const endDateTimeInput = document.getElementById('endDateTime') as HTMLInputElement;
-        const descriptionInput = document.getElementById('description') as HTMLInputElement;
-        
-        const formError = document.getElementById('form-error') as HTMLDivElement;
-        const isNewEvent = !formDataObj.eventId;
-
-        submitButton.addEventListener('click', async (e) => {
-        // form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (submitButton.disabled) return;
-
-            // Clear previous errors
-            clearError(titleInput);
-            clearError(petIdInput);
-            clearError(doctorProfileIdInput);
-            clearError(startDateTimeInput);
-            clearError(endDateTimeInput);
-            if (formError) formError.textContent = '';
-
-            const title = titleInput.value;
-            const petId = petIdInput.value;
-            const doctorProfileId = doctorProfileIdInput.value;
-            const startDateTime = startDateTimeInput.value;
-            const endDateTime = endDateTimeInput.value;
-            const description = descriptionInput.value;
-
-            let isValid = true;
-            if (!title) {
-                showError(titleInput, 'El título es obligatorio');
-                isValid = false;
-            }
-            if (!petId) {
-                showError(petIdInput, 'El paciente es obligatorio');
-                isValid = false;
-            }
-            if (!doctorProfileId) {
-                showError(doctorProfileIdInput, 'El veterinario es obligatorio');
-                isValid = false;
-            }
-            if (!startDateTime) {
-                showError(startDateTimeInput, 'La fecha y hora de inicio son obligatorias');
-                isValid = false;
-            }
-            if (!endDateTime) {
-                showError(endDateTimeInput, 'La fecha y hora de fin son obligatorias');
-                isValid = false;
-            }
-            if (startDateTime && endDateTime && new Date(startDateTime) >= new Date(endDateTime)) {
-                showError(endDateTimeInput, 'La fecha y hora de fin debe ser posterior a la fecha y hora de inicio');
-                isValid = false;
-            }
-
-            if (!isValid) return;
-
+            // If all good, REGISTER/UPDATE
             submitButton.disabled = true;
-            submitButton.textContent = isNewEvent ? 'Creando evento...' : 'Actualizando evento...';
+            submitButton.textContent = !isEditMode ? 'Creando evento...' : 'Actualizando evento...';
 
-            const resource = new SaveEventResource(title, new Date(startDateTime), new Date(endDateTime), description, doctorProfileId, petId, 'default-event-type');
+            const resource = new SaveEventResource(data.title, new Date(data.startDateTime), new Date(data.endDateTime), data.description, data.doctorProfileId, data.petId, 'default-event-type');
+            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+            const badErrorMessage = `Error al ${actionMessage} evento. Por favor, inténtalo de nuevo.`;
 
             try {
-                const response = isNewEvent
+                const response = !isEditMode
                     ? await createEvent(resource)
                     : await updateEvent(formDataObj.eventId!, resource);
 
                 if (response.success) {
                     window.location.href = '/app/calendar';
                 } else {
-                    formError.textContent = response.errorMessage || 'Ha ocurrido un error. Por favor, inténtalo de nuevo.';
+                    formError.textContent = response.errorMessage || badErrorMessage;
                 }
             } catch (error) {
-                formError.textContent = 'Ha ocurrido un error. Por favor, inténtalo de nuevo.';
+                console.error(`Error al ${actionMessage} evento:`, error);
+                formError.textContent = badErrorMessage;
             } finally {
                 submitButton.disabled = false;
-                submitButton.textContent = isNewEvent ? 'Crear evento' : 'Guardar cambios';
+                submitButton.textContent = !isEditMode ? 'Crear evento' : 'Guardar cambios';
             }
-        });
+        });;
+    }
 
-        // Delete dialog logic
+    function initializeDeleteDialog() {
+        /*******************************
+         ***** Delete dialog logic *****
+        ********************************/
+
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
@@ -232,5 +221,11 @@ const eventInputs = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializeForm();
+        initializeDeleteDialog();
+    });
 </script>

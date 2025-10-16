@@ -190,16 +190,27 @@ const detailInputs = [
 ---
 
 <ContentContainer class="h-full">
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop backHref="/app/home">
-        { pet ? "Datos de la mascota" : "Nueva mascota" }
+        { pet ? "Datos de la mascota" : "Nueva mascota" }  <!-- Main Title -->
         { pet && 
             <p slot="subtitle" class="mt-1 text-md text-gray-600">
                 Revisa y actualiza la información de {pet.name}.
             </p> 
         }
     </ContentTop>
-    <GridForm id="pet-form" lgCols={5} dataset={{ petId: pet?.id }} editMode={!!pet}>
-        <!-- Card de Perfil (Izquierda) -->
+
+    <!-- ------------------
+    ------ Main form ------
+    ------------------- -->
+    <!-- (Important to set editMode) -->
+    <GridForm id="pet-form" editMode={!!pet} lgCols={5} dataset={{ petId: pet?.id }}>
+
+        <!-- -----------------------
+        ------ Profile card ------
+        ------------------------ -->
         <SimpleCard lgColSpan="2" class="flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">
                 <img 
@@ -214,7 +225,9 @@ const detailInputs = [
             <DynamicInput {...profileInput} class="w-full" />
         </SimpleCard>
 
-        <!-- Card de Detalles (Derecha) -->
+        <!-- -----------------------
+        ------ Details card ------
+        ------------------------ -->
         <SimpleCard lgColSpan="3">
             <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Información detallada</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
@@ -224,8 +237,10 @@ const detailInputs = [
                 })
             }
             </div>
-            
-            <!-- Action Buttons -->
+
+            <!-- -----------------------
+            ------ Action buttons ------
+            ------------------------ -->
             <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
                 { pet &&
                     <>

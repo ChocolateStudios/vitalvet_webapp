@@ -1,7 +1,6 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro"
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro"
 import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
@@ -9,8 +8,20 @@ import ActionButton from "@/contexts/_shared/client/presentation/components/acti
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
+/****************************
+ ***** Page paramenters *****
+*****************************/
+// NO PARAMETERS HERE
+
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let profile: ProfileInfo | null = null;
 const getProfileResult = await getMyProfile(authenticatedUserId);
 
@@ -18,6 +29,9 @@ if (getProfileResult.success) {
     profile = getProfileResult.data;
 }
 
+/***********************
+ ***** Form inputs *****
+************************/
 const profileInputs = [
     {
         id: "name",
@@ -26,6 +40,9 @@ const profileInputs = [
         autocomplete: "name",
         label: "Nombres",
         value: profile?.name,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' }
+        ],
     },
     {
         id: "lastname",
@@ -34,6 +51,9 @@ const profileInputs = [
         autocomplete: "lastname",
         label: "Apellidos",
         value: profile?.lastname,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El apellido es obligatorio' }
+        ],
     },
     {
         id: "birthday",
@@ -42,6 +62,9 @@ const profileInputs = [
         autocomplete: "birthday",
         label: "Fecha de nacimiento",
         value: profile?.birthday ? (new Date(profile.birthday)).toISOString().split('T')[0] : "",
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
+        ],
     },
     {
         id: "email",
@@ -50,6 +73,10 @@ const profileInputs = [
         autocomplete: "email",
         label: "Correo electrónico",
         value: profile?.email,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El correo electrónico es obligatorio' },
+            { validate: ((value: any) => value.includes('@')).toString(), message: 'El correo electrónico debe contener un @' }
+        ],
     },
     {
         id: "phone",
@@ -58,6 +85,9 @@ const profileInputs = [
         autocomplete: "phone",
         label: "Teléfono",
         value: profile?.phone,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El teléfono es obligatorio' }
+        ],
     },
     {
         id: "role",
@@ -72,14 +102,26 @@ const profileInputs = [
 ---
 
 <ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop>Perfil</ContentTop>
-     <SimpleForm id="profile-form" dataset={{ profileId: profile?.id, roleId: profile?.roleId }}>
+
+    <!-- ------------------
+    ------ Main form ------
+    ------------------- -->
+    <!-- (Important to set editMode) -->
+    <SimpleForm id="profile-form" editMode={!!profile} dataset={{ profileId: profile?.id, roleId: profile?.roleId }}>
         <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
             {
                 profileInputs.map(input => 
                     <DynamicInput {...input} />
                 )
             }
+            
+            <!-- ----------------------
+            ------ Action button ------
+            ----------------------- -->
             <ActionButton id="submit-button" type="submit">
                 { profile ? "Guardar cambios" : "Crear perfil" }
             </ActionButton>
@@ -90,116 +132,54 @@ const profileInputs = [
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
-    import { FormStateManager } from "@/contexts/_shared/client/utils/form-state-manager";
-    import { clearError, getFormDataObj, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
-    function initializePageScripts() {
+    function initializeForm() {
         const form = document.getElementById('profile-form') as HTMLFormElement;
-        const submitButton = document.getElementById('submit-button') as HTMLButtonElement;
+        if (!form) return;
 
-        if (form && submitButton) {
-            const formDataObj = getFormDataObj(form);
-            
-            const isEditMode = !!formDataObj.profileId;
+        /************************
+         ***** Submit event *****
+        *************************/
 
-            if (isEditMode) {
-                const formStateManager = new FormStateManager(form, submitButton);
-                formStateManager.initialize();
-            } else {
-                // En modo creación, el botón debe estar habilitado por defecto
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+
+            /********************
+             ***** Api Call *****
+            *********************/
+
+            // If all good, REGISTER/UPDATE
+            submitButton.disabled = true;
+            submitButton.textContent = !isEditMode ? 'Creando perfil...' : 'Actualizando perfil...';
+
+            const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
+            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+            const badErrorMessage = `Error al ${actionMessage} perfil. Por favor, inténtalo de nuevo.`;
+
+            try {
+                const response = !isEditMode ? { success: false } : await updateMyProfile(resource);
+
+                if (response.success) {
+                    window.location.href = '/app/home';
+                } else {
+                    formError.textContent = response.errorMessage ?? badErrorMessage;
+                }
+            } catch (error) {
+                console.error(`Error al ${actionMessage} perfil:`, error);
+                formError.textContent = badErrorMessage;
+            } finally {
                 submitButton.disabled = false;
+                submitButton.textContent = !isEditMode ? 'Crear perfil' : 'Guardar cambios';
             }
+        });
+    }
 
-            const nameInput = document.getElementById('name') as HTMLInputElement;
-            const lastnameInput = document.getElementById('lastname') as HTMLInputElement;
-            const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
-            const emailInput = document.getElementById('email') as HTMLInputElement;
-            const phoneInput = document.getElementById('phone') as HTMLInputElement;
-            const formError = document.getElementById('form-error') as HTMLDivElement;
+    function initializeDeleteDialog() {
+        /*******************************
+         ***** Delete dialog logic *****
+        ********************************/
 
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                // Limpia errores previos
-                clearError(nameInput);
-                clearError(lastnameInput);
-                clearError(birthdayInput);
-                clearError(emailInput);
-                clearError(phoneInput);
-                if (formError) {
-                    formError.textContent = '';
-                }
-
-                const name = nameInput.value;
-                const lastname = lastnameInput.value;
-                const birthday = birthdayInput.value;
-                const email = emailInput.value;
-                const phone = phoneInput.value;
-
-                let isValid = true;
-
-                // Validaciones
-                if (!name) {
-                    showError(nameInput, 'El nombre es obligatorio');
-                    isValid = false;
-                } else if (name.length < 3) {
-                    showError(nameInput, 'El nombre debe tener al menos 3 caracteres');
-                    isValid = false;
-                }
-                
-                if (!lastname) {
-                    showError(lastnameInput, 'El apellido es obligatorio');
-                    isValid = false;
-                } else if (lastname.length < 3) {
-                    showError(lastnameInput, 'El apellido debe tener al menos 3 caracteres');
-                    isValid = false;
-                }
-
-                if (!birthday) {
-                    showError(birthdayInput, 'La fecha de nacimiento es obligatoria');
-                    isValid = false;
-                }
-
-                if (!email) {
-                    showError(emailInput, 'El correo es obligatorio');
-                    isValid = false;
-                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    showError(emailInput, 'Por favor, introduce un correo válido');
-                    isValid = false;
-                }
-
-                if (!phone) {
-                    showError(phoneInput, 'El teléfono es obligatoria');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    submitButton.disabled = true;
-
-                    const resource = new SaveProfileResource(name, lastname, email, phone, new Date(birthday), formDataObj.roleId!);
-
-                    submitButton.textContent = 'Actualizando perfil...';
-
-                    try {
-                        const response = await updateMyProfile(resource);
-                        if (response.success) {
-                            window.location.href = '/app/home';
-                        } else {
-                            formError.textContent = response.errorMessage ?? 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
-                        }
-                    } catch (error) {
-                        console.error('Error al actualizar perfil:', error);
-                        formError.textContent = 'Error al actualizar perfil. Por favor, inténtalo de nuevo.';
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Guardar cambios';
-                    }
-                }
-            });
-        }
-
-
-        // Delete dialog logic
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
@@ -207,8 +187,12 @@ const profileInputs = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializeForm();
+        initializeDeleteDialog();
+    });
 
 </script>
