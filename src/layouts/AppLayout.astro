@@ -7,10 +7,18 @@ import Layout from '@/layouts/Layout.astro';
 <Layout>
   <!-- El componente ClientRouter activa la magia de la navegación del lado del cliente -->
   <ClientRouter />
-  <div class="flex h-screen bg-gray-100">
+  <div class="flex bg-gray-100 min-h-screen">
     <!-- Esta barra lateral persistirá entre las navegaciones de la página -->
     <SideBar />
 
-    <main class="flex-1"><slot /></main>
+    <main class="w-full ml-59 transition-all duration-300 ease-in-out"><slot /></main>
   </div>
 </Layout>
+
+<style>
+  @reference "tailwindcss";
+
+  body.sidebar-collapsed main {
+      @apply ml-29;
+  }
+</style>

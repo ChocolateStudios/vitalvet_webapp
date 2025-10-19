@@ -32,7 +32,7 @@ const options = [
 
 ---
 
-<aside id="sidebar" class="group my-14 mx-6 rounded-xl w-50 bg-white shadow-md flex flex-col transition-all duration-300 ease-in-out">
+<aside id="sidebar" class="group fixed top-14 bottom-14 left-6 rounded-xl w-50 bg-white shadow-md flex flex-col transition-all duration-300 ease-in-out">
     <div class="relative p-4 flex justify-center items-center">
         <div class="flex justify-center items-center gap-2 text-xl font-bold transition-opacity duration-400 group-hover:opacity-0">
             <VitalvetIcon class="w-6.5 h-6.5" />
@@ -97,8 +97,10 @@ const options = [
         const isCollapsed = localStorage.getItem(storageKey) === 'true';
         if (isCollapsed) {
             sidebar.classList.add('is-collapsed');
+            document.body.classList.add('sidebar-collapsed');
         } else {
             sidebar.classList.remove('is-collapsed');
+            document.body.classList.remove('sidebar-collapsed');
         }
     }
 
@@ -118,6 +120,7 @@ const options = [
                 // toggle devuelve true si la clase se añadió, false si se quitó
                 const currentlyCollapsed = sidebar.classList.toggle('is-collapsed');
                 localStorage.setItem(storageKey, String(currentlyCollapsed));
+                document.body.classList.toggle('sidebar-collapsed', currentlyCollapsed);
             });
         }
     });
@@ -131,6 +134,7 @@ const options = [
         const isCollapsed = localStorage.getItem(storageKey) === 'true';
         if (isCollapsed) {
             document.getElementById('sidebar').classList.add('is-collapsed');
+            document.body.classList.add('sidebar-collapsed');
         }
     } catch (e) {
         // En caso de que localStorage no esté disponible (ej. en modo incógnito estricto)
