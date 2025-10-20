@@ -6,7 +6,23 @@ import type { PetListItemInfo } from "@/contexts/pets/client/usecases/getall-pet
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
+import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
+getAuthenticatedUserIdOrRedirect(Astro);
+
+/****************************
+ ***** Page paramenters *****
+*****************************/
+// NO PARAMETERS HERE
+
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let pets: PetListItemInfo[] = [];
 const getPetsResult = await getAllPets();
 
@@ -14,6 +30,9 @@ if (getPetsResult.success) {
     pets = getPetsResult.data ?? [];
 }
 
+/*************************
+ ***** Table headers *****
+**************************/
 const tableHeaders = [
     "Nombre (Dueño)",
     "Especie",
@@ -25,6 +44,9 @@ const tableHeaders = [
 ---
 
 <ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop>
         Pacientes <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
@@ -34,9 +56,16 @@ const tableHeaders = [
             </ActionLink>
         </div>
     </ContentTop>
-    <div class="mt-8 flow-root">
+    
+    <!-- ------------------
+    ------ Main card ------
+    ------------------- -->
+    <SimpleCard class="flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <!-- -------------------
+                ------ Main table ------
+                -------------------- -->
                 <SimpleTable id="pets-table" headers={tableHeaders} items={pets} itemsName="mascotas" noItemsMessage="No hay mascotas registradas.">
                     {
                         pets.map(pet => 
@@ -56,7 +85,7 @@ const tableHeaders = [
                 </SimpleTable>
             </div>
         </div>
-    </div>
+    </SimpleCard>
 </ContentContainer>
 
 <script>

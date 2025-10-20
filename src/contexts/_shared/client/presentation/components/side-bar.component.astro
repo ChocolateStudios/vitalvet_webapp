@@ -6,6 +6,9 @@ import ProfileIcon from '@/contexts/_shared/client/presentation/components/icons
 import OwnerIcon from '@/contexts/_shared/client/presentation/components/icons/OwnerIcon.astro';
 import LogoutIcon from '@/contexts/_shared/client/presentation/components/icons/LogoutIcon.astro';
 import DoubleChevronRightIcon from '@/contexts/_shared/client/presentation/components/icons/DoubleChevronRightIcon.astro';
+import MenuIcon from '@/contexts/_shared/client/presentation/components/icons/MenuIcon.astro';
+
+const currentPage = Astro.url.pathname;
 
 // Mapeamos los nombres de los iconos a sus componentes importados
 const icons: any = {
@@ -16,7 +19,8 @@ const icons: any = {
     logout: LogoutIcon,
 };
 
-const optionClass = "flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors overflow-hidden";
+const optionClass = "flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors overflow-hidden";
+const mobileOptionClass = "flex items-center gap-4 px-4 py-3 text-gray-700 rounded-lg transition-colors";
 
 const options = [
     [
@@ -32,7 +36,55 @@ const options = [
 
 ---
 
-<aside id="sidebar" class="group fixed top-14 bottom-14 left-6 rounded-xl w-50 bg-white shadow-md flex flex-col transition-all duration-300 ease-in-out">
+<!-- Botón de hamburguesa para móvil -->
+<button id="mobile-menu-button" class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md text-gray-700 bg-white/50 backdrop-blur-sm">
+    <MenuIcon class="w-6 h-6" />
+</button>
+
+<!-- Overlay -->
+<div id="mobile-menu-overlay" class="hidden md:hidden fixed inset-0 bg-black/30 z-40"></div>
+
+<!-- Sidebar para móvil -->
+<aside id="mobile-sidebar" class="md:hidden fixed top-0 left-0 h-full w-64 bg-white shadow-lg flex flex-col transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="p-4 flex justify-center items-center border-b">
+        <div class="flex justify-center items-center gap-2 text-xl font-bold">
+            <VitalvetIcon class="w-8 h-8" />
+            <span class="whitespace-nowrap">VitalVet</span>
+        </div>
+    </div>
+    <nav class="mt-2 mb-2 flex flex-col justify-between flex-1 p-3">
+        {
+            options.map(optionsGroup => 
+                <div class="space-y-2">
+                { 
+                    optionsGroup.map(option => {
+                        const Icon = icons[option.icon];
+                        const isLogout = option.displayName === 'Cerrar sesión';
+                        let isActive = false;
+                        if (!isLogout) {
+                            isActive = currentPage === option.href;
+                            // if (option.href === '/app/home') {
+                            //     isActive = currentPage === option.href;
+                            // } else {
+                            //     isActive = currentPage.startsWith(option.href);
+                            // }
+                        }
+                        return (
+                            <a href={option.href} class:list={[mobileOptionClass, { 'bg-gray-200 font-bold text-gray-900': isActive }]} title={option.displayName}>
+                                <Icon class="w-7 h-7 flex-shrink-0" />
+                                <span class="text-lg">{option.displayName}</span>
+                            </a>
+                        );
+                    })
+                }
+                </div>
+            )
+        }
+    </nav>
+</aside>
+
+<!-- Sidebar para escritorio -->
+<aside id="sidebar" class="hidden md:flex group fixed top-14 bottom-14 left-6 rounded-xl w-50 bg-white shadow-md flex-col transition-all duration-300 ease-in-out">
     <div class="relative p-4 flex justify-center items-center">
         <div class="flex justify-center items-center gap-2 text-xl font-bold transition-opacity duration-400 group-hover:opacity-0">
             <VitalvetIcon class="w-6.5 h-6.5" />
@@ -49,8 +101,18 @@ const options = [
                 { 
                     optionsGroup.map(option => {
                         const Icon = icons[option.icon];
+                        const isLogout = option.displayName === 'Cerrar sesión';
+                        let isActive = false;
+                        if (!isLogout) {
+                            isActive = currentPage === option.href;
+                            // if (option.href === '/app/home') {
+                            //     isActive = currentPage === option.href;
+                            // } else {
+                            //     isActive = currentPage.startsWith(option.href);
+                            // }
+                        }
                         return (
-                            <a href={option.href} class={optionClass} title={option.displayName}>
+                            <a href={option.href} class:list={[optionClass, { 'bg-gray-100 font-bold': isActive }]} title={option.displayName}>
                                 <Icon class="w-6 h-6 flex-shrink-0" />
                                 <span class="nav-text whitespace-nowrap transition-all duration-200">{option.displayName}</span>
                             </a>
@@ -86,10 +148,9 @@ const options = [
 </style>
 
 <script>
+    // --- Lógica para sidebar de escritorio ---
     const storageKey = 'sidebar-collapsed';
 
-    // Función para aplicar el estado desde localStorage.
-    // Se llamará tanto en la carga inicial como en cada navegación.
     function applyState() {
         const sidebar = document.getElementById('sidebar');
         if (!sidebar) return;
@@ -104,39 +165,65 @@ const options = [
         }
     }
 
-    // Se ejecuta DESPUÉS de que el nuevo contenido se ha añadido, pero ANTES de que se muestre.
-    // Esto es clave para evitar el flash en las navegaciones del lado del cliente.
     document.addEventListener('astro:after-swap', applyState);
 
-    // Se ejecuta cuando la página está completamente cargada.
-    // Es el mejor lugar para añadir listeners de eventos.
     document.addEventListener('astro:page-load', () => {
         const sidebar = document.getElementById('sidebar');
         const toggleButton = document.getElementById('toggle-button');
 
         if (sidebar && toggleButton) {
-
             toggleButton.addEventListener('click', () => {
-                // toggle devuelve true si la clase se añadió, false si se quitó
                 const currentlyCollapsed = sidebar.classList.toggle('is-collapsed');
                 localStorage.setItem(storageKey, String(currentlyCollapsed));
                 document.body.classList.toggle('sidebar-collapsed', currentlyCollapsed);
             });
         }
+
+        // --- Lógica para sidebar móvil ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+
+        const openMenu = () => {
+            if (mobileSidebar) mobileSidebar.classList.remove('-translate-x-full');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        };
+
+        const closeMenu = () => {
+            if (mobileSidebar) mobileSidebar.classList.add('-translate-x-full');
+            if (mobileMenuOverlay) mobileMenuOverlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        };
+
+        if (mobileMenuButton && mobileSidebar && mobileMenuOverlay) {
+            mobileMenuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mobileSidebar.classList.contains('-translate-x-full')) {
+                    openMenu();
+                } else {
+                    closeMenu();
+                }
+            });
+
+            mobileMenuOverlay.addEventListener('click', closeMenu);
+        }
+        
+        // Cerrar menú móvil en navegación
+        document.addEventListener('astro:before-preparation', closeMenu);
     });
 </script>
 
 <script is:inline>
-    // Este script se ejecuta inmediatamente para evitar el "flash" de la animación en la PRIMERA carga de página.
-    // Establece el estado inicial de la barra lateral ANTES de que la página se renderice por completo.
     try {
         const storageKey = 'sidebar-collapsed';
         const isCollapsed = localStorage.getItem(storageKey) === 'true';
         if (isCollapsed) {
-            document.getElementById('sidebar').classList.add('is-collapsed');
+            // No podemos aplicar las clases directamente aquí en el script inline
+            // porque el DOM del sidebar de escritorio podría no existir en móvil.
+            // Lo manejamos en astro:page-load y astro:after-swap.
+            // Pero sí podemos añadir la clase al body para que el layout principal se ajuste si es necesario.
             document.body.classList.add('sidebar-collapsed');
         }
-    } catch (e) {
-        // En caso de que localStorage no esté disponible (ej. en modo incógnito estricto)
-    }
+    } catch (e) {}
 </script>

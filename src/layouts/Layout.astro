@@ -23,10 +23,13 @@ const { title = 'Vitalvet' } = Astro.props;
 </html>
 
 <style>
+  @reference "tailwindcss";
+  
 	html,
 	body {
 		margin: 0;
 		width: 100%;
 		height: 100%;
+		@apply bg-gray-100;
 	}
 </style>

@@ -5,7 +5,22 @@ import SearchBar from "@/contexts/_shared/client/presentation/components/search-
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
+import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
+getAuthenticatedUserIdOrRedirect(Astro);
+
+/****************************
+ ***** Page paramenters *****
+*****************************/
+// NO PARAMETERS HERE
+
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let events: any[] = [];
 const today = new Date();
 
@@ -21,6 +36,9 @@ const data = {
 ---
 
 <ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop>
         Calendario <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
@@ -30,5 +48,9 @@ const data = {
             </ActionLink>
         </div>
     </ContentTop>
+
+    <!-- -----------------
+    ------ Calendar ------
+    ------------------ -->
     <CalendarComponent {data} />
 </ContentContainer>

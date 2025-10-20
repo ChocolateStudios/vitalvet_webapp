@@ -37,6 +37,9 @@ const tableHeaders = [
 ---
 
 <ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop backHref={`/app/pets/${petId}`}>
         Historial médico <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
@@ -46,6 +49,10 @@ const tableHeaders = [
             </ActionLink>
         </div>
     </ContentTop>
+    
+    <!-- ------------------------
+    ------ Cards container ------
+    ------------------------- -->
     <GridForm lgCols={6}>
         <!-- Left Card -->
         <PetMiniprofileCard pet={pet} lgColSpan="2" />
@@ -54,6 +61,9 @@ const tableHeaders = [
         <SimpleCard class="flow-root" lgColSpan="4">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <!-- -------------------
+                    ------ Main table ------
+                    -------------------- -->
                     <SimpleTable id="medicalhistory-table" headers={tableHeaders} items={medicalHistory} itemsName="citas médicas" noItemsMessage="No hay citas médicas registradas.">
                         {
                             medicalHistory?.map(medicalAppointment => 

@@ -6,9 +6,22 @@ import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/u
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
+import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
+/****************************
+ ***** Page paramenters *****
+*****************************/
+// NO PARAMETERS HERE
+
+/************************************
+ ***** Get info to show on page *****
+*************************************/
 let owners = [];
 const getOwnersResult = await getAllProfilesByRoleId(import.meta.env.OWNER_ROLE_ID, authenticatedUserId);
 
@@ -16,6 +29,9 @@ if (getOwnersResult.success) {
     owners = getOwnersResult.data ?? [];
 }
 
+/*************************
+ ***** Table headers *****
+**************************/
 const tableHeaders = [
     "Nombre",
     "Correo",
@@ -26,6 +42,9 @@ const tableHeaders = [
 ---
 
 <ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
     <ContentTop>
         Dueños de mascotas <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
@@ -35,9 +54,16 @@ const tableHeaders = [
             </ActionLink>
         </div>
     </ContentTop>
-    <div class="mt-8 flow-root">
+    
+    <!-- ------------------
+    ------ Main card ------
+    ------------------- -->
+    <SimpleCard class="flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <!-- -------------------
+                ------ Main table ------
+                -------------------- -->
                 <SimpleTable id="owners-table" headers={tableHeaders} items={owners} itemsName="dueños" noItemsMessage="No hay dueños registrados.">
                     {
                         owners.map((owner: any) => 
@@ -56,7 +82,7 @@ const tableHeaders = [
                 </SimpleTable>
             </div>
         </div>
-    </div>
+    </SimpleCard>
 </ContentContainer>
 
 <script>
