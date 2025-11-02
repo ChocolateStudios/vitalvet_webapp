@@ -5,4 +5,5 @@ export class Bath extends AuditableModel {
     public observations: string = "";
     public petId: number | string = 0;
     public doctorProfileId: number | string = 0;
+    public imageURL?: string;
 }

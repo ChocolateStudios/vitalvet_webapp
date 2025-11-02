@@ -134,10 +134,9 @@ const {
                     this.formError.textContent = '';
                 }
 
-                /**********************************************
-                 ***** Emit event for logic from the page *****
-                ***********************************************/
-                
+                /******************************************
+                 ***** Prepare form data to use later *****
+                *******************************************/
                 const formData = new FormData(this.form!);
                 const data = Object.fromEntries(formData.entries());
             
@@ -167,7 +166,14 @@ const {
                 this.form?.dispatchEvent(new CustomEvent('form:submit', {
                     bubbles: true,
                     composed: true,
-                    detail: { data, inputs: this.inputs, submitButton: this.submitButton, isEditMode: this.isEditMode, formDataObj: this.formDataObj, },
+                    detail: { 
+                        initialData: this.formStateManager?.getFormInitialState(), // initial values before editing
+                        data, // current values
+                        inputs: this.inputs, 
+                        submitButton: this.submitButton, 
+                        isEditMode: this.isEditMode, 
+                        formDataObj: this.formDataObj, 
+                    },
                 }));
             
                 /**********************************************************************
@@ -217,12 +223,6 @@ const {
                     this.navigationConfirmed = true;
                     window.location.href = this.targetUrl;
                 }
-            }
-
-            public getFormData() {
-                if (!this.form) return {};
-                const formData = new FormData(this.form);
-                return Object.fromEntries(formData.entries());
             }
         }
 

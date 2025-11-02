@@ -7,6 +7,7 @@ export class BathResource extends AuditableModel {
     public petId: number | string = 0;
     public bathNumber: number = 0;
     public doctorProfileId: number | string = 0;
+    public imageURL?: string;
 
     constructor(model: Bath) {
         super();
@@ -15,6 +16,7 @@ export class BathResource extends AuditableModel {
         this.observations = model.observations;
         this.petId = model.petId;
         this.doctorProfileId = model.doctorProfileId;
+        this.imageURL = model.imageURL;
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
     }

@@ -7,6 +7,7 @@ export class SaveProfileResource {
     public phone: string;
     public birthday: Date;
     public roleId: string;
+    public avatarURL?: string;
 
     constructor(name: string, lastname: string, email: string, phone: string, birthday: Date, roleId: string) {
         this.name = name;
@@ -26,6 +27,7 @@ export class SaveProfileResource {
             phone: this.phone,
             birthday: this.birthday,
             roleId: this.roleId,
+            avatarURL: this.avatarURL,
             userId: "",
             createdAt: new Date(),
             updatedAt: new Date()

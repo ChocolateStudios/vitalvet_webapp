@@ -14,9 +14,9 @@ export interface PetListItemInfo {
     isDead?: boolean,
 }
 
-export async function getAllPets(baseUrl: string = ''): Promise<PetListItemInfo[]> {
+export async function getAllPets(): Promise<PetListItemInfo[]> {
     try {
-        const response = await fetch(`${baseUrl}/api/pets`);
+        const response = await fetch(`/api/pets`);
         const pets = await response.json();
         const petsInfo = pets.map((pet: PetResource) => {
             return {

@@ -12,6 +12,7 @@ export class ProfileResource extends AuditableModel {
     public roleId: string = "";
     public roleName: string = "";
     public me: boolean = false;
+    public avatarURL?: string;
 
     public constructor() {
         super();
@@ -30,6 +31,7 @@ export class ProfileResource extends AuditableModel {
         resource.roleId = model.roleId;
         resource.createdAt = model.createdAt;
         resource.updatedAt = model.updatedAt;
+        resource.avatarURL = model.avatarURL;
         return resource;
     }
 }

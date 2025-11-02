@@ -1,9 +1,9 @@
 import type { SaveEventResource } from "@/contexts/calendar/server/interfaces/api/resources/save-event.resource";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
-export async function updateEvent(eventId: string, event: SaveEventResource, baseUrl: string = ''): Promise<UsecaseResult<any>> {
+export async function updateEvent(eventId: string, event: SaveEventResource): Promise<UsecaseResult<any>> {
     try {
-        const response = await fetch(`${baseUrl}/api/events/${eventId}`, {
+        const response = await fetch(`/api/events/${eventId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

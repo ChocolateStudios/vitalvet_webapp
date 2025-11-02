@@ -6,9 +6,9 @@ interface MedicalAppointmentInfo extends MedicalAppointment {
     appointmentNumber: number,
 }
 
-export async function getMedicalAppointment(petId: string, medicalAppointmentId: string, baseUrl: string = ''): Promise<UsecaseResult<MedicalAppointmentInfo>> {
+export async function getMedicalAppointment(petId: string, medicalAppointmentId: string): Promise<UsecaseResult<MedicalAppointmentInfo>> {
     try {
-        const response = await fetch(`${baseUrl}/api/pets/${petId}/medical-appointments/${medicalAppointmentId}`);
+        const response = await fetch(`/api/pets/${petId}/medical-appointments/${medicalAppointmentId}`);
 
         if (!response.ok) {
             const errorData = await response.json();

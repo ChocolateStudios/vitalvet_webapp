@@ -8,4 +8,5 @@ export class Profile extends AuditableModel {
     public birthday: Date = new Date();
     public userId: string = "";
     public roleId: string = "";
+    public avatarURL?: string;
 }

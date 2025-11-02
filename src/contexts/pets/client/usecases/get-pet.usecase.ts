@@ -10,9 +10,9 @@ export interface PetInfo extends Pet {
     weight: number;
 }
 
-// export async function getPet(petId: string, baseUrl: string = ''): Promise<UsecaseResult<PetInfo>> {
+// export async function getPet(petId: string): Promise<UsecaseResult<PetInfo>> {
 //     try {
-//         const response = await fetch(`${baseUrl}/api/pets/${petId}`);
+//         const response = await fetch(`/api/pets/${petId}`);
 
 //         if (!response.ok) {
 //             const errorData = await response.json();

@@ -8,9 +8,9 @@ interface MedicalAppointmentListItemInfo {
     doctorName: string,
 }
 
-export async function getAllMedicalAppointmentsByPetId(petId: string, baseUrl: string = ''): Promise<UsecaseResult<MedicalAppointmentListItemInfo[]>> {
+export async function getAllMedicalAppointmentsByPetId(petId: string): Promise<UsecaseResult<MedicalAppointmentListItemInfo[]>> {
     try {
-        const response = await fetch(`${baseUrl}/api/pets/${petId}/medical-appointments`);
+        const response = await fetch(`/api/pets/${petId}/medical-appointments`);
 
         if (!response.ok) {
             const errorData = await response.json();

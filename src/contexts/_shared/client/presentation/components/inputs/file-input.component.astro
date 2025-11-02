@@ -1,0 +1,90 @@
+---
+export interface Props {
+  id: string;
+  name: string;
+  label?: string;
+  value?: File | string;
+  error?: string;
+  class?: string;
+  accept?: string;
+  visible?: boolean;
+  showValue?: boolean;
+}
+
+const {
+  id,
+  name,
+  label,
+  value,
+  error,
+  class: className,
+  accept,
+  visible = true,
+  showValue = false,
+} = Astro.props as Props;
+---
+
+<div class:list={["relative w-full group", className, { hidden: !visible }]}>
+  {label &&
+    <label
+      for={id}
+      class:list={[
+        "cursor-pointer inline-block bg-white py-2 px-4 border border-gray-300 rounded-md text-base text-gray-900",
+        "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]",
+        { "border-red-600": error },
+      ]}
+    >
+      {label}
+    </label>
+  }
+  <input
+    data-file-input
+    type="file"
+    {id}
+    {name}
+    {accept}
+    class="hidden"
+  />
+  {showValue && <span id={`${id}-file-name`} class="ml-3 text-sm text-gray-500">
+    {typeof value === 'string' && value ? value.split('/').pop() : (value instanceof File ? value.name : 'No file selected')}
+  </span>}
+  <div id={`${id}-error-container`} class="mt-1 text-sm text-red-600 h-4">
+    {error}
+  </div>
+</div>
+
+<script>
+  function setupFileInputs() {
+    document.querySelectorAll("input[data-file-input]").forEach((input) => {
+      const inputElement = input as HTMLInputElement;
+
+      if (inputElement.dataset.fileInputInitialized) return;
+      inputElement.dataset.fileInputInitialized = "true";
+
+      inputElement.addEventListener("change", () => {
+        const fileNameSpan = document.getElementById(
+          `${inputElement.id}-file-name`
+        );
+        const file = inputElement.files ? inputElement.files[0] : null;
+
+        if (fileNameSpan) {
+          fileNameSpan.textContent = file
+            ? file.name
+            : "No file selected";
+        }
+
+        const event = new CustomEvent("form:input", {
+          bubbles: true,
+          composed: true,
+          detail: {
+            name: inputElement.name,
+            value: file,
+          },
+        });
+        inputElement.dispatchEvent(event);
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", setupFileInputs);
+</script>

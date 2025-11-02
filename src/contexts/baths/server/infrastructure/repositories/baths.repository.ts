@@ -29,6 +29,7 @@ export class BathsRepository {
             bathDate: newBath.bathDate.toISOString(),
             createdAt: newBath.createdAt.toISOString(),
             updatedAt: newBath.updatedAt.toISOString(),
+            imageURL: newBath.imageURL || null, // Asegúrate de incluir el nuevo campo
         };
 
         await set(newBathRef, dataToSave);
@@ -52,6 +53,7 @@ export class BathsRepository {
         const dataToUpdate = {
             ...data,
             updatedAt: new Date().toISOString(),
+            imageURL: data.imageURL || null, // Asegúrate de incluir el nuevo campo
         };
         
         await update(bathRef, dataToUpdate);
@@ -106,6 +108,7 @@ export class BathsRepository {
             bathDate: new Date(bathsData[key].bathDate),
             createdAt: new Date(bathsData[key].createdAt),
             updatedAt: new Date(bathsData[key].updatedAt),
+            imageURL: bathsData[key].imageURL, // Asegúrate de incluir el nuevo campo
         }));
 
         // 2. Ordenar el array por fecha de creación (ascendente)

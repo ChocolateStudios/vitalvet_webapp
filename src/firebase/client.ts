@@ -1,5 +1,7 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -15,7 +17,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Obtiene una instancia de la Realtime Database.
+// Obtiene una instancia de servicios de firebase
 const db = getDatabase(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { app, db };
+export { app, db, auth, storage };

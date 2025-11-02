@@ -20,12 +20,9 @@ export const GET: APIRoute = async ({ request }) => {
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        // Re-instanciamos la clase a partir del objeto plano del JSON.
-        // Es crucial convertir la fecha de string a Date.
+        
         const resource = new SavePetResource(
             body.name,
-            // body.species,
-            // body.subspecies,
             body.imgUrl,
             new Date(body.birthday),
             body.status,

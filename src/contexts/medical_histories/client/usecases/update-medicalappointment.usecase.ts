@@ -1,9 +1,9 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
 
-export async function updateMedicalAppointment(petId: string, medicalAppointmentId: string, medicalAppointment: SaveMedicalAppointmentResource, baseUrl: string = ''): Promise<UsecaseResult<any>> {
+export async function updateMedicalAppointment(petId: string, medicalAppointmentId: string, medicalAppointment: SaveMedicalAppointmentResource): Promise<UsecaseResult<any>> {
     try {
-        const response = await fetch(`${baseUrl}/api/pets/${petId}/medical-appointments/${medicalAppointmentId}`, {
+        const response = await fetch(`/api/pets/${petId}/medical-appointments/${medicalAppointmentId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

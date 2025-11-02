@@ -1,9 +1,9 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
 
-export async function updateBath(petId: string, bathId: string, bath: SaveBathResource, baseUrl: string = ''): Promise<UsecaseResult<any>> {
+export async function updateBath(petId: string, bathId: string, bath: SaveBathResource): Promise<UsecaseResult<any>> {
     try {
-        const response = await fetch(`${baseUrl}/api/pets/${petId}/baths/${bathId}`, {
+        const response = await fetch(`/api/pets/${petId}/baths/${bathId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

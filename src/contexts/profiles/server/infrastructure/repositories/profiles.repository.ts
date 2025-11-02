@@ -28,6 +28,7 @@ export class ProfilesRepository {
             birthday: newProfile.birthday.toISOString(),
             createdAt: newProfile.createdAt.toISOString(),
             updatedAt: newProfile.updatedAt.toISOString(),
+            avatarURL: newProfile.avatarURL || null,
         };
 
         await set(newProfileRef, dataToSave);
@@ -54,6 +55,7 @@ export class ProfilesRepository {
             birthday: newProfile.birthday.toISOString(),
             createdAt: newProfile.createdAt.toISOString(),
             updatedAt: newProfile.updatedAt.toISOString(),
+            avatarURL: newProfile.avatarURL || null,
         };
 
         await set(newProfileRef, dataToSave);
@@ -72,6 +74,7 @@ export class ProfilesRepository {
             ...saveResource,
             birthday: saveResource.birthday.toISOString(),
             updatedAt: (new Date()).toISOString(),
+            avatarURL: saveResource.avatarURL || null,
         };
 
         await update(ref(db, `${PROFILES_PATH}/${profileId}`), dataToUpdate);
@@ -97,6 +100,7 @@ export class ProfilesRepository {
             userId,
             birthday: saveResource.birthday.toISOString(),
             updatedAt: (new Date()).toISOString(),
+            avatarURL: saveResource.avatarURL || null,
         };
 
         await update(ref(db, `${PROFILES_PATH}/${profileId}`), dataToUpdate);
@@ -124,6 +128,7 @@ export class ProfilesRepository {
             birthday: new Date(profileData.birthday),
             createdAt: new Date(profileData.createdAt),
             updatedAt: new Date(profileData.updatedAt),
+            avatarURL: profileData.avatarURL,
         };
 
         return ProfileResource.fromModel(profileModel);
@@ -144,6 +149,7 @@ export class ProfilesRepository {
             birthday: new Date(profileData.birthday),
             createdAt: new Date(profileData.createdAt),
             updatedAt: new Date(profileData.updatedAt),
+            avatarURL: profileData.avatarURL,
         };
 
         return ProfileResource.fromModel(profileModel);
@@ -188,6 +194,7 @@ export class ProfilesRepository {
                     birthday: new Date(profileData.birthday),
                     createdAt: new Date(profileData.createdAt),
                     updatedAt: new Date(profileData.updatedAt),
+                    avatarURL: profileData.avatarURL,
                 };
                 return ProfileResource.fromModel(profileModel);
             });
@@ -215,6 +222,7 @@ export class ProfilesRepository {
                 birthday: new Date(profileData.birthday),
                 createdAt: new Date(profileData.createdAt),
                 updatedAt: new Date(profileData.updatedAt),
+                avatarURL: profileData.avatarURL,
             };
             const resource = ProfileResource.fromModel(profileModel);
             resource.petsCount = profileData.petsCount ?? 0;

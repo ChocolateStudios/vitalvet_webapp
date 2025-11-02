@@ -36,8 +36,6 @@ export const PUT: APIRoute = async ({ request, params }) => {
         const body = await request.json();
         const resource = new SavePetResource(
             body.name,
-            // body.species,
-            // body.subspecies,
             body.imgUrl,
             new Date(body.birthday),
             body.status,

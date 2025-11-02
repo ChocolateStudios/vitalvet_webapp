@@ -1,8 +1,8 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 
-export async function deleteEvent(eventId: string, baseUrl: string = ''): Promise<UsecaseResult<any>> {
+export async function deleteEvent(eventId: string): Promise<UsecaseResult<any>> {
     try {
-        const response = await fetch(`${baseUrl}/api/events/${eventId}`, {
+        const response = await fetch(`/api/events/${eventId}`, {
             method: 'DELETE',
         });
 

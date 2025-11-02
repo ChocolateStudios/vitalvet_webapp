@@ -19,6 +19,7 @@ import ActionLink from "@/contexts/_shared/client/presentation/components/action
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import FileInput from "@/contexts/_shared/client/presentation/components/inputs/file-input.component.astro";
 
 /*******************************
  ***** User authentication *****
@@ -46,12 +47,11 @@ if (getPetResult.success) {
 
 const getOwnerProfilesResult = await getAllProfilesByRoleId(import.meta.env.OWNER_ROLE_ID, authenticatedUserId);
 if (getOwnerProfilesResult.success) {
-    ownerProfiles = getOwnerProfilesResult.data;
-    ownerProfiles = ownerProfiles.map(op => ({
-            id: op.id,
-            name: `${op.name} ${op.lastname} ${op.me ? '(Tú)' : ''}`,
-            me: op.me,
-        }));
+    ownerProfiles = getOwnerProfilesResult.data.map((op: any) => ({
+        id: op.id,
+        name: `${op.name} ${op.lastname} ${op.me ? '(Tú)' : ''}`,
+        me: op.me,
+    }));
 }
 
 const getSpeciesResult = await getAllSpecies();
@@ -86,9 +86,7 @@ const detailInputs = [
         name: "owner",
         type: "combobox",
         label: "Dueño",
-        value: pet ? 
-            pet?.ownerProfileId.toString()
-            : (ownerProfiles && ownerProfiles.length > 0) ? ownerProfiles.find(op => op.me === true)?.id.toString() : "",
+        value: pet ? pet?.ownerProfileId.toString() : ownerProfiles.find(op => !!op.me)?.id.toString() || "",
         options: ownerProfiles ?? [],
         actions: [
             {
@@ -118,8 +116,8 @@ const detailInputs = [
         name: "species",
         type: "combobox",
         label: "Especie",
-        value: (allSubspecies.find(ss => ss.id === pet?.subspeciesId)?.speciesId?.toString()),
-        options: allSpecies ?? [],
+        value: allSubspecies.find(ss => ss.id === pet?.subspeciesId)?.speciesId?.toString(),
+        options: allSpecies,
         actions: [
             {
                 label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva especie`,
@@ -137,7 +135,7 @@ const detailInputs = [
         type: "combobox",
         label: "Raza",
         value: pet?.subspeciesId?.toString(),
-        options: allSubspecies ?? [],
+        options: allSubspecies,
         actions: [
             {
                 label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva raza`,
@@ -174,9 +172,9 @@ const detailInputs = [
         type: "number",
         autocomplete: "weight",
         label: "Peso (kg)",
-        value:  (pet && pet?.medicalAppointmentsCount > 0) ? pet?.weight : "",
+        value:  (pet && pet.medicalAppointmentsCount > 0) ? pet.weight : "",
         readonly: true,
-        tooltip: (pet && pet?.medicalAppointmentsCount > 0) ? "El peso se obtuvo de la última cita médica." : "El peso se obtendrá cuando se registre la primera cita médica.",
+        tooltip: (pet && pet.medicalAppointmentsCount > 0) ? "El peso se obtuvo de la última cita médica." : "El peso se obtendrá cuando se registre la primera cita médica.",
     },
     {
         id: "status",
@@ -184,12 +182,19 @@ const detailInputs = [
         type: "switch",
         trueLabel: "Activo",
         falseLabel: "Inactivo",
-        value:  pet?.status === PetStatus.Inactive ? PetStatus.Inactive : PetStatus.Active,
+        value: pet?.status === PetStatus.Inactive ? PetStatus.Inactive : PetStatus.Active,
         trueValue: PetStatus.Active,
         falseValue: PetStatus.Inactive,
         trueTooltip: "El estado actual de la mascota indica que sigue con vida.",
         falseTooltip: "El estado actual de la mascota indica que ha fallecido.",
     },
+    {
+        // only to send this field to client
+        id: "imgUrl",
+        name: "imgUrl",
+        value: pet?.imgUrl,
+        visible: false,
+    }
 ];
 
 ---
@@ -200,11 +205,11 @@ const detailInputs = [
     ----------------- -->
     <ContentTop backHref="/app/home">
         { pet ? "Datos de la mascota" : "Nueva mascota" }  <!-- Main Title -->
-        { pet && 
+        { pet && (
             <p slot="subtitle" class="mt-1 text-md text-gray-600">
                 Revisa y actualiza la información de {pet.name}.
             </p> 
-        }
+        )}
     </ContentTop>
 
     <!-- ------------------
@@ -219,11 +224,13 @@ const detailInputs = [
         <SimpleCard lgColSpan="2" class="flex flex-col items-center text-center" transition:name={pet ? `pet-profile-${pet.id}`: ''}>
             <div class="relative w-40 h-40 mb-6">
                 <img 
-                    src={petProfilePhoto.src} 
+                    id="photo-preview"
+                    src={pet?.imgUrl || petProfilePhoto.src}
                     alt={`Foto de ${pet?.name || 'mascota'}`} 
                     class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md"
                 />
-                <button type="button" aria-label="Cambiar foto" class="absolute bottom-0 right-0 bg-[#6faab5] text-white rounded-full p-2 hover:bg-[#5f9ea8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]">
+                <FileInput id="photo-upload" name="photoUpload" accept="image/*" />
+                <button id="change-photo-button" type="button" aria-label="Cambiar foto" class="absolute bottom-0 right-0 bg-[#6faab5] text-white rounded-full p-2 hover:bg-[#5f9ea8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]">
                     <EditIcon />
                 </button>
             </div>
@@ -237,9 +244,7 @@ const detailInputs = [
             <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Información detallada</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {
-                detailInputs.map(input => {
-                    return <DynamicInput {...input as any} />;
-                })
+                detailInputs.map(input => <DynamicInput {...input as any} />)
             }
             </div>
 
@@ -250,24 +255,24 @@ const detailInputs = [
                 { pet &&
                     <>
                         <ActionLink href={`/app/pets/${petId}/baths-history`}>
-                            Baños {pet?.bathsCount > 0 ? `(${pet?.bathsCount})` : ''}
+                            Baños {pet?.bathsCount > 0 ? `(${pet.bathsCount})` : ''}
                         </ActionLink>
                         <ActionLink href={`/app/pets/${petId}/medical-history`}>
-                            Historial médico {pet?.medicalAppointmentsCount > 0 ? `(${pet?.medicalAppointmentsCount})` : ''}
+                            Historial médico {pet?.medicalAppointmentsCount > 0 ? `(${pet.medicalAppointmentsCount})` : ''}
                         </ActionLink>
                     </>
                 }
                 <ActionButton id="submit-button" type="submit" disabled>
-                    { pet ? "Guardar cambios" : "Crear mascota" }
+                    {pet ? "Guardar cambios" : "Crear mascota"}
                 </ActionButton>
-                { pet &&
+                {pet && (
                     <>
                         <ActionButton id="open-delete-dialog-button" type="danger">
                             Eliminar
                         </ActionButton>
                         <DeletePetDialog petName={pet?.name} />
                     </>
-                }
+                )}
             </div>
         </SimpleCard>
     </GridForm>
@@ -283,19 +288,47 @@ const detailInputs = [
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
+    import { uploadFile } from "@/contexts/files/client/usecases/upload-file.usecase";
+    import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 
     declare global {
         interface Window {
             listenersInitialized?: boolean;
         }
     }
+
+    function initializePhotoUpload() {
+        /**********************************************
+         ***** Add photo upload buttons listeners *****
+        **********************************************/
+        const changePhotoButton = document.getElementById('change-photo-button');
+        const photoUploadInput = document.getElementById('photo-upload');
+        const photoPreview = document.getElementById('photo-preview');
+
+        changePhotoButton?.addEventListener('click', () => {
+            photoUploadInput?.click();
+        });
+
+        photoUploadInput?.addEventListener('change', (event) => {
+            const files = (event.target as HTMLInputElement).files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    (photoPreview as HTMLImageElement).src = e.target?.result as string;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
     function initializeForm() {
         const form = document.getElementById('pet-form') as HTMLFormElement | null;
         if (!form) return;
 
-        /*************************************************************
-         ***** Calculate and insert years based on date of birth *****
-        **************************************************************/
+        /***************************************************************
+         ***** Calculate and show pet years based on date of birth *****
+        ***************************************************************/
         const birthdayInput = document.getElementById('birthday') as HTMLInputElement;
         const petAgeInput = document.getElementById('age') as HTMLInputElement;
 
@@ -330,25 +363,56 @@ const detailInputs = [
         /************************
          ***** Submit event *****
         *************************/
-
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
         
-            /********************
-             ***** Api Call *****
-            *********************/
-
+            /*********************************
+             ***** Prepare for api calls *****
+            *********************************/
             // If all good, REGISTER/UPDATE
             submitButton.disabled = true;
             submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
+            let petImgUrl = data.imgUrl;
+        
+            /************************
+             ***** Upload photo *****
+            ************************/
+            if (data.photoUpload.name) {
+                const PET_STORAGE_ROUTE = 'pets';
+                const petImgStorageName = `${data.name}_${data.owner}_${data.photoUpload.lastModified}`;
+                const petImgResource = new SaveFileResource(data.photoUpload, petImgStorageName, 'png', data.photoUpload.type, data.photoUpload.size, PET_STORAGE_ROUTE);
 
-            const resource = new SavePetResource(data.name, "", new Date(data.birthday), data.status, data.owner ?? 0, data.subspecies ?? 0);
+                try {
+                    const petImgResponse = await uploadFile(petImgResource);
+
+                    if (petImgResponse.success) {
+                        petImgUrl = petImgResponse.data?.publicURL ?? '';
+                    } else {
+                        formError.textContent = petImgResponse.errorMessage ?? 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
+                        submitButton.disabled = false;
+                        submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error al subir la imagen de la mascota:', error);
+                    formError.textContent = 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
+                    return;
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+                }
+            }
+        
+            /*******************************
+             ***** Register/update Pet *****
+            *******************************/
+            const petResource = new SavePetResource(data.name, petImgUrl, new Date(data.birthday), data.status, data.owner ?? 0, data.subspecies ?? 0);
             const actionMessage = !isEditMode ? 'crear' : 'actualizar';
             const badErrorMessage = `Error al ${actionMessage} mascota. Por favor, inténtalo de nuevo.`;
 
             try {
-                const response = !isEditMode ? await createPet(resource) : await updatePet(formDataObj.petId!, resource);
+                const response = !isEditMode ? await createPet(petResource) : await updatePet(formDataObj.petId!, petResource);
 
                 if (response.success) {
                     window.location.href = '/app/home';
@@ -369,7 +433,6 @@ const detailInputs = [
         /*******************************
          ***** Delete dialog logic *****
         ********************************/
-
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
@@ -441,6 +504,7 @@ const detailInputs = [
      ***** Run scripts on page load *****
     *************************************/
     document.addEventListener('astro:page-load', () => {
+        initializePhotoUpload();
         initializeForm();
         initializeDeleteDialog();
         initializeListeners();

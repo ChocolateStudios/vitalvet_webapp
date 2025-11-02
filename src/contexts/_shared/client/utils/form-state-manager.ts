@@ -26,7 +26,12 @@ export class FormStateManager {
         const formData = new FormData(this.form);
         const data: Record<string, any> = {};
         formData.forEach((value, key) => {
-            data[key] = value;
+            // data[key] = value;
+            if (value instanceof File) {
+                data[key] = `${value.name}_${value.lastModified}_${value.size}`;
+            } else {
+                data[key] = value;
+            }
         });
         return data;
     }
@@ -37,7 +42,12 @@ export class FormStateManager {
     private handleInput(event: CustomEvent) {
         const { name, value } = event.detail;
         if (name) {
-            this.currentState[name] = value;
+            // this.currentState[name] = value;
+            if (value instanceof File) {
+                this.currentState[name] = `${value.name}_${value.lastModified}_${value.size}`;
+            } else {
+                this.currentState[name] = value;
+            }
         }
         this.dispatchDirtyState();
     }
@@ -66,5 +76,9 @@ export class FormStateManager {
      */
     public initialize() {
         this.form.addEventListener('form:input', (e) => this.handleInput(e as CustomEvent));
+    }
+
+    public getFormInitialState(): Record<string, any> {
+        return this.initialState;
     }
 }

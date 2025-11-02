@@ -4,6 +4,7 @@ export class SaveBathResource {
     public bathDate: Date = new Date();
     public observations: string = "";
     public doctorProfileId: number | string = 0;
+    public imageURL?: string;
 
     constructor(bathDate: Date, observations: string, doctorProfileId: number | string) {
         this.bathDate = bathDate;
