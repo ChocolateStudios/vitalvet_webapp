@@ -9,6 +9,12 @@ export interface Props {
   accept?: string;
   visible?: boolean;
   showValue?: boolean;
+  button?: {
+    text?: string;
+    icon?: boolean;
+  }
+  fileTypes?: string;
+  targetPreviewer?: string;
 }
 
 const {
@@ -21,29 +27,57 @@ const {
   accept,
   visible = true,
   showValue = false,
+  button,
+  fileTypes,
+  targetPreviewer,
 } = Astro.props as Props;
+
+const fileTypeMap: { [key: string]: string } = {
+    image: "image/jpeg, image/png, image/gif, image/svg+xml, image/webp",
+    video: "video/mp4, video/webm, video/ogg",
+    audio: "audio/mpeg, audio/ogg, audio/wav",
+    document: "application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation",
+};
+
+const acceptValue = fileTypes ? (fileTypeMap[fileTypes] || fileTypes) : accept;
 ---
 
-<div class:list={["relative w-full group", className, { hidden: !visible }]}>
-  {label &&
-    <label
-      for={id}
-      class:list={[
-        "cursor-pointer inline-block bg-white py-2 px-4 border border-gray-300 rounded-md text-base text-gray-900",
-        "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]",
-        { "border-red-600": error },
-      ]}
-    >
-      {label}
-    </label>
-  }
+<div class:list={["relative w-full group", { hidden: !visible }]}>
+  <div class="flex items-center">
+    {label &&
+      <label
+        for={id}
+        class:list={[
+          "cursor-pointer inline-block bg-white py-2 px-4 border border-gray-300 rounded-md text-base text-gray-900",
+          "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]",
+          { "border-red-600": error },
+        ]}
+      >
+        {label}
+      </label>
+    }
+    {button &&
+      <button
+        type="button"
+        class:list={[
+          "inline-flex items-center p-2 border border-transparent shadow-sm text-sm font-medium text-white bg-[#6faab5] hover:bg-[#5a8f9a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6faab5]",
+          className
+        ]}
+        onclick={`document.getElementById('${id}').click()`}
+      >
+        {button.icon && <slot name="icon" />}
+        {button.text && <span>{button.text}</span>}
+      </button>
+    }
+  </div>
   <input
     data-file-input
     type="file"
     {id}
     {name}
-    {accept}
+    accept={acceptValue}
     class="hidden"
+    data-target-previewer={targetPreviewer}
   />
   {showValue && <span id={`${id}-file-name`} class="ml-3 text-sm text-gray-500">
     {typeof value === 'string' && value ? value.split('/').pop() : (value instanceof File ? value.name : 'No file selected')}
@@ -71,6 +105,22 @@ const {
           fileNameSpan.textContent = file
             ? file.name
             : "No file selected";
+        }
+
+        const targetPreviewerId = inputElement.dataset.targetPreviewer;
+        if (targetPreviewerId) {
+          const previewer = document.getElementById(targetPreviewerId);
+          if (previewer && file) {
+            if (file.type.startsWith("image/")) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                if (e.target?.result) {
+                  previewer.setAttribute("src", e.target.result as string);
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+          }
         }
 
         const event = new CustomEvent("form:input", {
