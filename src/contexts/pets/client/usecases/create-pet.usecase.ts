@@ -20,8 +20,13 @@ export async function createPet(pet: SavePetResource): Promise<UsecaseResult<any
             };
         }
 
+        const newPet = await response.json();
+
         return {
             success: true,
+            data: {
+                id: newPet.id,
+            }
         };
     } catch (error) {
         return {

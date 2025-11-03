@@ -359,6 +359,7 @@ const detailInputs = [
             submitButton.disabled = true;
             submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
             let petImgUrl = data.imgUrl;
+            // let petId = formDataObj.petId;
         
             /************************
              ***** Upload photo *****
@@ -397,28 +398,38 @@ const detailInputs = [
             /*******************************
              ***** Register/update Pet *****
             *******************************/
-            const petResource = new SavePetResource(data.name, petImgUrl, new Date(data.birthday), data.status, data.owner ?? 0, data.subspecies ?? 0);
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} mascota. Por favor, inténtalo de nuevo.`;
+            const registerOrUpdatePet = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+                submitButton.disabled = true;
+                submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
+                const petResource = new SavePetResource(data.name, petImgUrl, new Date(data.birthday), data.status, data.owner ?? 0, data.subspecies ?? 0);
+                const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+                const badErrorMessage = `Error al ${actionMessage} mascota. Por favor, inténtalo de nuevo.`;
+                const editMode = !!forceUpdate || isEditMode;
 
-            try {
-                const response = !isEditMode ? await createPet(petResource) : await updatePet(formDataObj.petId!, petResource);
+                try {
+                    const response = !editMode ? await createPet(petResource) : await updatePet(formDataObj.petId!, petResource);
+                    formDataObj.petId = response.data.id;
 
-                if (response.success) {
-                    window.location.href = '/app/home';
-                } else {
-                    formError.textContent = response.errorMessage ?? badErrorMessage;
+                    if (!response.success) {
+                        formError.textContent = response.errorMessage ?? badErrorMessage;
+                    } 
+                    else if (!cancelRedirect) {
+                        window.location.href = '/app/home';
+                    }
+                } catch (error) {
+                    console.error(`Error al ${actionMessage} mascota:`, error);
+                    formError.textContent = badErrorMessage;
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
                 }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} mascota:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-            }
+            };
+
+            await registerOrUpdatePet({cancelRedirect: !isEditMode});
 
             if (!isEditMode) {
                 await uploadPhoto();
+                await registerOrUpdatePet({forceUpdate: true});
             }
         });
     }

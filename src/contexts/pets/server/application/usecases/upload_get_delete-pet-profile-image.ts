@@ -9,13 +9,16 @@ const PET_STORAGE_ROUTE = 'pets';
 
 export async function uploadPetProfileImage(petId: string, file: SaveFileResource): Promise<UsecaseResult<any>> {
     const storagePath = `${PET_STORAGE_ROUTE}/${petId}`;
+    file.fileName = 'profilePhoto';
     file.storagePath = storagePath;
+    console.log('LLEGO AQUI')
 
     return uploadFile(file);
 }
 
 export async function getPetProfileImage(petId: string): Promise<UsecaseResult<any>> {
-    const result = await getStreamFile(`pets/${petId}/${petId}.png`);
+    const storagePath = `${PET_STORAGE_ROUTE}/${petId}`;
+    const result = await getStreamFile(`${storagePath}/profilePhoto`);
 
     if (result.errorMessage && result.errorMessage === 'Image not found')
     {

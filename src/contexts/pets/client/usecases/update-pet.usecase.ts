@@ -19,8 +19,13 @@ export async function updatePet(petId: string, pet: SavePetResource): Promise<Us
             };
         }
 
+        const updatedPet = await response.json();
+
         return {
             success: true,
+            data: {
+                id: updatedPet.id,
+            }
         };
     } catch (error) {
         return {

@@ -3,5 +3,5 @@ import { uploadFile } from "@/contexts/files/client/usecases/upload-file.usecase
 import type { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 
 export async function uploadPetProfileImage(petId: string,  file: SaveFileResource): Promise<UsecaseResult<any>> {
-    return await uploadFile(file, `/api/pets/${petId}`);
+    return await uploadFile(file, `/api/pets/${petId}/image`);
 }
