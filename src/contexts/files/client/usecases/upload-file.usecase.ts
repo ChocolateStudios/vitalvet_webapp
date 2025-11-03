@@ -1,7 +1,7 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 
-export async function uploadFile(file: SaveFileResource): Promise<UsecaseResult<any>> {
+export async function uploadFile(file: SaveFileResource, path?: string): Promise<UsecaseResult<any>> {
     try {
         const formData = new FormData();
         formData.append("filename", file.fileName);
@@ -14,7 +14,7 @@ export async function uploadFile(file: SaveFileResource): Promise<UsecaseResult<
             formData.append("file", file.fileContent);
         }
 
-        const response = await fetch(`/api/files`, {
+        const response = await fetch(path || `/api/files`, {
             method: 'POST',
             body: formData,
         });

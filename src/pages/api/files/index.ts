@@ -7,7 +7,6 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request }) => {
     try {
         const formData = await request.formData();
-        console.log(formData);
 
         const fileContent = formData.get("file") as globalThis.File | null;
         if (!fileContent) {
@@ -21,8 +20,6 @@ export const POST: APIRoute = async ({ request }) => {
         const storagePath = formData.get("path") as string;
 
         const resource = new SaveFileResource(fileContent, fileName, extension, contentType, Number(size), storagePath);
-
-        console.log(resource);
 
         const result = await uploadFile(resource);
 

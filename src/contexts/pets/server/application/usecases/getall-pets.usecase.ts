@@ -1,6 +1,6 @@
 import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
-import type { PetListItemInfo } from "@/contexts/pets/client/usecases/getall-pets.usecase";
+import type { PetListItemInfo } from "@/contexts/pets/client/usecases/_interfaces";
 import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";

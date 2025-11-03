@@ -6,7 +6,7 @@ import DynamicInput from "@/contexts/_shared/client/presentation/components/inpu
 import DeletePetDialog from "@/contexts/pets/client/presentation/components/delete-pet-dialog.component.astro";
 import EditIcon from "@/contexts/_shared/client/presentation/components/icons/EditIcon.astro";
 import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
-import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
+import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import ModalManager from "@/contexts/_shared/client/presentation/components/modal-manager.component.astro";
@@ -225,7 +225,7 @@ const detailInputs = [
             <div class="relative w-40 h-40 mb-6">
                 <img 
                     id="photo-preview"
-                    src={pet?.imgUrl || petProfilePhoto.src}
+                    src={`/api/pets/${petId}/image` || pet?.imgUrl || petProfilePhoto.src}
                     alt={`Foto de ${pet?.name || 'mascota'}`} 
                     class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md"
                 />
@@ -296,10 +296,10 @@ const detailInputs = [
 
 <script>
     import { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
+    import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
-    import { uploadFile } from "@/contexts/files/client/usecases/upload-file.usecase";
-    import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
+    import { uploadPetProfileImage } from "../../usecases/upload-pet-profile-image";
 
     declare global {
         interface Window {
@@ -363,30 +363,35 @@ const detailInputs = [
             /************************
              ***** Upload photo *****
             ************************/
-            if (data.photoUpload.name) {
-                const PET_STORAGE_ROUTE = 'pets';
-                const petImgStorageName = `${data.name}_${data.owner}_${data.photoUpload.lastModified}`;
-                const petImgResource = new SaveFileResource(data.photoUpload, petImgStorageName, 'png', data.photoUpload.type, data.photoUpload.size, PET_STORAGE_ROUTE);
+            const uploadPhoto = async () => {
+                if (data.photoUpload.name) {
+                    const petImgStorageName = `${formDataObj.petId!}`;
+                    const petImgResource = new SaveFileResource(data.photoUpload, petImgStorageName, data.photoUpload.name.split('.').pop(), data.photoUpload.type, data.photoUpload.size);
 
-                try {
-                    const petImgResponse = await uploadFile(petImgResource);
+                    try {
+                        const petImgResponse = await uploadPetProfileImage(formDataObj.petId!, petImgResource);
 
-                    if (petImgResponse.success) {
-                        petImgUrl = petImgResponse.data?.publicURL ?? '';
-                    } else {
-                        formError.textContent = petImgResponse.errorMessage ?? 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
+                        if (petImgResponse.success) {
+                            petImgUrl = petImgResponse.data?.publicURL ?? '';
+                        } else {
+                            formError.textContent = petImgResponse.errorMessage ?? 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
+                            submitButton.disabled = false;
+                            submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error al subir la imagen de la mascota:', error);
+                        formError.textContent = 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
+                        return;
+                    } finally {
                         submitButton.disabled = false;
                         submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-                        return;
                     }
-                } catch (error) {
-                    console.error('Error al subir la imagen de la mascota:', error);
-                    formError.textContent = 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
-                    return;
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
                 }
+            }
+
+            if (isEditMode) {
+                await uploadPhoto();
             }
         
             /*******************************
@@ -410,6 +415,10 @@ const detailInputs = [
             } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+            }
+
+            if (!isEditMode) {
+                await uploadPhoto();
             }
         });
     }

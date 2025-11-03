@@ -1,18 +1,6 @@
-import type { Pet } from "@/contexts/pets/server/models/pet.model";
 import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
-
-export interface PetListItemInfo {
-    id?: number | string,
-    name?: string,
-    medicalAppointmentsCount: number,
-    bathsCount: number,
-    owner?: string,
-    species?: string,
-    subspecies?: string,
-    // subspeciesId?: number | string,
-    isDead?: boolean,
-}
+import type { PetListItemInfo } from "@/contexts/pets/client/usecases/_interfaces";
 
 export async function getAllPets(): Promise<PetListItemInfo[]> {
     try {

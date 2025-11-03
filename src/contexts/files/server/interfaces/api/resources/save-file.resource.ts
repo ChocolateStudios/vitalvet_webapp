@@ -8,7 +8,7 @@ export class SaveFileResource {
     fileSize: number = 0;
     storagePath: string = '';
 
-    constructor(fileContent: globalThis.File | null, fileName: string, fileExtension: string, fileContentType: string, fileSize: number, storagePath: string) {
+    constructor(fileContent: globalThis.File | null, fileName: string, fileExtension: string, fileContentType: string, fileSize: number, storagePath: string = '') {
         this.fileContent = fileContent;
         this.fileName = fileName;
         this.fileExtension = fileExtension;

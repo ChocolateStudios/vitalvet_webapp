@@ -2,7 +2,7 @@ import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositori
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import { MedicalAppointmentsRepository } from "@/contexts/medical_histories/server/infrastructure/repositories/medical-appointments.repository";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
-import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
+import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 import type { PetStatus } from "../../models/pet-status.enum";
 
 export async function getPet(petId: string): Promise<UsecaseResult<PetInfo>> {

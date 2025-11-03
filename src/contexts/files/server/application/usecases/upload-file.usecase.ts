@@ -34,7 +34,6 @@ export async function uploadFile(file: SaveFileResource): Promise<UsecaseResult<
             updatedAt: new Date(snapshot.metadata.updated),
         };
 
-        console.log(uploadedFile)
         return { success: true, data: uploadedFile };
     } catch (error) {
         console.error("Error al subir el archivo:", error);
