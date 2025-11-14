@@ -5,7 +5,7 @@ import type { SaveMedicalAppointmentResource } from "@/contexts/medical_historie
 import { MedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/medical-appointment.resource";
 import { PETS_PATH } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
 
-const MEDICAL_APPOINTMENTS_PATH = 'medical_appointments';
+export const MEDICAL_APPOINTMENTS_PATH = 'medical_appointments';
 
 export class MedicalAppointmentsRepository {
 

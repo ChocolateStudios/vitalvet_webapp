@@ -2,29 +2,10 @@ import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-r
 import { storage } from '@/firebase/client';
 import { ref, getStream, getMetadata, listAll } from 'firebase/storage';
 import path from 'path';
+import fs from 'fs';
 
-export async function getStreamFile(storagePath: string): Promise<UsecaseResult<any>> {
+export async function getStreamFile(storagePath: string, defaultItemPath?: string): Promise<UsecaseResult<any>> {
     try {
-        // First, try the direct path in case a full path with extension is provided
-        // try {
-        //     const directStorageRef = ref(storage, storagePath);
-        //     const metadata = await getMetadata(directStorageRef);
-        //     const stream = getStream(directStorageRef);
-
-        //     return {
-        //         success: true,
-        //         data: {
-        //             stream,
-        //             metadata,
-        //         }
-        //     };
-        // } catch (error: any) {
-        //     if (error.code !== 'storage/object-not-found') {
-        //         throw error; // re-throw if it's not a "not found" error
-        //     }
-        //     // if it is "not found", proceed to search without extension
-        // }
-
         const dirname = path.dirname(storagePath);
         const basename = path.basename(storagePath);
         const dirRef = ref(storage, dirname);
@@ -43,6 +24,22 @@ export async function getStreamFile(storagePath: string): Promise<UsecaseResult<
                     stream,
                     metadata,
                 }
+            };
+        }
+
+        if (defaultItemPath) {
+
+            const defaultImagePath = path.join(process.cwd(), defaultItemPath);
+            const stats = fs.statSync(defaultImagePath);
+            const stream = fs.createReadStream(defaultImagePath);
+            const metadata = { contentType: 'image/png', size: stats.size };
+    
+            return { 
+                success: true, 
+                data: { 
+                    stream, 
+                    metadata 
+                } 
             };
         }
 

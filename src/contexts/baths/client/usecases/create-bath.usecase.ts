@@ -19,8 +19,13 @@ export async function createBath(petId: string, bath: SaveBathResource): Promise
             };
         }
 
+        const newBath = await response.json();
+
         return {
             success: true,
+            data: {
+                id: newBath.id,
+            }
         };
     } catch (error) {
         return {

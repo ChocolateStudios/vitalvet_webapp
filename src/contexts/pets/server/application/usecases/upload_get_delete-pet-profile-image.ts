@@ -11,7 +11,6 @@ export async function uploadPetProfileImage(petId: string, file: SaveFileResourc
     const storagePath = `${PET_STORAGE_ROUTE}/${petId}`;
     file.fileName = 'profilePhoto';
     file.storagePath = storagePath;
-    console.log('LLEGO AQUI')
 
     return uploadFile(file);
 }

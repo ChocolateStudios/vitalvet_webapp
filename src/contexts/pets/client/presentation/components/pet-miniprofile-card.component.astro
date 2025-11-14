@@ -1,5 +1,4 @@
 ---
-import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import DynamicInput from '@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro';
 
 export interface Props {
@@ -71,7 +70,7 @@ const profileInputs = [
     <div class="flex flex-row items-center gap-4">
         <div class="w-30 h-30 shrink-0">
             <img 
-                src={petProfilePhoto.src} 
+                src={`/api/pets/${pet?.id}/image`}
                 alt={`Foto de ${pet?.name || 'mascota'}`} 
                 class="rounded-full w-30 h-30 object-cover border-4 border-white shadow-md"
             />

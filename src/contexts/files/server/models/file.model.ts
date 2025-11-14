@@ -1,7 +1,7 @@
 import { AuditableModel } from "@/contexts/_shared/server/models/auditable.model";
 
 export class File extends AuditableModel {
-    fileContent: globalThis.File | null = null;
+    fileContent: globalThis.File | Buffer | null = null;
     fileName: string = '';          // ex: HelloWorld (without extension)
     fileExtension: string = '';     // ex: png
     fileContentType: string = '';   // ex: image/png

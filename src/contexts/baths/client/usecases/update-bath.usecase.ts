@@ -19,8 +19,13 @@ export async function updateBath(petId: string, bathId: string, bath: SaveBathRe
             };
         }
 
+        const updatedBath = await response.json();
+
         return {
             success: true,
+            data: {
+                id: updatedBath.id,
+            }
         };
     } catch (error) {
         return {

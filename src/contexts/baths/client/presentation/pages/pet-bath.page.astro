@@ -5,13 +5,13 @@ import DeletePetBathDialog from "@/contexts/baths/client/presentation/components
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import { getBath, type BathInfo } from "@/contexts/baths/server/application/usecases/get-bath.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 
 /*******************************
  ***** User authentication *****
@@ -96,6 +96,39 @@ const bathInputs = [
     },
 ];
 
+const imgsPreviewAndInputs = [
+    {
+        input : {
+            id: "beforeImage",
+            name: "beforeImage",
+            type: "file",
+            label: "Foto (Antes)",
+            fileTypes: "image",
+            targetPreviewer: "beforeImagePreview",
+        },
+        preview: {
+            id: "beforeImagePreview",
+            src: `/api/pets/${petId}/baths/${bathId}/beforeImage/image?v=${Date.now()}`,
+            alt: "Imagen antes del baño",
+        },
+    },
+    {
+        input : {
+            id: "afterImage",
+            name: "afterImage",
+            type: "file",
+            label: "Foto (Después)",
+            fileTypes: "image",
+            targetPreviewer: "afterImagePreview",
+        },
+        preview: {
+            id: "afterImagePreview",
+            src: `/api/pets/${petId}/baths/${bathId}/afterImage/image?v=${Date.now()}`,
+            alt: "Imagen después del baño",
+        },
+    },
+];
+
 ---
 
 <ContentContainer>
@@ -147,6 +180,16 @@ const bathInputs = [
                     <DynamicInput {...inputs} />
                 )
             }
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                {
+                    imgsPreviewAndInputs.map(imgsPreviewAndInput => 
+                        <div class="flex flex-col items-center gap-4 w-full">
+                            <DynamicInput {...imgsPreviewAndInput.input} />
+                            <img {...imgsPreviewAndInput.preview} class="w-full h-40 object-contain rounded-lg mt-2 bg-gray-100 transition-all duration-300" data-image-preview />
+                        </div>
+                    )
+                }
+            </div>
         </SimpleCard>
 
         <!-- -----------------------
@@ -165,13 +208,15 @@ const bathInputs = [
                 </>
             }
         </div>
-    </SimpleForm>
+    </GridForm>
 </ContentContainer>
 
 <script>
     import { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
     import { createBath } from "@/contexts/baths/client/usecases/create-bath.usecase";
     import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
+    import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
+    import { uploadBathImage } from "@/contexts/baths/client/usecases/upload_get_delete-bath-image";
 
     function initializeForm() {
         const form = document.getElementById('bath-form') as HTMLFormElement | null;
@@ -180,38 +225,82 @@ const bathInputs = [
         /************************
          ***** Submit event *****
         *************************/
-
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        
+            /************************
+             ***** Upload photo *****
+            ************************/
+            const uploadPhotos = async () => {
+                if (data.beforeImage.name || data.afterImage.name) {
+                    const resources: SaveFileResource[] = [
+                        ...(data.beforeImage.name ? [new SaveFileResource(data.beforeImage, 'beforeImage', data.beforeImage.name.split('.').pop(), data.beforeImage.type, data.beforeImage.size)] : []),
+                        ...(data.afterImage.name ? [new SaveFileResource(data.afterImage, 'afterImage', data.afterImage.name.split('.').pop(), data.afterImage.type, data.afterImage.size)] : []),
+                    ];
 
-            /********************
-             ***** Api Call *****
-            *********************/
+                    for (const resource of resources) {
+                        try {
+                            const imgResponse = await uploadBathImage(formDataObj.petId!, formDataObj.bathId!, resource);
 
-            // If all good, REGISTER/UPDATE
-            submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando baño...' : 'Actualizando baño...';
-
-            const resource = new SaveBathResource(new Date(data.date), data.observations, data.doctor ?? 0);
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} baño. Por favor, inténtalo de nuevo.`;
-
-            try {
-                const response = !isEditMode ? await createBath(formDataObj.petId!, resource) : 
-                                    await updateBath(formDataObj.petId!, formDataObj.bathId!, resource);
-
-                if (response.success) {
-                    window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
-                } else {
-                    formError.textContent = response.errorMessage ?? badErrorMessage;
+                            if (!imgResponse.success) {
+                                formError.textContent = imgResponse.errorMessage ?? 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
+                                submitButton.disabled = false;
+                                submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+                                return;
+                            }
+                        } catch (error) {
+                            console.error('Error al subir la imagen del baño:', error);
+                            formError.textContent = 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
+                            return;
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
+                        }
+                    }
                 }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} baño:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear baño' : 'Guardar cambios';
+            }
+
+            if (isEditMode) {
+                await uploadPhotos();
+            }
+        
+            /********************************
+             ***** Register/update Bath *****
+            ********************************/
+            const registerOrUpdateBath = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+                submitButton.disabled = true;
+                submitButton.textContent = !isEditMode ? 'Creando baño...' : 'Actualizando baño...';
+
+                const resource = new SaveBathResource(new Date(data.date), data.observations, data.doctor ?? 0);
+                const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+                const badErrorMessage = `Error al ${actionMessage} baño. Por favor, inténtalo de nuevo.`;
+                const editMode = !!forceUpdate || isEditMode;
+
+                try {
+                    const response = !editMode ? await createBath(formDataObj.petId!, resource) 
+                                            : await updateBath(formDataObj.petId!, formDataObj.bathId!, resource);
+                    formDataObj.bathId = response.data.id;
+
+                    if (!response.success) {
+                        formError.textContent = response.errorMessage ?? badErrorMessage;
+                    } else if (!cancelRedirect) {
+                        window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
+                    }
+                } catch (error) {
+                    console.error(`Error al ${actionMessage} baño:`, error);
+                    formError.textContent = badErrorMessage;
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = !isEditMode ? 'Crear baño' : 'Guardar cambios';
+                }
+            };
+
+            await registerOrUpdateBath({cancelRedirect: !isEditMode});
+
+            if (!isEditMode) {
+                await uploadPhotos();
+                await registerOrUpdateBath({forceUpdate: true});
             }
         });
     }
@@ -228,11 +317,47 @@ const bathInputs = [
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
+    function adjustImagePreviews() {
+        const previewImages = document.querySelectorAll<HTMLImageElement>('[data-image-preview]');
+        const TALL_IMAGE_THRESHOLD = 1.2; // La imagen es un 20% más alta que ancha
+        const DEFAULT_HEIGHT_CLASS = 'h-40';
+        const TALL_HEIGHT_CLASS = 'h-96'; // Altura mayor para imágenes verticales
+
+        previewImages.forEach(img => {
+            const handleImageLoad = () => {
+                // Si la imagen no tiene src (placeholder), no hacemos nada.
+                if (!img.currentSrc.includes('http')) return;
+
+                const { naturalWidth, naturalHeight } = img;
+                if (naturalWidth > 0 && naturalHeight > 0) {
+                    const aspectRatio = naturalHeight / naturalWidth;
+
+                    if (aspectRatio > TALL_IMAGE_THRESHOLD) {
+                        img.classList.remove(DEFAULT_HEIGHT_CLASS);
+                        img.classList.add(TALL_HEIGHT_CLASS);
+                    } else {
+                        img.classList.remove(TALL_HEIGHT_CLASS);
+                        img.classList.add(DEFAULT_HEIGHT_CLASS);
+                    }
+                }
+            };
+
+            // Si la imagen ya está cargada (cache), ejecutamos la lógica.
+            if (img.complete) {
+                handleImageLoad();
+            } else {
+                // Si no, esperamos a que se cargue.
+                img.addEventListener('load', handleImageLoad);
+            }
+        });
+    }
+
     /************************************
      ***** Run scripts on page load *****
     *************************************/
     document.addEventListener('astro:page-load', () => {
         initializeForm();
         initializeDeleteDialog();
+        adjustImagePreviews();
     });
 </script>

@@ -2,7 +2,7 @@ import { AuditableModel } from "@/contexts/_shared/server/models/auditable.model
 import type { File } from "@/contexts/files/server/models/file.model";
 
 export class FileResource extends AuditableModel {
-    fileContent: globalThis.File | null = null;
+    fileContent: globalThis.File | Buffer | null = null;
     fileName: string = '';
     fileExtension: string = '';
     fileContentType: string = '';

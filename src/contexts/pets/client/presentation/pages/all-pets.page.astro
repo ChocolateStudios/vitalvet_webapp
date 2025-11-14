@@ -2,12 +2,12 @@
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
 import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-pets.usecase";
-import type { PetListItemInfo } from "@/contexts/pets/client/usecases/getall-pets.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
 import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
+import type { PetListItemInfo } from "@/contexts/pets/client/usecases/_interfaces";
 
 /*******************************
  ***** User authentication *****

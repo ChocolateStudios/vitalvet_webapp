@@ -1,5 +1,4 @@
 ---
-import petProfilePhoto from "@/assets/petProfilePhoto.png";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
@@ -19,7 +18,6 @@ import ActionLink from "@/contexts/_shared/client/presentation/components/action
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
-import FileInput from "@/contexts/_shared/client/presentation/components/inputs/file-input.component.astro";
 
 /*******************************
  ***** User authentication *****
@@ -197,6 +195,17 @@ const detailInputs = [
     }
 ];
 
+const profileImgInput = {
+    id: "photo-upload",
+    name: "photoUpload",
+    type: "file",
+    button: {
+        icon: true,
+    },
+    fileTypes: "image",
+    targetPreviewer: "photo-preview",
+};
+
 ---
 
 <ContentContainer>
@@ -225,24 +234,16 @@ const detailInputs = [
             <div class="relative w-40 h-40 mb-6">
                 <img 
                     id="photo-preview"
-                    src={`/api/pets/${petId}/image` || pet?.imgUrl || petProfilePhoto.src}
+                    src={`/api/pets/${petId}/image`}
                     alt={`Foto de ${pet?.name || 'mascota'}`} 
                     class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md"
                 />
                 <!-- ---------------------------
                 ------ Pet photo uploader ------
                 ---------------------------- -->
-                <FileInput 
-                    id="photo-upload" 
-                    name="photoUpload" 
-                    accept="image/*" 
-                    button={{ icon: true }} 
-                    fileTypes="image" 
-                    class="absolute bottom-0 right-0 rounded-full"
-                    targetPreviewer="photo-preview"
-                >
+                <DynamicInput {...profileImgInput} class="absolute bottom-0 right-0 rounded-full">
                     <EditIcon slot="icon" />
-                </FileInput>
+                </DynamicInput>
             </div>
             <DynamicInput {...profileInput} class="w-full" />
         </SimpleCard>
@@ -407,13 +408,13 @@ const detailInputs = [
                 const editMode = !!forceUpdate || isEditMode;
 
                 try {
-                    const response = !editMode ? await createPet(petResource) : await updatePet(formDataObj.petId!, petResource);
+                    const response = !editMode ? await createPet(petResource) 
+                                                : await updatePet(formDataObj.petId!, petResource);
                     formDataObj.petId = response.data.id;
 
                     if (!response.success) {
                         formError.textContent = response.errorMessage ?? badErrorMessage;
-                    } 
-                    else if (!cancelRedirect) {
+                    } else if (!cancelRedirect) {
                         window.location.href = '/app/home';
                     }
                 } catch (error) {

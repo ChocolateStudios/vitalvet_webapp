@@ -1,18 +1,17 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 
+// TODO: en pet.page.astro hay que agregar en el src del img al final el datetime now para que siempre recargue la imagen
+// Hay que documentar bien en los comentarios el cookies '__sesion' y esta forma de deserializar el buffer por culpa de firebase
 export async function uploadFile(file: SaveFileResource, path?: string): Promise<UsecaseResult<any>> {
     try {
         const formData = new FormData();
-        formData.append("filename", file.fileName);
-        formData.append("extension", file.fileExtension);
-        formData.append("contentType", file.fileContentType);
-        formData.append("size", file.fileSize.toString());
-        formData.append("path", file.storagePath);
-
-        if (file.fileContent) {
-            formData.append("file", file.fileContent);
-        }
+        file.fileName && formData.append("filename", file.fileName);
+        file.fileExtension && formData.append("extension", file.fileExtension);
+        file.fileContentType && formData.append("contentType", file.fileContentType);
+        file.fileSize && formData.append("size", file.fileSize.toString());
+        file.storagePath && formData.append("path", file.storagePath);
+        file.fileContent && file.fileContent instanceof globalThis.File && formData.append("file", file.fileContent);
 
         const response = await fetch(path || `/api/files`, {
             method: 'POST',

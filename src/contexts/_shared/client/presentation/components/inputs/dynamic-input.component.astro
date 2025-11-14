@@ -4,16 +4,18 @@ import SimpleTextInput from "@/contexts/_shared/client/presentation/components/i
 import TextareaInput from "@/contexts/_shared/client/presentation/components/inputs/textarea-input.component.astro";
 import SwitchInput from "@/contexts/_shared/client/presentation/components/inputs/switch-input.component.astro";
 import ComboboxInput from "@/contexts/_shared/client/presentation/components/inputs/combobox-input.component.astro";
+import FileInput from "@/contexts/_shared/client/presentation/components/inputs/file-input.component.astro";
 import type { Props as SimpleTextProps } from "@/contexts/_shared/client/presentation/components/inputs/simple-text-input.component.astro";
 import type { Props as TextareaProps } from "@/contexts/_shared/client/presentation/components/inputs/textarea-input.component.astro";
 import type { Props as SwitchProps } from "@/contexts/_shared/client/presentation/components/inputs/switch-input.component.astro";
 import type { Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/inputs/combobox-input.component.astro";
+import type { Props as FileProps } from "@/contexts/_shared/client/presentation/components/inputs/file-input.component.astro";
 
 type ComponentMap = {
   [key: string]: any; 
 };
 
-export type Props = SimpleTextProps | TextareaProps | SwitchProps | ComboboxProps;
+export type Props = SimpleTextProps | TextareaProps | SwitchProps | ComboboxProps | FileProps;
 
 const { 
   type = "text", 
@@ -25,6 +27,7 @@ const inputComponents: ComponentMap = {
   textarea: TextareaInput,
   switch: SwitchInput,
   combobox: ComboboxInput,
+  file: FileInput,
 };
 
 // Por defecto, usamos SimpleTextInput para todos los tipos de input estándar
@@ -36,4 +39,7 @@ const Component = inputComponents[type] || SimpleTextInput;
   we can parse it back into a JavaScript object on the <script>, allowing the
   client-side validation logic to access and execute the validation functions.
 -->
-<Component type={type} {...props} validations={JSON.stringify(validations)} />
+<Component type={type} {...props} validations={JSON.stringify(validations)} >
+  <!-- Icon slot for file input -->
+  {props?.button?.icon && <slot name="icon" slot="icon" />}
+</Component>
