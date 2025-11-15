@@ -7,8 +7,6 @@ export const PUT: APIRoute = async ({ request, params }) => {
     try {
         const body = await request.json();
         const { profileId } = params;
-        // console.log(locals)
-
         
         const saveResource = new SaveProfileResource(
             body.name,

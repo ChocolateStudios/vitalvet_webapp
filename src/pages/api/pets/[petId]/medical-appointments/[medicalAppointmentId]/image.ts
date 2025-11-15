@@ -2,12 +2,20 @@ import type { APIRoute } from 'astro';
 import { SaveFileResource } from '@/contexts/files/server/interfaces/api/resources/save-file.resource';
 import { uploadFile } from '@/contexts/files/server/application/usecases/upload-file.usecase';
 import { MEDICAL_APPOINTMENT_STORAGE_ROUTE } from '@/contexts/files/server/infrastructure/repositories/file.repository';
-import { getStreamFile } from '@/contexts/files/server/application/usecases/get-stream-file.usecase';
+import { parseMultipartFormData } from '@/contexts/_shared/server/utils/form-data.util';
 
 export const prerender = false;
 
+/********************************************
+ ***** Upload medical appointment image *****
+********************************************/
 export const POST: APIRoute = async ({ request, params }) => {
+    /**************************
+    ***** Api paramenters *****
+    **************************/
     const { petId, medicalAppointmentId } = params;
+    
+    /* *** Validations *** */
     if (!petId) {
         return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
     }
@@ -16,23 +24,33 @@ export const POST: APIRoute = async ({ request, params }) => {
     }
     
     try {
-        const formData = await request.formData();
+        /*************************
+        ***** Read form data *****
+        *************************/
+        const { fields, fileContent, fileMimeType } = await parseMultipartFormData(request);
 
-        const fileContent = formData.get("file") as globalThis.File | null;
+        /* *** Validations *** */
         if (!fileContent) {
             return new Response(JSON.stringify({ message: "File not found in form data" }), { status: 400 });
         }
 
-        const fileName = formData.get("filename") as string;
-        const extension = formData.get("extension") as string;
-        const contentType = formData.get("contentType") as string;
-        const size = formData.get("size") as string;
+        /****************************
+        ***** Assemble resource *****
+        ****************************/
+        const fileName = fields.filename as string;
+        const extension = fields.extension as string;
+        const contentType = fileMimeType;
+        const size = fields.size as string;
         const storagePath = `${MEDICAL_APPOINTMENT_STORAGE_ROUTE(petId)}/${medicalAppointmentId}/images`;
         
         const resource = new SaveFileResource(fileContent, fileName, extension, contentType, Number(size), storagePath);
 
+        /* *** Call service *** */
         const result = await uploadFile(resource);
 
+        /**************************
+        ***** Return response *****
+        **************************/
         if (result.success) {
             return new Response(JSON.stringify(result.data), { 
                 status: 201, 
@@ -44,41 +62,5 @@ export const POST: APIRoute = async ({ request, params }) => {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
         return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
-    }
-};
-
-export const GET: APIRoute = async ({ params }) => {
-    const { petId, medicalAppointmentId } = params;
-    if (!petId) {
-        return new Response('Pet ID is required', { status: 400 });
-    }
-    if (!medicalAppointmentId) {
-        return new Response(JSON.stringify({ message: 'Medical Appointment ID is required' }), { status: 400 });
-    }
-
-    try {
-            const result = await getStreamFile(`${MEDICAL_APPOINTMENT_STORAGE_ROUTE(petId)}/${medicalAppointmentId}/images`);
-
-        if (result.success) {
-            return new Response(result.data.stream, {
-                status: 200,
-                headers: {
-                    'Content-Type': result.data.metadata.contentType || 'application/octet-stream',
-                    'Cache-Control': 'public, max-age=31536000, immutable'
-                }
-            });
-        } else {
-            return new Response(JSON.stringify({ message: result.errorMessage }), { status: 500 });
-        }
-
-    } catch (error: any) {
-        if (error.code === 'storage/object-not-found') {
-            return new Response('Image not found', { status: 404 });
-        }
-        const errorMessage = error.message || 'An unexpected error occurred';
-        return new Response(JSON.stringify({ message: 'Error downloading image', error: errorMessage }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
     }
 };

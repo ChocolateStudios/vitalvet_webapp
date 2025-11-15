@@ -11,4 +11,7 @@ initializeApp();
 
 // Crea y exporta la Cloud Function
 // El nombre "server" debe coincidir con el que pusiste en firebase.json
-export const server = https.onRequest(handler);
+export const server = https.onRequest(
+  { memory: '512MiB' }, // <-- Aumentamos la memoria aquí
+  handler
+);

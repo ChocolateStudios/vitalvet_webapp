@@ -4,8 +4,16 @@ import { getStreamFile } from '@/contexts/files/server/application/usecases/get-
 
 export const prerender = false;
 
+/**************************
+ ***** Get bath image *****
+**************************/
 export const GET: APIRoute = async ({ params }) => {
+    /**************************
+    ***** Api paramenters *****
+    **************************/
     const { petId, bathId, fileName } = params;
+    
+    /* *** Validations *** */
     if (!petId) {
         return new Response('Pet ID is required', { status: 400 });
     }
@@ -17,9 +25,12 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     try {
-        console.log('accediendo a: ' + `${BATH_STORAGE_ROUTE(petId)}/${bathId}/images/${fileName}`)
+        /* *** Call service *** */
         const result = await getStreamFile(`${BATH_STORAGE_ROUTE(petId)}/${bathId}/images/${fileName}`, 'src/assets/smallInsertImage.png');
 
+        /**************************
+        ***** Return response *****
+        **************************/
         if (result.success) {
             return new Response(result.data.stream, {
                 status: 200,

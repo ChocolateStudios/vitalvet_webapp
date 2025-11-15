@@ -234,7 +234,7 @@ const profileImgInput = {
             <div class="relative w-40 h-40 mb-6">
                 <img 
                     id="photo-preview"
-                    src={`/api/pets/${petId}/image`}
+                    src={`/api/pets/${petId}/image?v=${Date.now()}`}
                     alt={`Foto de ${pet?.name || 'mascota'}`} 
                     class="rounded-full w-40 h-40 object-cover border-4 border-white shadow-md"
                 />

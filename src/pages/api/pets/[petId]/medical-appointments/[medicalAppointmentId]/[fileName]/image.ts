@@ -4,8 +4,16 @@ import { getStreamFile } from '@/contexts/files/server/application/usecases/get-
 
 export const prerender = false;
 
+/*****************************************
+ ***** Get medical appointment image *****
+*****************************************/
 export const GET: APIRoute = async ({ params }) => {
+    /**************************
+    ***** Api paramenters *****
+    **************************/
     const { petId, medicalAppointmentId, fileName } = params;
+    
+    /* *** Validations *** */
     if (!petId) {
         return new Response('Pet ID is required', { status: 400 });
     }
@@ -17,8 +25,12 @@ export const GET: APIRoute = async ({ params }) => {
     }
 
     try {
-            const result = await getStreamFile(`${MEDICAL_APPOINTMENT_STORAGE_ROUTE(petId)}/${medicalAppointmentId}/images/${fileName}`);
+        /* *** Call service *** */
+        const result = await getStreamFile(`${MEDICAL_APPOINTMENT_STORAGE_ROUTE(petId)}/${medicalAppointmentId}/images/${fileName}`);
 
+        /**************************
+        ***** Return response *****
+        **************************/
         if (result.success) {
             return new Response(result.data.stream, {
                 status: 200,
