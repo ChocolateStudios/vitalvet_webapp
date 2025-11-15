@@ -300,7 +300,7 @@ const profileImgInput = {
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
-    import { uploadPetProfileImage } from "../../usecases/upload-pet-profile-image";
+    import { uploadPetProfileImage } from "@/contexts/pets/client/usecases/upload-pet-profile-image";
 
     declare global {
         interface Window {
@@ -356,11 +356,9 @@ const profileImgInput = {
             /*********************************
              ***** Prepare for api calls *****
             *********************************/
-            // If all good, REGISTER/UPDATE
             submitButton.disabled = true;
             submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
             let petImgUrl = data.imgUrl;
-            // let petId = formDataObj.petId;
         
             /************************
              ***** Upload photo *****
@@ -446,7 +444,7 @@ const profileImgInput = {
         openDialogButton?.addEventListener('click', () => toggleDialog(true));
     }
 
-    function initializeListeners() {
+    function initializeComboboxListeners() {
         // Evita añadir el listener múltiples veces con Astro View Transitions
         if (window.listenersInitialized) return;
         window.listenersInitialized = true;
@@ -512,7 +510,7 @@ const profileImgInput = {
     document.addEventListener('astro:page-load', () => {
         initializeForm();
         initializeDeleteDialog();
-        initializeListeners();
+        initializeComboboxListeners();
     });
 
 </script>

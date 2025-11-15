@@ -100,3 +100,53 @@ export const collectValidationRulesAndDeleteFromDOM = (form: HTMLFormElement): a
 
     return rules;
 }
+
+
+
+interface MakeRequestProps {
+    isEditMode: boolean,
+    formError: any,
+    entityDisplayName: string,
+    submitButton: any,
+    makeRequestFunc: any,
+    onSuccessFunc?: any,
+    onErrorFunc?: any,
+};
+export const tryMakeRequestOrThrowError = async ({ 
+    isEditMode, formError, entityDisplayName, submitButton, 
+    makeRequestFunc, onSuccessFunc, onErrorFunc
+}: MakeRequestProps) => {
+    /*******************************
+     ***** Prepare for request *****
+    *******************************/
+    submitButton.disabled = true;
+    submitButton.textContent = !isEditMode ? `Creando ${entityDisplayName}...`  : `Actualizando ${entityDisplayName}...`;
+    const actionMessage = !isEditMode ? 'crear' : 'actualizar';
+    const badErrorMessage = `Error al ${actionMessage} ${entityDisplayName}. Por favor, inténtalo de nuevo.`;
+
+    try {
+        /***********************
+         ***** Try request *****
+        ***********************/
+        const response = await makeRequestFunc();
+
+        /********************
+         ***** On error *****
+        ********************/
+        if (!response.success) {
+            onErrorFunc ? onErrorFunc(response) : formError.textContent = response.errorMessage ?? badErrorMessage;
+        } 
+        /**********************
+         ***** On success *****
+        **********************/
+        else {
+            onSuccessFunc && onSuccessFunc(response);
+        }
+    } catch (error) {
+        console.error(`Error al ${actionMessage} ${entityDisplayName}:`, error);
+        formError.textContent = badErrorMessage;
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = !isEditMode ? `Crear ${entityDisplayName}` : 'Guardar cambios';
+    }
+}

@@ -1,7 +1,7 @@
 ---
-import BaseModal from "@/contexts/_shared/client/presentation/components/base-modal.component.astro";
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
 
 const profileInputs = [
     {
@@ -10,150 +10,86 @@ const profileInputs = [
         type: "text",
         autocomplete: "species-name",
         label: "Nombre",
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
+            { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
+        ],
     },
 ]
 ---
-<BaseModal id="species-modal" title="Agregar nueva especie">
-    <form slot="body" id="species-form" novalidate>
+<FormModal id="species-modal" title="Agregar nueva especie">
+
+    <!-- ------------------
+    ------ Main form ------
+    ------------------- -->
+    <div slot="body" class="flex flex-col">
         {
             profileInputs.map(input => 
                 <DynamicInput {...input} />
             )
         }
-    </form>
-    <div slot="footer">
-        <button id='species-submit-button' type="button" class="inline-flex w-full justify-center rounded-md bg-[#6faab5] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] sm:w-auto">Agregar especie</button>
-        <button type="button" data-modal-close class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancelar</button>
     </div>
-</BaseModal>
+    
+    <!-- -----------------------
+    ------ Action buttons ------
+    ------------------------ -->
+    <ActionButton id="species-submit-button" type="submit" slot="footer">
+        Crear especie
+    </ActionButton>
+    <ActionButton dataModalClose slot="footer">
+        Cancelar
+    </ActionButton>
+</FormModal>
 
 <script>
     import { SaveSpeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-species.resource";
-    // import { updateProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { createSpecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
+import { tryMakeRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
-    function initializePageScripts() {
-        const form = document.getElementById('species-form') as HTMLFormElement | null;
+    function initializeForm() {
+        const form = document.getElementById('species-modal-form') as HTMLFormElement | null;
+        if (!form) return;
 
-        if (form) {
-            const nameInput = document.getElementById('species-name') as HTMLInputElement;
-            const submitButton = document.getElementById('species-submit-button') as HTMLButtonElement;
-            const formError = document.getElementById('species-form-error') as HTMLDivElement;
+        /************************
+         ***** Submit event *****
+        *************************/
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        
+            /***********************************
+             ***** Register/update Species *****
+            ***********************************/
+            const resource = new SaveSpeciesResource(data['species-name']);
+            await tryMakeRequestOrThrowError({
+                isEditMode,
+                formError,
+                entityDisplayName: 'especie',
+                submitButton,
+                makeRequestFunc: async () => !isEditMode ? await createSpecies(resource)
+                                                    : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
+                onSuccessFunc: (response: any) => {
+                    formDataObj.profileId = response.data.id;
+                    // 1. Dispara un evento con los datos de la nueva especie para que la página principal lo escuche
+                    document.dispatchEvent(new CustomEvent('species-created', {
+                        detail: { newSpecies: response.data }
+                    }));
 
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
+                    // 2. Dispara un evento para cerrar este modal específico
+                    document.dispatchEvent(new CustomEvent('close-modal-by-id', {
+                        detail: { id: 'species-modal' }
+                    }));
 
-            // const isNewOwner = !form.dataset.profileId;
-            const isNewSpecies = true;
-
-            const showError = (input: HTMLInputElement, message: string) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = message;
-                }
-                // Cambia el color del borde del input a rojo
-                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                input.classList.add('outline-red-500', 'focus:outline-red-500');
-            }
-
-            const clearError = (input: HTMLInputElement) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = '';
-                }
-                // Restaura el color del borde del input
-                input.classList.remove('outline-red-500', 'focus:outline-red-500');
-                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-            }
-
-            // form.addEventListener('submit', async (event) => {
-            submitButton.addEventListener('click', async (event) => {
-                // console.log('clicked')
-                event.preventDefault();
-
-                // Limpia errores previos
-                clearError(nameInput);
-                if (formError) {
-                    formError.textContent = '';
-                }
-
-                const name = nameInput.value;
-
-                let isValid = true;
-
-                // Validaciones
-                if (!name) {
-                    showError(nameInput, 'El nombre es obligatorio');
-                    isValid = false;
-                } else if (name.length < 3) {
-                    showError(nameInput, 'El nombre debe tener al menos 3 caracteres');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    submitButton.disabled = true;
-
-                    const resource = new SaveSpeciesResource(name);
-
-                    if (isNewSpecies) {
-                        submitButton.textContent = 'Agregando especie...';
-
-                        try {
-                            const response = await createSpecies(resource);
-                            if (response.success && response.data) {
-                                // 1. Dispara un evento con los datos de la nueva especie para que la página principal lo escuche
-                                document.dispatchEvent(new CustomEvent('species-created', {
-                                    detail: { newSpecies: response.data }
-                                }));
-
-                                // 2. Dispara un evento para cerrar este modal específico
-                                document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                                    detail: { id: 'species-modal' }
-                                }));
-
-                                // 3. Limpia el formulario para la próxima vez
-                                form.reset();
-                                [nameInput].forEach(clearError);
-
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al agregar especie. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al agregar especie:', error);
-                            formError.textContent = 'Error al agregar especie. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Agregar especie';
-                        }
-                    } else {
-                        submitButton.textContent = 'Actualizando especie...';
-                        // TODO
-                        // try {
-                        //     const response = await updateProfile(profileId, resource);
-                        //     if (response.success) {
-                        //         // window.location.reload();
-                        //         // window.location.href = '/app/home';
-                        //         // TODO: close modal
-                        //     } else {
-                        //         formError.textContent = response.errorMessage ?? 'Error al actualizar el especie. Por favor, inténtalo de nuevo.';
-                        //     }
-                        // } catch (error) {
-                        //     console.error('Error al actualizar el especie:', error);
-                        //     formError.textContent = 'Error al actualizar el especie. Por favor, inténtalo de nuevo.';
-                        // } finally {
-                        //     submitButton.disabled = false;
-                        //     submitButton.textContent = 'Guardar cambios';
-                        // }
-                    }
-                }
+                    // 3. Limpia el formulario para la próxima vez
+                    form.reset();
+                },
             });
-        }
+        });
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', initializeForm);
 
 </script>

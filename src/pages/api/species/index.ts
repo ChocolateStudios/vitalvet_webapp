@@ -5,8 +5,6 @@ import type { APIRoute } from "astro";
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        // Re-instanciamos la clase a partir del objeto plano del JSON.
-        // Es crucial convertir la fecha de string a Date.
         const resource = new SaveSpeciesResource(
             body.name,
         );

@@ -4,16 +4,18 @@ import BaseForm from '@/contexts/_shared/client/presentation/components/forms/ba
 export interface Props {
     id?: string;
     dataset?: any;
+    class?: string | (string | Record<string, any>)[];
     editMode?: boolean;
 }
 
 const {
     id,
     dataset,
+    class: className,
     editMode,
 } = Astro.props as Props;
 ---
 
-<BaseForm id={id} class="flex justify-center" dataset={dataset} editMode={editMode}>
+<BaseForm id={id} class:list={[className, "flex justify-center flex-col"]} dataset={dataset} editMode={editMode}>
     <slot/>
 </BaseForm>

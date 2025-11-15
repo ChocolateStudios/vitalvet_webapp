@@ -16,10 +16,16 @@ const {
 } = Astro.props as Props;
 ---
 
+<!-- ------------------
+------ Main form ------
+------------------- -->
 <form id={id} class:list={className} data-form-data={JSON.stringify({ ...dataset, editMode })} novalidate>
     <slot/>
 </form>
 
+<!-- -----------------------
+------ Confirm dialog ------
+------------------------ -->
 <ConfirmDialog 
     id="confirm-dialog-unsaved-changes"
     title="Cambios no guardados"
@@ -169,10 +175,10 @@ const {
                     detail: { 
                         initialData: this.formStateManager?.getFormInitialState(), // initial values before editing
                         data, // current values
-                        inputs: this.inputs, 
-                        submitButton: this.submitButton, 
-                        isEditMode: this.isEditMode, 
-                        formDataObj: this.formDataObj, 
+                        inputs: this.inputs,
+                        submitButton: this.submitButton,
+                        isEditMode: this.isEditMode,
+                        formDataObj: this.formDataObj,
                     },
                 }));
             
@@ -242,7 +248,8 @@ const {
             // Check if the wrapper has already been added
             if (form.parentElement?.tagName !== 'BASE-FORM-CONTAINER') {
                 const wrapper = document.createElement('base-form-container');
-                wrapper.setAttribute('id', `${form.id}-container`);
+                // Use form's ID or generate a unique one for the wrapper's ID
+                wrapper.id = form.id ? `${form.id}-container` : `base-form-container-${crypto.randomUUID()}`;
                 form.before(wrapper);
                 wrapper.append(form);
             }

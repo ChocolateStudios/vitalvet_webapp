@@ -2,28 +2,34 @@
 import { actionStyles, DISABLED_SUBMIT_TOOLTIP_MESSAGE } from '@/contexts/_shared/client/presentation/components/actions/_action-constants';
 
 export interface Props {
-  type?: 'submit' | 'danger' | 'default';
-  id: string;
-  disabled?: boolean;
-  tooltip?: string;
+    id?: string;
+    disabled?: boolean;
+    tooltip?: string;
+    type?: 'submit' | 'danger' | 'default';
+    style?: 'submit' | 'danger' | 'default';
+    dataModalClose?: boolean;
 }
 
 const {
-  type = "default",
-  id,
-  disabled = false,
-  tooltip,
+    id,
+    disabled = false,
+    tooltip,
+    type = "default",
+    style,
+    dataModalClose = false,
 } = Astro.props as Props;
 
 const buttonType = type === "submit" ? "submit" : "button";
+const finalStyle = style ?? type;
 ---
 
 <div class="relative group">
     <button 
         id={id} 
         type={buttonType} 
-        class:list={actionStyles(type)} 
+        class:list={actionStyles(finalStyle)} 
         disabled={disabled}
+        data-modal-close={dataModalClose || undefined}
     >
         <slot />
     </button>
