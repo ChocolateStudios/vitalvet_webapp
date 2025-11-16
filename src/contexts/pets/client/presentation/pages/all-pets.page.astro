@@ -90,6 +90,9 @@ const tableHeaders = [
 
 <script>
     function initializePageScripts() {
+        /****************************
+         ***** Search bar logic *****
+        ****************************/
         const searchInput = document.getElementById("pet-search") as HTMLInputElement;
         const table = document.getElementById('pets-table');
         const tableRows = table?.querySelectorAll('tbody tr');
@@ -122,7 +125,10 @@ const tableHeaders = [
         }
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializePageScripts();
+    });
 </script>

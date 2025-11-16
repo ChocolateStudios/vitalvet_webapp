@@ -3,13 +3,17 @@ import ActionButton from "@/contexts/_shared/client/presentation/components/acti
 import BaseModal from "@/contexts/_shared/client/presentation/components/modals/base-modal.component.astro";
 import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
 
 const ownerRoleId = import.meta.env.OWNER_ROLE_ID;
 
+/***********************
+ ***** Form inputs *****
+************************/
 const profileInputs = [
     {
         id: "owner-name",
-        name: "name",
+        name: "owner-name",
         type: "text",
         autocomplete: "name",
         label: "Nombres",
@@ -17,10 +21,11 @@ const profileInputs = [
             { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
             { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
         ],
+        showMandatory: true,
     },
     {
         id: "owner-lastname",
-        name: "lastname",
+        name: "owner-lastname",
         type: "text",
         autocomplete: "lastname",
         label: "Apellidos",
@@ -28,6 +33,7 @@ const profileInputs = [
             { validate: ((value: any) => !!value).toString(), message: 'El apellido es obligatorio' },
             { validate: ((value: any) => value.length >= 3).toString(), message: 'El apellido debe tener al menos 3 caracteres' }
         ],
+        showMandatory: true,
     },
     {
         id: "owner-birthday",
@@ -38,10 +44,11 @@ const profileInputs = [
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
         ],
+        showMandatory: true,
     },
     {
         id: "owner-email",
-        name: "email",
+        name: "owner-email",
         type: "email",
         autocomplete: "email",
         label: "Correo electrónico",
@@ -49,16 +56,18 @@ const profileInputs = [
             { validate: ((value: any) => !!value).toString(), message: 'El correo es obligatorio' },
             { validate: ((value: any) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)).toString(), message: 'Por favor, introduce un correo válido' }
         ],
+        showMandatory: true,
     },
     {
         id: "owner-phone",
-        name: "phone",
+        name: "owner-phone",
         type: "text",
         autocomplete: "phone",
         label: "Teléfono",
         validations: [
             { validate: ((value: any) => !!value).toString(), message: 'El teléfono es obligatorio' }
         ],
+        showMandatory: true,
     },
     {
         id: "owner-role",
@@ -71,36 +80,37 @@ const profileInputs = [
     },
 ]
 ---
-<BaseModal id="petowner-modal" title="Agregar nuevo dueño">
+<FormModal id="owner-modal" title="Agregar nuevo dueño" dataset={{ ownerRoleId }}>
 
-    <!-- ------------------
-    ------ Main form ------
-    ------------------- -->
-    <SimpleForm id="owner-form" slot="body" dataset={ownerRoleId}>
+    <!-- ---------------
+    ------ Inputs ------
+    ---------------- -->
+    <div slot="body" class="flex flex-col">
         {
             profileInputs.map(input => 
                 <DynamicInput {...input} />
             )
         }
-    </SimpleForm>
+    </div>
     
     <!-- -----------------------
     ------ Action buttons ------
     ------------------------ -->
-    <ActionButton id="owner-submit-button" style="submit" slot="footer">
+    <ActionButton id="owner-submit-button" type="submit" slot="footer">
         Crear dueño
     </ActionButton>
     <ActionButton dataModalClose slot="footer">
         Cancelar
     </ActionButton>
-</BaseModal>
+</FormModal>
 
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
-        const form = document.getElementById('owner-form') as HTMLFormElement | null;
+        const form = document.getElementById('owner-modal-form') as HTMLFormElement | null;
         if (!form) return;
         
         /************************
@@ -120,18 +130,17 @@ const profileInputs = [
             /*********************************
              ***** Register/update Owner *****
             *********************************/
-            const ownerResource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.ownerRoleId!);
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} dueño. Por favor, inténtalo de nuevo.`;
+            const resource = new SaveProfileResource(data['owner-name'], data['owner-lastname'], data['owner-email'], data['owner-phone'], new Date(data.birthday), formDataObj.ownerRoleId!);
+            await tryCreateEditRequestOrThrowError({
+                isEditMode,
+                formError,
+                entityDisplayName: 'dueño',
+                submitButton,
+                makeRequestFunc: async () => !isEditMode ? await createProfile(resource)
+                                                    : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
+                onSuccessFunc: (response: any) => {
+                    formDataObj.profileId = response.data.id;
 
-            try {
-                const response = !isEditMode ? await createProfile(ownerResource) 
-                                            : { success: false, errorMessage: badErrorMessage }  //await updatePet(formDataObj.petId!, ownerResource);
-                formDataObj.profileId = response.data.id;
-
-                if (!response.success) {
-                    formError.textContent = response.errorMessage ?? badErrorMessage;
-                } else {
                     // 1. Dispara un evento con los datos del nuevo dueño para que la página principal lo escuche
                     document.dispatchEvent(new CustomEvent('owner-created', {
                         detail: { newOwner: response.data }
@@ -139,26 +148,21 @@ const profileInputs = [
 
                     // 2. Dispara un evento para cerrar este modal específico
                     document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                        detail: { id: 'petowner-modal' }
+                        detail: { id: 'owner-modal' }
                     }));
 
                     // 3. Limpia el formulario para la próxima vez
                     form.reset();
-                    // [nameInput, lastnameInput, birthdayInput, emailInput, phoneInput].forEach(clearError);
-                }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} dueño:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear dueño' : 'Guardar cambios';
-            }
+                },
+            });
         });
     }
 
     /************************************
      ***** Run scripts on page load *****
     *************************************/
-    document.addEventListener('astro:page-load', initializeForm);
+    document.addEventListener('astro:page-load', () => {
+        initializeForm();
+    });
 
 </script>

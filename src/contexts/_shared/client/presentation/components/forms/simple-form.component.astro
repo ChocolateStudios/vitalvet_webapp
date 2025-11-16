@@ -16,6 +16,6 @@ const {
 } = Astro.props as Props;
 ---
 
-<BaseForm id={id} class:list={[className, "flex justify-center flex-col"]} dataset={dataset} editMode={editMode}>
+<BaseForm id={id} class:list={[className, "flex justify-center items-center flex-col"]} dataset={dataset} editMode={editMode}>
     <slot/>
 </BaseForm>

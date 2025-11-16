@@ -3,6 +3,10 @@ import ActionButton from "@/contexts/_shared/client/presentation/components/acti
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
 
+
+/***********************
+ ***** Form inputs *****
+************************/
 const profileInputs = [
     {
         id: "species-name",
@@ -14,14 +18,15 @@ const profileInputs = [
             { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
             { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
         ],
+        showMandatory: true,
     },
 ]
 ---
 <FormModal id="species-modal" title="Agregar nueva especie">
 
-    <!-- ------------------
-    ------ Main form ------
-    ------------------- -->
+    <!-- ---------------
+    ------ Inputs ------
+    ---------------- -->
     <div slot="body" class="flex flex-col">
         {
             profileInputs.map(input => 
@@ -44,7 +49,7 @@ const profileInputs = [
 <script>
     import { SaveSpeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-species.resource";
     import { createSpecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
-import { tryMakeRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('species-modal-form') as HTMLFormElement | null;
@@ -61,7 +66,7 @@ import { tryMakeRequestOrThrowError } from "@/contexts/_shared/client/presentati
              ***** Register/update Species *****
             ***********************************/
             const resource = new SaveSpeciesResource(data['species-name']);
-            await tryMakeRequestOrThrowError({
+            await tryCreateEditRequestOrThrowError({
                 isEditMode,
                 formError,
                 entityDisplayName: 'especie',
@@ -90,6 +95,8 @@ import { tryMakeRequestOrThrowError } from "@/contexts/_shared/client/presentati
     /************************************
      ***** Run scripts on page load *****
     *************************************/
-    document.addEventListener('astro:page-load', initializeForm);
+    document.addEventListener('astro:page-load', () => {
+        initializeForm();
+    });
 
 </script>

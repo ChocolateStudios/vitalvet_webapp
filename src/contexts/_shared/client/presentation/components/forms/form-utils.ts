@@ -103,26 +103,28 @@ export const collectValidationRulesAndDeleteFromDOM = (form: HTMLFormElement): a
 
 
 
-interface MakeRequestProps {
+interface MakeCreateEditRequestProps {
     isEditMode: boolean,
     formError: any,
     entityDisplayName: string,
     submitButton: any,
+    actionMessage?: string
     makeRequestFunc: any,
     onSuccessFunc?: any,
+    onUnsuccessFunc?: any,
     onErrorFunc?: any,
 };
-export const tryMakeRequestOrThrowError = async ({ 
-    isEditMode, formError, entityDisplayName, submitButton, 
-    makeRequestFunc, onSuccessFunc, onErrorFunc
-}: MakeRequestProps) => {
+export const tryCreateEditRequestOrThrowError = async ({ 
+    isEditMode, formError, entityDisplayName, submitButton, actionMessage,
+    makeRequestFunc, onSuccessFunc, onUnsuccessFunc, onErrorFunc
+}: MakeCreateEditRequestProps) => {
     /*******************************
      ***** Prepare for request *****
     *******************************/
     submitButton.disabled = true;
     submitButton.textContent = !isEditMode ? `Creando ${entityDisplayName}...`  : `Actualizando ${entityDisplayName}...`;
-    const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-    const badErrorMessage = `Error al ${actionMessage} ${entityDisplayName}. Por favor, inténtalo de nuevo.`;
+    const _actionMessage = !isEditMode ? 'crear' : 'actualizar';
+    const badErrorMessage = `Error al ${actionMessage ?? _actionMessage} ${entityDisplayName}. Por favor, inténtalo de nuevo.`;
 
     try {
         /***********************
@@ -134,7 +136,7 @@ export const tryMakeRequestOrThrowError = async ({
          ***** On error *****
         ********************/
         if (!response.success) {
-            onErrorFunc ? onErrorFunc(response) : formError.textContent = response.errorMessage ?? badErrorMessage;
+            onUnsuccessFunc ? onUnsuccessFunc(response) : formError.textContent = response.errorMessage ?? badErrorMessage;
         } 
         /**********************
          ***** On success *****
@@ -143,10 +145,71 @@ export const tryMakeRequestOrThrowError = async ({
             onSuccessFunc && onSuccessFunc(response);
         }
     } catch (error) {
-        console.error(`Error al ${actionMessage} ${entityDisplayName}:`, error);
-        formError.textContent = badErrorMessage;
+        if (onErrorFunc) {
+            onErrorFunc(error);
+        } else {
+            console.error(`Error al ${actionMessage ?? _actionMessage} ${entityDisplayName}:`, error);
+            formError.textContent = badErrorMessage;
+        }
     } finally {
         submitButton.disabled = false;
         submitButton.textContent = !isEditMode ? `Crear ${entityDisplayName}` : 'Guardar cambios';
+    }
+}
+
+
+interface MakeDeleteRequestProps {
+    textError: any,
+    entityDisplayName?: string,
+    deleteButton: any,
+    actionMessage?: string
+    makeRequestFunc: any,
+    onSuccessFunc?: any,
+    onUnsuccessFunc?: any,
+    onErrorFunc?: any,
+    addToOnFinallyFunc?: any,
+};
+export const tryDeleteRequestOrThrowError = async ({ 
+    textError, entityDisplayName, deleteButton, actionMessage,
+    makeRequestFunc, onSuccessFunc, onUnsuccessFunc, onErrorFunc, addToOnFinallyFunc,
+}: MakeDeleteRequestProps) => {
+    /*******************************
+     ***** Prepare for request *****
+    *******************************/
+    const _entityDisplayName = entityDisplayName ? ' ' + entityDisplayName : '';
+    deleteButton.disabled = true;
+    deleteButton.textContent = `Eliminando${_entityDisplayName}...`;
+    const _actionMessage = 'eliminar';
+    const badErrorMessage = `Error al ${actionMessage ?? _actionMessage}${_entityDisplayName}. Por favor, inténtalo de nuevo.`;
+
+    try {
+        /***********************
+         ***** Try request *****
+        ***********************/
+        const response = await makeRequestFunc();
+
+        /********************
+         ***** On error *****
+        ********************/
+        if (!response.success) {
+            onUnsuccessFunc ? onUnsuccessFunc(response) : textError.textContent = response.errorMessage ?? badErrorMessage;
+        } 
+        /**********************
+         ***** On success *****
+        **********************/
+        else {
+            onSuccessFunc && onSuccessFunc(response);
+        }
+    } catch (error) {
+        if (!onErrorFunc) {
+            onErrorFunc(error);
+        } else {
+            console.error(`Error al ${actionMessage ?? _actionMessage}${_entityDisplayName}:`, error);
+            textError.textContent = badErrorMessage;
+        }
+    } finally {
+        deleteButton.disabled = false;
+        deleteButton.textContent = `Eliminar${_entityDisplayName}`;
+        addToOnFinallyFunc && addToOnFinallyFunc();
     }
 }

@@ -1,11 +1,16 @@
 ---
-// import BaseCombobox, { type Props as ComboboxProps } from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
-import BaseModal from "@/contexts/_shared/client/presentation/components/modals/base-modal.component.astro";
-// import BaseTextInput from "@/contexts/_shared/client/presentation/components/base-text-input.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
+import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
 
+/*****************************
+ ***** Modal paramenters *****
+*****************************/
 const { allSpecies } = Astro.props;
 
+/***********************
+ ***** Form inputs *****
+************************/
 const speciesInputs = [
     {
         id: "subspecies-name",
@@ -13,7 +18,11 @@ const speciesInputs = [
         type: "text",
         autocomplete: "subspecies-name",
         label: "Nombres",
-        // value: species?.name,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
+            { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
+        ],
+        showMandatory: true,
     },
     {
         id: "subspecies-species",
@@ -21,158 +30,88 @@ const speciesInputs = [
         type: "combobox",
         label: "Especie",
         options: allSpecies ?? [],
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'La especie es obligatoria' }
+        ],
+        showMandatory: true,
     },
 ]
 ---
-<BaseModal id="subspecies-modal" title="Agregar nuevo raza">
-    <form slot="body" id="subspecies-form" novalidate>
+<FormModal id="subspecies-modal" title="Agregar nuevo raza">
+
+    <!-- ---------------
+    ------ Inputs ------
+    ---------------- -->
+    <div slot="body" class="flex flex-col">
         {
             speciesInputs.map(input => 
                 <DynamicInput {...input} />
             )
         }
-    </form>
-    <div slot="footer">
-        <button id='subspecies-submit-button' type="button" class="inline-flex w-full justify-center rounded-md bg-[#6faab5] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#5f9ea8] sm:w-auto">Agregar raza</button>
-        <button type="button" data-modal-close class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancelar</button>
     </div>
-</BaseModal>
+    
+    <!-- -----------------------
+    ------ Action buttons ------
+    ------------------------ -->
+    <ActionButton id="species-submit-button" type="submit" slot="footer">
+        Crear raza
+    </ActionButton>
+    <ActionButton dataModalClose slot="footer">
+        Cancelar
+    </ActionButton>
+</FormModal>
 
 <script>
     import { SaveSubspeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-subspecies.resource";
     // import { updateSpecies } from "@/contexts/pets/client/usecases/update-species.usecase";
     import { createSubspecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
+import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
-        const form = document.getElementById('subspecies-form') as HTMLFormElement | null;
+        const form = document.getElementById('subspecies-modal-form') as HTMLFormElement | null;
+        if (!form) return;
 
-        if (form) {
-            const nameInput = document.getElementById('subspecies-name') as HTMLInputElement;
-            const speciesInput = document.getElementById('subspecies-species-value') as HTMLInputElement;
-            const submitButton = document.getElementById('subspecies-submit-button') as HTMLButtonElement;
-            const formError = document.getElementById('subspecies-form-error') as HTMLDivElement;
+        /************************
+         ***** Submit event *****
+        *************************/
+        // Before this event, in base-form.astro validations were executed
+        form.addEventListener('form:submit', async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+            
+            /***********************************
+             ***** Register/update Subspecies *****
+            ***********************************/
+            const resource = new SaveSubspeciesResource(data['subspecies-name']);
+            await tryCreateEditRequestOrThrowError({
+                isEditMode,
+                formError,
+                entityDisplayName: 'especie',
+                submitButton,
+                makeRequestFunc: async () => !isEditMode ? await createSubspecies(resource, data.species)
+                                                    : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
+                onSuccessFunc: (response: any) => {
+                    // 1. Dispara un evento con los datos de la nueva raza para que la página principal lo escuche
+                    document.dispatchEvent(new CustomEvent('subspecies-created', {
+                        detail: { newSubspecies: response.data }
+                    }));
 
-            // Habilita el botón de envío una vez que el script se ha cargado.
-            if (submitButton) {
-                submitButton.disabled = false;
-            }
+                    // 2. Dispara un evento para cerrar este modal específico
+                    document.dispatchEvent(new CustomEvent('close-modal-by-id', {
+                        detail: { id: 'subspecies-modal' }
+                    }));
 
-            // const isNewOwner = !form.dataset.speciesId;
-            const isNewOwner = true;
-
-            const showError = (input: HTMLInputElement, message: string) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = message;
-                }
-                // Cambia el color del borde del input a rojo
-                input.classList.remove('outline-gray-300', 'focus:outline-blue-800');
-                input.classList.add('outline-red-500', 'focus:outline-red-500');
-            }
-
-            const clearError = (input: HTMLInputElement) => {
-                const errorContainer = document.getElementById(`${input.id}-error-container`);
-                if (errorContainer) {
-                    errorContainer.textContent = '';
-                }
-                // Restaura el color del borde del input
-                input.classList.remove('outline-red-500', 'focus:outline-red-500');
-                input.classList.add('outline-gray-300', 'focus:outline-blue-800');
-            }
-
-            // form.addEventListener('submit', async (event) => {
-            submitButton.addEventListener('click', async (event) => {
-                // console.log('clicked')
-                event.preventDefault();
-
-                // Limpia errores previos
-                clearError(nameInput);
-                clearError(speciesInput);
-                if (formError) {
-                    formError.textContent = '';
-                }
-
-                const name = nameInput.value;
-                const species = speciesInput.value;
-
-                let isValid = true;
-
-                // Validaciones
-                if (!name) {
-                    showError(nameInput, 'El nombre es obligatorio');
-                    isValid = false;
-                } else if (name.length < 3) {
-                    showError(nameInput, 'El nombre debe tener al menos 3 caracteres');
-                    isValid = false;
-                }
-                
-                if (!species) {
-                    showError(speciesInput, 'La especie es obligatoria');
-                    isValid = false;
-                }
-
-                if (isValid) {
-                    submitButton.disabled = true;
-                    
-                    const resource = new SaveSubspeciesResource(name);
-
-                    if (isNewOwner) {
-                        submitButton.textContent = 'Agregando raza...';
-
-                        try {
-                            const response = await createSubspecies(resource, species);
-                            if (response.success && response.data) {
-                                // 1. Dispara un evento con los datos de la nueva raza para que la página principal lo escuche
-                                document.dispatchEvent(new CustomEvent('subspecies-created', {
-                                    detail: { newSubspecies: response.data }
-                                }));
-
-                                // 2. Dispara un evento para cerrar este modal específico
-                                document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                                    detail: { id: 'subspecies-modal' }
-                                }));
-
-                                // 3. Limpia el formulario para la próxima vez
-                                form.reset();
-                                [nameInput, speciesInput].forEach(clearError);
-
-                            } else {
-                                formError.textContent = response.errorMessage ?? 'Error al agregar raza. Por favor, inténtalo de nuevo.';
-                            }
-                        } catch (error) {
-                            console.error('Error al agregar raza:', error);
-                            formError.textContent = 'Error al agregar raza. Por favor, inténtalo de nuevo.';
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = 'Agregar raza';
-                        }
-                    } else {
-                        submitButton.textContent = 'Actualizando raza...';
-                        // TODO
-                        // try {
-                        //     const response = await updateSpecies(speciesId, resource);
-                        //     if (response.success) {
-                        //         // window.location.reload();
-                        //         // window.location.href = '/app/home';
-                        //         // TODO: close modal
-                        //     } else {
-                        //         formError.textContent = response.errorMessage ?? 'Error al actualizar el raza. Por favor, inténtalo de nuevo.';
-                        //     }
-                        // } catch (error) {
-                        //     console.error('Error al actualizar el raza:', error);
-                        //     formError.textContent = 'Error al actualizar el raza. Por favor, inténtalo de nuevo.';
-                        // } finally {
-                        //     submitButton.disabled = false;
-                        //     submitButton.textContent = 'Guardar cambios';
-                        // }
-                    }
-                }
+                    // 3. Limpia el formulario para la próxima vez
+                    form.reset();
+                },
             });
-        }
+        });
     }
 
-    // Ejecuta los scripts en la carga inicial de la página (con View Transitions) 
-    // y en cada navegación del lado del cliente.
-    document.addEventListener('astro:page-load', initializePageScripts);
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializePageScripts();
+    });
 
 </script>

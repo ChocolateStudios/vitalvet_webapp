@@ -5,8 +5,10 @@ interface Option {
 }
 
 interface Action {
-  label: string;
+  label?: string;
+  text?: string;
   onClick: string;
+  icon?: any; // Para pasar el componente del icono
 }
 
 export interface Props {
@@ -119,12 +121,15 @@ const initialDisplayName = selectedOption ? selectedOption.name : "";
     {actions.length > 0 && (
       <div class="border-t border-gray-200 p-1">
         {actions.map(action => (
-          <button
-            type="button"
-            class="relative w-full text-left cursor-pointer select-none rounded-md py-2 px-3 text-sm text-gray-700 hover:bg-[#6faab5] hover:text-white"
-            onclick={action.onClick}
-            set:html={action.label}
-          ></button>
+            <button
+              type="button"
+              class="relative w-full text-left cursor-pointer select-none rounded-md py-2 px-3 text-sm text-gray-700 hover:bg-[#6faab5] hover:text-white flex items-center"
+              onclick={action.onClick}
+              set:html={action.label}
+            >
+              {action.icon && <action.icon class="h-4 w-4 mr-2" />}
+              {action.text}
+            </button>
         ))}
       </div>
     )}

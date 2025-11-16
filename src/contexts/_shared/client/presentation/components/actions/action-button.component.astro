@@ -8,6 +8,7 @@ export interface Props {
     type?: 'submit' | 'danger' | 'default';
     style?: 'submit' | 'danger' | 'default';
     dataModalClose?: boolean;
+    class?: string | (string | Record<string, any>)[];
 }
 
 const {
@@ -17,13 +18,14 @@ const {
     type = "default",
     style,
     dataModalClose = false,
+    class: className,
 } = Astro.props as Props;
 
 const buttonType = type === "submit" ? "submit" : "button";
 const finalStyle = style ?? type;
 ---
 
-<div class="relative group">
+<div class:list={[className, "relative group"]}>
     <button 
         id={id} 
         type={buttonType} 

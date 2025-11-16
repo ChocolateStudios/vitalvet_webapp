@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createMyProfile } from "@/contexts/profiles/server/application/usecases/create-profile.usecase";
+import { createProfile } from "@/contexts/profiles/server/application/usecases/create-profile.usecase";
 import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
 
 export const prerender = false;
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
             body.roleId,
         );
         
-        const newProfile = await createMyProfile(saveResource);
+        const newProfile = await createProfile(saveResource);
         return new Response(JSON.stringify(newProfile.data), {
             status: 201,
             headers: { 'Content-Type': 'application/json' }

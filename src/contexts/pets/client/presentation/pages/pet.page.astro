@@ -18,6 +18,7 @@ import ActionLink from "@/contexts/_shared/client/presentation/components/action
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.astro";
 
 /*******************************
  ***** User authentication *****
@@ -88,8 +89,9 @@ const detailInputs = [
         options: ownerProfiles ?? [],
         actions: [
             {
-                label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nuevo dueño`,
-                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'petowner-modal' } }))"
+                text: "Agregar nuevo dueño",
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'owner-modal' } }))",
+                icon: AddIcon,
             }
         ],
         validations: [
@@ -118,8 +120,9 @@ const detailInputs = [
         options: allSpecies,
         actions: [
             {
-                label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva especie`,
-                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'species-modal' } }))"
+                text: "Agregar nueva especie",
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'species-modal' } }))",
+                icon: AddIcon,
             }
         ],
         validations: [
@@ -136,8 +139,9 @@ const detailInputs = [
         options: allSubspecies,
         actions: [
             {
-                label: `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>Agregar nueva raza`,
-                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'subspecies-modal' } }))"
+                text: "Agregar nueva raza",
+                onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'subspecies-modal' } }))",
+                icon: AddIcon,
             }
         ],
         validations: [
@@ -301,6 +305,7 @@ const profileImgInput = {
     import { createPet } from "@/contexts/pets/client/usecases/create-pet.usecase";
     import { updatePet } from "@/contexts/pets/client/usecases/update-pet.usecase";
     import { uploadPetProfileImage } from "@/contexts/pets/client/usecases/upload-pet-profile-image";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     declare global {
         interface Window {
@@ -364,70 +369,62 @@ const profileImgInput = {
              ***** Upload photo *****
             ************************/
             const uploadPhoto = async () => {
-                if (data.photoUpload.name) {
-                    const petImgStorageName = `${formDataObj.petId!}`;
-                    const petImgResource = new SaveFileResource(data.photoUpload, petImgStorageName, data.photoUpload.name.split('.').pop(), data.photoUpload.type, data.photoUpload.size);
+                // There is no photo to upload
+                if (!data.photoUpload.name) return true;
+                
+                let uploadSuccessful = false;
+                const petImgStorageName = `${formDataObj.petId!}`;
+                const petImgResource = new SaveFileResource(data.photoUpload, petImgStorageName, data.photoUpload.name.split('.').pop(), data.photoUpload.type, data.photoUpload.size);
 
-                    try {
-                        const petImgResponse = await uploadPetProfileImage(formDataObj.petId!, petImgResource);
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'mascota',
+                    submitButton,
+                    actionMessage: 'subir la imagen de la',
+                    makeRequestFunc: async () => await uploadPetProfileImage(formDataObj.petId!, petImgResource),
+                    onSuccessFunc: (response: any) => {
+                        petImgUrl = response.data?.publicURL ?? '';
+                        uploadSuccessful = true;
+                    },
+                });
 
-                        if (petImgResponse.success) {
-                            petImgUrl = petImgResponse.data?.publicURL ?? '';
-                        } else {
-                            formError.textContent = petImgResponse.errorMessage ?? 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
-                            submitButton.disabled = false;
-                            submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-                            return;
-                        }
-                    } catch (error) {
-                        console.error('Error al subir la imagen de la mascota:', error);
-                        formError.textContent = 'Error al subir la imagen de la mascota. Por favor, inténtalo de nuevo.';
-                        return;
-                    } finally {
-                        submitButton.disabled = false;
-                        submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-                    }
-                }
+                return uploadSuccessful;
             }
 
             if (isEditMode) {
-                await uploadPhoto();
+                const uploadOk = await uploadPhoto();
+                if (!uploadOk) return;
             }
         
             /*******************************
              ***** Register/update Pet *****
             *******************************/
             const registerOrUpdatePet = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
-                submitButton.disabled = true;
-                submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
                 const petResource = new SavePetResource(data.name, petImgUrl, new Date(data.birthday), data.status, data.owner ?? 0, data.subspecies ?? 0);
-                const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-                const badErrorMessage = `Error al ${actionMessage} mascota. Por favor, inténtalo de nuevo.`;
                 const editMode = !!forceUpdate || isEditMode;
 
-                try {
-                    const response = !editMode ? await createPet(petResource) 
-                                                : await updatePet(formDataObj.petId!, petResource);
-                    formDataObj.petId = response.data.id;
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'mascota',
+                    submitButton,
+                    makeRequestFunc: async () => !editMode ? await createPet(petResource) 
+                                                     : await updatePet(formDataObj.petId!, petResource),
+                    onSuccessFunc: (response: any) => {
+                        formDataObj.petId = response.data.id;
 
-                    if (!response.success) {
-                        formError.textContent = response.errorMessage ?? badErrorMessage;
-                    } else if (!cancelRedirect) {
-                        window.location.href = '/app/home';
-                    }
-                } catch (error) {
-                    console.error(`Error al ${actionMessage} mascota:`, error);
-                    formError.textContent = badErrorMessage;
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-                }
+                        if (!cancelRedirect) 
+                            window.location.href = '/app/home';
+                    },
+                });
             };
 
             await registerOrUpdatePet({cancelRedirect: !isEditMode});
 
             if (!isEditMode) {
-                await uploadPhoto();
+                const uploadOk = await uploadPhoto();
+                if (!uploadOk) return;
                 await registerOrUpdatePet({forceUpdate: true});
             }
         });
