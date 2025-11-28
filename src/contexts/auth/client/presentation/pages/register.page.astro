@@ -77,7 +77,7 @@ const inputFields = [
     import { SaveUserResource } from "@/contexts/auth/server/interfaces/api/resources/save-user.resource";
     import { registerUser } from "@/contexts/auth/client/usecases/register-user.usecase";
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
-    import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+    import { createMyProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
     import { clearError, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {
@@ -147,7 +147,7 @@ const inputFields = [
                             return;
                         }
                         
-                        const profileResponse = await createProfile(saveProfileResource);
+                        const profileResponse = await createMyProfile(saveProfileResource);
                         if (profileResponse.success) {
                             window.location.href = '/app/home';
                         }
