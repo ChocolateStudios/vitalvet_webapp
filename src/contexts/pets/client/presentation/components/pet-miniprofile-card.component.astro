@@ -1,36 +1,25 @@
 ---
-import DynamicInput from '@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro';
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+import {
+    colSpanClasses,
+    lgColSpanClasses,
+} from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.constants";
 
 export interface Props {
     pet: any;
-	colSpan?: "1" | "2" | "3" | "4" | "5" | "6" | "full";
-	lgColSpan?: "1" | "2" | "3" | "4" | "5" | "6" | "full";
+    colSpan?: "1" | "2" | "3" | "4" | "5" | "6" | "full";
+    lgColSpan?: "1" | "2" | "3" | "4" | "5" | "6" | "full";
 }
 
-const {
-    colSpan, lgColSpan, pet,
+const { 
+    colSpan, 
+    lgColSpan, 
+    pet 
 } = Astro.props as Props;
 
-const colSpanClasses = {
-	"1": "col-span-1",
-	"2": "col-span-2",
-	"3": "col-span-3",
-	"4": "col-span-4",
-	"5": "col-span-5",
-	"6": "col-span-6",
-	full: "col-span-full",
-};
-
-const lgColSpanClasses = {
-	"1": "lg:col-span-1",
-	"2": "lg:col-span-2",
-	"3": "lg:col-span-3",
-	"4": "lg:col-span-4",
-	"5": "lg:col-span-5",
-	"6": "lg:col-span-6",
-	full: "lg:col-span-full",
-};
-
+/***********************
+ ***** Form inputs *****
+************************/
 const profileInputs = [
     {
         id: "name",
@@ -51,36 +40,56 @@ const profileInputs = [
 ];
 ---
 
-<div 
+<div
     class:list={[
         "bg-gray-200 rounded-xl shadow-lg p-7 text-left",
-		colSpan && colSpanClasses[colSpan],
-		lgColSpan && lgColSpanClasses[lgColSpan],
-    ]} 
-    transition:name={pet ? `pet-profile-${pet.id}`: ''}
+        // Apply column span classes if props are provided
+        colSpan && colSpanClasses[colSpan],
+        lgColSpan && lgColSpanClasses[lgColSpan],
+    ]}
+    transition:name={pet ? `pet-profile-${pet.id}` : ""}
 >
+    {/* Header section with title and link to full profile */}
     <div class="flex flex-row items-center justify-between mb-3">
         <h3 class="font-semibold">Datos de la mascota</h3>
-        <a href={`/app/pets/${pet?.id}`} title={`Ver más de ${pet?.name}`} class="text-gray-500 hover:text-gray-800 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        <a
+            href={`/app/pets/${pet?.id}`}
+            title={`Ver más de ${pet?.name}`}
+            class="text-gray-500 hover:text-gray-800 transition-colors"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                ></path>
             </svg>
         </a>
     </div>
+
+    {/* Content section with image and details inputs */}
     <div class="flex flex-row items-center gap-4">
         <div class="w-30 h-30 shrink-0">
-            <img 
+            <img
                 src={`/api/pets/${pet?.id}/image`}
-                alt={`Foto de ${pet?.name || 'mascota'}`} 
+                alt={`Foto de ${pet?.name || "mascota"}`}
                 class="rounded-full w-30 h-30 object-cover border-4 border-white shadow-md"
             />
         </div>
         <div class="flex flex-col w-full">
-        {
-            profileInputs.map(profileInput => 
-                <DynamicInput {...profileInput} readonly />
-            )
-        }
+            {
+                // Render dynamic inputs for pet details (readonly)
+                profileInputs.map((profileInput) => (
+                    <DynamicInput {...profileInput} readonly />
+                ))
+            }
         </div>
     </div>
 </div>
