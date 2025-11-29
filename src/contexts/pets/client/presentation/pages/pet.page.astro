@@ -8,7 +8,7 @@ import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import ModalManager from "@/contexts/_shared/client/presentation/components/modal-manager.component.astro";
+import ModalManager from "@/contexts/_shared/client/presentation/components/modals/modal-manager.component.astro";
 import PetOwnerModal from "@/contexts/pets/client/presentation/components/petowner-modal.component.astro";
 import { getAllSpecies, getAllSubspecies } from "@/contexts/pets/server/application/usecases/getall-species-subspecies.usecase";
 import SpeciesModal from "@/contexts/pets/client/presentation/components/species-modal.component.astro";
