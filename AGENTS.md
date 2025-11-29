@@ -156,3 +156,10 @@
  ---
  
  **Al seguir estas directrices, asegurarás que tu contribución se alinee perfectamente con la estructura y calidad del proyecto VitalVet.**
+
+## 7. Reglas de Despliegue (Firebase Hosting)
+
+### 7.1. Cookies
+- **Restricción**: Firebase Hosting elimina todas las cookies de las peticiones entrantes excepto una llamada `__session`.
+- **Uso**: Cualquier dato que necesite persistir entre peticiones (como el token de autenticación) **debe** almacenarse dentro de la cookie `__session`.
+- **Formato**: Se recomienda mantener el valor de `__session` lo más simple posible (ej. solo el token JWT string). Evitar estructuras JSON complejas si no son estrictamente necesarias para minimizar problemas de parsing y compatibilidad.

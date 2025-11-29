@@ -32,7 +32,7 @@ export class UsersRepository {
             throw new Error('No se pudo generar un ID para el nuevo usuario.');
         }
 
-        newUser.stringId = userId;
+        newUser.id = userId;
 
         const dataToSave = {
             ...data,
