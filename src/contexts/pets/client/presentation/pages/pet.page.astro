@@ -290,6 +290,8 @@ const profileImgInput = {
                 )}
             </div>
         </SimpleCard>
+        
+        <div class="form-error col-span-full text-red-500"></div>
     </GridForm>
     
     <!-- Modals -->
@@ -361,8 +363,6 @@ const profileImgInput = {
             /*********************************
              ***** Prepare for api calls *****
             *********************************/
-            submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando mascota...'  : 'Actualizando mascota...';
             let petImgUrl = data.imgUrl;
         
             /************************

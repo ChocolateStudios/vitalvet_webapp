@@ -6,12 +6,12 @@ import { getMedicalAppointment, type MedicalAppointmentInfo } from "@/contexts/m
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 
 /*******************************
  ***** User authentication *****
@@ -203,6 +203,8 @@ const medicalAppointmentInputs = [
                 </>
             }
         </div>
+        
+        <div class="form-error col-span-full text-red-500"></div>
     </GridForm>
 </ContentContainer>
 

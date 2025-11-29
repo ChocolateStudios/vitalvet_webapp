@@ -103,6 +103,11 @@ export const collectValidationRulesAndDeleteFromDOM = (form: HTMLFormElement): a
 
 
 
+const validErrorMessage = (message: string | null | undefined) => {
+    return (message && message !== 'Unexpected token \'<\', "<!doctype "... is not valid JSON') ? message : undefined;
+};
+
+
 interface MakeCreateEditRequestProps {
     isEditMode: boolean,
     formError: any,
@@ -136,7 +141,7 @@ export const tryCreateEditRequestOrThrowError = async ({
          ***** On error *****
         ********************/
         if (!response.success) {
-            onUnsuccessFunc ? onUnsuccessFunc(response) : formError.textContent = response.errorMessage ?? badErrorMessage;
+            onUnsuccessFunc ? onUnsuccessFunc(response) : formError.textContent = validErrorMessage(response.errorMessage) ?? badErrorMessage;
         } 
         /**********************
          ***** On success *****
@@ -192,7 +197,7 @@ export const tryDeleteRequestOrThrowError = async ({
          ***** On error *****
         ********************/
         if (!response.success) {
-            onUnsuccessFunc ? onUnsuccessFunc(response) : textError.textContent = response.errorMessage ?? badErrorMessage;
+            onUnsuccessFunc ? onUnsuccessFunc(response) : textError.textContent = validErrorMessage(response.errorMessage) ?? badErrorMessage;
         } 
         /**********************
          ***** On success *****
