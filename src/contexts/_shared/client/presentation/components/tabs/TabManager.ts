@@ -34,7 +34,13 @@ class TabManager {
         tabs.forEach(tab => {
             const isActive = tab.id === activeTabId;
             const tabEl = document.createElement('div');
-            tabEl.className = `cursor-pointer px-4 py-2 border-b-2 flex items-center gap-2 ${isActive ? 'border-blue-500 text-blue-600 font-semibold' : 'border-transparent text-gray-500 hover:text-gray-700'}`;
+
+            // Folder style classes
+            const baseClasses = "cursor-pointer px-6 py-2 rounded-t-lg flex items-center gap-2 transition-all duration-200 border-t border-l border-r text-sm select-none";
+            const activeClasses = "bg-white border-gray-200 border-b-white font-bold -mb-[1px] z-10 shadow-[0_-2px_5px_rgba(0,0,0,0.02)]";
+            const inactiveClasses = "bg-gray-100 border-gray-300 text-gray-500 hover:bg-gray-200 hover:text-gray-700 mb-0";
+
+            tabEl.className = `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
 
             // Title
             const titleSpan = document.createElement('span');
