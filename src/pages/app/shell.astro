@@ -1,0 +1,28 @@
+---
+import AppWithTabsLayout from "@/layouts/AppWithTabsLayout.astro";
+import TabBar from "@/contexts/_shared/client/presentation/components/tabs/TabBar.astro";
+import TabContainer from "@/contexts/_shared/client/presentation/components/tabs/TabContainer.astro";
+---
+
+<AppWithTabsLayout>
+    <div class="flex flex-col h-[calc(100vh-4rem)] md:h-screen">
+        <TabBar />
+        <div class="flex-1 overflow-hidden relative">
+            <TabContainer />
+        </div>
+    </div>
+</AppWithTabsLayout>
+
+<script>
+    import { tabsStore, openTab, syncFromUrl } from "@/stores/tabs.store";
+
+    // Initialize tabs from URL or default
+    syncFromUrl();
+
+    const state = tabsStore.get();
+    if (state.tabs.length === 0) {
+        // Open default tab (Home)
+        openTab("Pacientes", "home", {}, [], { isClosable: true });
+        openTab("Dueños", "owners", {}, [], { isClosable: true });
+    }
+</script>

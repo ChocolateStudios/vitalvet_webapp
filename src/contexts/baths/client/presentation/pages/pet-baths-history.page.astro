@@ -1,13 +1,15 @@
 ---
-
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { formatDateToDdMmYyyyHhMm } from "@/contexts/_shared/client/utils/date-formatters/clasicdate-formatter.utils";
-import { getAllBathsByPetId, type BathListItemInfo } from "@/contexts/baths/server/application/usecases/getall-baths-by-petid.usecase";
+import {
+    getAllBathsByPetId,
+    type BathListItemInfo,
+} from "@/contexts/baths/server/application/usecases/getall-baths-by-petid.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
-import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
+import SearchBar from "@/contexts/_shared/client/presentation/components/inputs/search-bar.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
-import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
+import SimpleTable from "@/contexts/_shared/client/presentation/components/tables/simple-table.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
@@ -16,20 +18,20 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
 getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 const { petId } = Astro.props;
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let pet: PetInfo | null = null;
-let bathsHistory: BathListItemInfo[] = []
+let bathsHistory: BathListItemInfo[] = [];
 
 const getPetResult = await getPet(petId);
 if (getPetResult.success) {
@@ -43,13 +45,8 @@ if (getBathsHistory.success) {
 
 /*************************
  ***** Table headers *****
-**************************/
-const tableHeaders = [
-    "N° cita",
-    "Fecha del baño",
-    "Veterinario",
-]
-
+ **************************/
+const tableHeaders = ["N° cita", "Fecha del baño", "Veterinario"];
 ---
 
 <ContentContainer>
@@ -60,12 +57,15 @@ const tableHeaders = [
         Historial de baños <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
             <SearchBar id="bathshistory-search" name="bathshistory-search" />
-            <ActionLink href={`/app/pets/${petId}/baths-history/new`} style="submit">
+            <ActionLink
+                href={`/app/pets/${petId}/baths-history/new`}
+                style="submit"
+            >
                 Añadir baño
             </ActionLink>
         </div>
     </ContentTop>
-    
+
     <!-- ------------------------
     ------ Cards container ------
     ------------------------- -->
@@ -76,23 +76,43 @@ const tableHeaders = [
         <!-- Right Card -->
         <SimpleCard class="flow-root" lgColSpan="4">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div
+                    class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8"
+                >
                     <!-- -------------------
                     ------ Main table ------
                     -------------------- -->
-                    <SimpleTable id="bathshistory-table" headers={tableHeaders} items={bathsHistory} itemsName="baños" noItemsMessage="No hay baños registrados.">
+                    <SimpleTable
+                        id="bathshistory-table"
+                        headers={tableHeaders}
+                        items={bathsHistory}
+                        itemsName="baños"
+                        noItemsMessage="No hay baños registrados."
+                    >
                         {
-                            bathsHistory?.map(bath => 
+                            bathsHistory?.map((bath) => (
                                 <tr class="relative hover:bg-gray-50 cursor-pointer">
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-center text-gray-900 sm:pl-0">
-                                        <a href={`/app/pets/${petId}/baths-history/${bath.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de la cita número ${bath.bathNumber} de ${bath.doctorName}`}>
-                                            <span class="relative z-10">{bath.bathNumber}</span>
+                                        <a
+                                            href={`/app/pets/${petId}/baths-history/${bath.id}`}
+                                            class="before:absolute before:inset-0"
+                                            aria-label={`Ver detalles de la cita número ${bath.bathNumber} de ${bath.doctorName}`}
+                                        >
+                                            <span class="relative z-10">
+                                                {bath.bathNumber}
+                                            </span>
                                         </a>
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{formatDateToDdMmYyyyHhMm(bath.bathDate)}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{bath.doctorName}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {formatDateToDdMmYyyyHhMm(
+                                            bath.bathDate,
+                                        )}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {bath.doctorName}
+                                    </td>
                                 </tr>
-                            )
+                            ))
                         }
                     </SimpleTable>
                 </div>

@@ -1,0 +1,22 @@
+---
+---
+
+<div id="tab-bar-container" class="w-full bg-white border-b border-gray-200">
+    <div id="tab-bar" class="flex flex-row overflow-x-auto no-scrollbar">
+        <!-- Tabs will be injected here by TabManager -->
+    </div>
+</div>
+
+<script>
+    import "@/contexts/_shared/client/presentation/components/tabs/TabManager";
+</script>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>

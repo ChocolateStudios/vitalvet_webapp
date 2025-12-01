@@ -1,0 +1,33 @@
+--- 
+import { ClientRouter } from 'astro:transitions'; 
+import SideBar from '@/contexts/_shared/client/presentation/components/toolbars/side-bar.component.astro';
+import Layout from '@/layouts/Layout.astro'; 
+
+const isPartial = Astro.url.searchParams.get('partial') === 'true'; 
+--- 
+
+{ 
+    isPartial ? ( <slot /> )
+        : ( 
+            <Layout> 
+                {/* ClientRouter component initialize view transitions and element's persistance */}
+                <ClientRouter /> 
+                
+                {/* This bar is fixed */}
+                <SideBar /> 
+                
+                {/* This is the main container of all pages */} 
+                <main class="mt-10 md:mt-0 md:ml-59 transition-all duration-300 ease-in-out">
+                    <slot />
+                </main> 
+            </Layout> 
+        ) 
+}
+
+<style> 
+    @reference "tailwindcss"; 
+    
+    body.sidebar-collapsed main { 
+        @apply md:ml-29;
+    } 
+</style>

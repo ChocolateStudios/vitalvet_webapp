@@ -6,15 +6,12 @@
   "scripts": {
     "astro": "astro",
     "dev": "astro dev",
-
     "build": "astro build",
     "deploy": "npm run build && firebase deploy -P default",
     "preview": "astro preview",
-
     "build:pre": "astro build --mode pre",
     "deploy:pre": "npm run build:pre && firebase deploy -P pre",
     "preview:pre": "astro preview --mode pre",
-
     "build:pro": "astro build --mode pro",
     "deploy:pro": "npm run build:pro && firebase deploy -P pro",
     "preview:pro": "astro preview --mode pro",
@@ -27,6 +24,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/node": "^9.3.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@types/uuid": "^11.0.0",
     "astro": "^5.10.1",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
@@ -35,8 +33,10 @@
     "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.3.2",
     "jsonwebtoken": "^9.0.2",
+    "nanostores": "^1.1.0",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

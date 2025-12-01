@@ -1,13 +1,16 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
-import { getAllMedicalAppointmentsByPetId, type MedicalAppointmentListItemInfo } from "@/contexts/medical_histories/server/application/usecases/getall-medicalappointments-by-petid.usecase";
+import {
+    getAllMedicalAppointmentsByPetId,
+    type MedicalAppointmentListItemInfo,
+} from "@/contexts/medical_histories/server/application/usecases/getall-medicalappointments-by-petid.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { formatDateToDdMmYyyyHhMm } from "@/contexts/_shared/client/utils/date-formatters/clasicdate-formatter.utils";
 import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
-import SearchBar from "@/contexts/_shared/client/presentation/components/search-bar.component.astro";
+import SearchBar from "@/contexts/_shared/client/presentation/components/inputs/search-bar.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
-import SimpleTable from "@/contexts/_shared/client/presentation/components/simple-table.component.astro";
+import SimpleTable from "@/contexts/_shared/client/presentation/components/tables/simple-table.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
@@ -15,7 +18,7 @@ import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/
 const { petId } = Astro.props;
 
 let pet: PetInfo | null = null;
-let medicalHistory: MedicalAppointmentListItemInfo[] = []
+let medicalHistory: MedicalAppointmentListItemInfo[] = [];
 
 const getPetResult = await getPet(petId);
 if (getPetResult.success) {
@@ -32,8 +35,7 @@ const tableHeaders = [
     "Fecha de la cita",
     "Veterinario",
     "Peso (kg)",
-]
-
+];
 ---
 
 <ContentContainer>
@@ -43,13 +45,19 @@ const tableHeaders = [
     <ContentTop backHref={`/app/pets/${petId}`}>
         Historial médico <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
-            <SearchBar id="medicalhistory-search" name="medicalhistory-search" />
-            <ActionLink href={`/app/pets/${petId}/medical-history/new`} style="submit">
+            <SearchBar
+                id="medicalhistory-search"
+                name="medicalhistory-search"
+            />
+            <ActionLink
+                href={`/app/pets/${petId}/medical-history/new`}
+                style="submit"
+            >
                 Añadir cita
             </ActionLink>
         </div>
     </ContentTop>
-    
+
     <!-- ------------------------
     ------ Cards container ------
     ------------------------- -->
@@ -60,24 +68,48 @@ const tableHeaders = [
         <!-- Right Card -->
         <SimpleCard class="flow-root" lgColSpan="4">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div
+                    class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8"
+                >
                     <!-- -------------------
                     ------ Main table ------
                     -------------------- -->
-                    <SimpleTable id="medicalhistory-table" headers={tableHeaders} items={medicalHistory} itemsName="citas médicas" noItemsMessage="No hay citas médicas registradas.">
+                    <SimpleTable
+                        id="medicalhistory-table"
+                        headers={tableHeaders}
+                        items={medicalHistory}
+                        itemsName="citas médicas"
+                        noItemsMessage="No hay citas médicas registradas."
+                    >
                         {
-                            medicalHistory?.map(medicalAppointment => 
+                            medicalHistory?.map((medicalAppointment) => (
                                 <tr class="relative hover:bg-gray-50 cursor-pointer">
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-center text-gray-900 sm:pl-0">
-                                        <a href={`/app/pets/${petId}/medical-history/${medicalAppointment.id}`} class="before:absolute before:inset-0" aria-label={`Ver detalles de la cita número ${medicalAppointment.appointmentNumber} de ${medicalAppointment.doctorName}`}>
-                                            <span class="relative z-10">{medicalAppointment.appointmentNumber}</span>
+                                        <a
+                                            href={`/app/pets/${petId}/medical-history/${medicalAppointment.id}`}
+                                            class="before:absolute before:inset-0"
+                                            aria-label={`Ver detalles de la cita número ${medicalAppointment.appointmentNumber} de ${medicalAppointment.doctorName}`}
+                                        >
+                                            <span class="relative z-10">
+                                                {
+                                                    medicalAppointment.appointmentNumber
+                                                }
+                                            </span>
                                         </a>
                                     </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{formatDateToDdMmYyyyHhMm(medicalAppointment.appointmentDate)}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{medicalAppointment.doctorName}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{medicalAppointment.weight} kg</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {formatDateToDdMmYyyyHhMm(
+                                            medicalAppointment.appointmentDate,
+                                        )}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {medicalAppointment.doctorName}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                        {medicalAppointment.weight} kg
+                                    </td>
                                 </tr>
-                            )
+                            ))
                         }
                     </SimpleTable>
                 </div>

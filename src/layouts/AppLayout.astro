@@ -12,7 +12,9 @@ import Layout from '@/layouts/Layout.astro';
   <SideBar />
 
   <!-- This is the main container of all pages -->
-  <main class="mt-10 md:mt-0 md:ml-59 transition-all duration-300 ease-in-out"><slot /></main>
+  <main class="mt-10 md:mt-0 md:ml-59 transition-all duration-300 ease-in-out">
+    <slot />
+  </main>
 </Layout>
 
 <style>
