@@ -7,6 +7,7 @@ import OwnerIcon from "@/contexts/_shared/client/presentation/components/icons/O
 import LogoutIcon from "@/contexts/_shared/client/presentation/components/icons/LogoutIcon.astro";
 import DoubleChevronRightIcon from "@/contexts/_shared/client/presentation/components/icons/DoubleChevronRightIcon.astro";
 import MenuIcon from "@/contexts/_shared/client/presentation/components/icons/MenuIcon.astro";
+import ConfigIcon from "@/contexts/_shared/client/presentation/components/icons/ConfigIcon.astro";
 
 const currentPage = Astro.url.pathname;
 
@@ -16,6 +17,7 @@ const icons: any = {
     calendar: CalendarIcon,
     owner: OwnerIcon,
     profile: ProfileIcon,
+    config: ConfigIcon,
     logout: LogoutIcon,
 };
 
@@ -31,7 +33,8 @@ const options = [
         { displayName: "Dueños", href: "/app/owners", icon: "owner" },
     ],
     [
-        { displayName: "Perfil", href: "/app/profile", icon: "profile" },
+        { displayName: "Perfil", href: "/app/profiles/myprofile", icon: "profile" },
+        { displayName: "Configuración", href: "/app/configs/myconfig", icon: "config" },
         {
             displayName: "Cerrar sesión",
             href: "/api/auth/logout",
@@ -83,9 +86,9 @@ const options = [
                             //     isActive = currentPage.startsWith(option.href);
                             // }
                         }
-                        // href={option.href}
                         return (
                             <a
+                                href={option.href}
                                 class:list={[
                                     mobileOptionClass,
                                     {
@@ -94,21 +97,6 @@ const options = [
                                     },
                                 ]}
                                 title={option.displayName}
-                                data-open-tab={
-                                    !isLogout && option.href.startsWith("/app/")
-                                        ? "true"
-                                        : undefined
-                                }
-                                data-view-id={
-                                    !isLogout && option.href.startsWith("/app/")
-                                        ? option.href.replace("/app/", "")
-                                        : undefined
-                                }
-                                data-title={
-                                    !isLogout && option.href.startsWith("/app/")
-                                        ? option.displayName
-                                        : undefined
-                                }
                             >
                                 <Icon class="w-7 h-7 flex-shrink-0" />
                                 <span class="text-lg">
@@ -165,29 +153,14 @@ const options = [
                             //     isActive = currentPage.startsWith(option.href);
                             // }
                         }
-                        // href={option.href}
                         return (
                             <a
+                                href={option.href}
                                 class:list={[
                                     optionClass,
                                     { "bg-gray-100 font-bold": isActive },
                                 ]}
                                 title={option.displayName}
-                                data-open-tab={
-                                    !isLogout && option.href.startsWith("/app/")
-                                        ? "true"
-                                        : undefined
-                                }
-                                data-view-id={
-                                    !isLogout && option.href.startsWith("/app/")
-                                        ? option.href.replace("/app/", "")
-                                        : undefined
-                                }
-                                data-title={
-                                    !isLogout && option.href.startsWith("/app/")
-                                        ? option.displayName
-                                        : undefined
-                                }
                             >
                                 <Icon class="w-6 h-6 flex-shrink-0" />
                                 <span class="nav-text whitespace-nowrap transition-all duration-200">
@@ -250,7 +223,6 @@ const options = [
 
         if (sidebar && toggleButton) {
             toggleButton.addEventListener("click", () => {
-                console.log("Sidebar toggle clicked");
                 const currentlyCollapsed =
                     sidebar.classList.toggle("is-collapsed");
                 localStorage.setItem(storageKey, String(currentlyCollapsed));

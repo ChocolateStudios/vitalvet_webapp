@@ -1,10 +1,9 @@
 ---
-import AppLayout from '@/layouts/AppLayout.astro';
-import PetMedicalHistoryPage from '@/contexts/medical_histories/client/presentation/pages/pet-medical-history.page.astro';
+import AppLayout from "@/contexts/_shared/client/presentation/layouts/AppLayout.astro";
+import PetMedicalHistoryPage from "@/contexts/medical_histories/client/presentation/pages/pet-medical-history.page.astro";
 
 export const prerender = false;
 const { petId } = Astro.params;
-
 ---
 
 <AppLayout>

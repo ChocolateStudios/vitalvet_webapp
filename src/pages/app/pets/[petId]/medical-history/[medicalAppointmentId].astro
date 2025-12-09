@@ -1,10 +1,9 @@
 ---
-import AppLayout from '@/layouts/AppLayout.astro';
-import PetMedicalAppointmentPage from '@/contexts/medical_histories/client/presentation/pages/pet-medical-appointment.page.astro';
+import AppLayout from "@/contexts/_shared/client/presentation/layouts/AppLayout.astro";
+import PetMedicalAppointmentPage from "@/contexts/medical_histories/client/presentation/pages/pet-medical-appointment.page.astro";
 
 export const prerender = false;
-const { petId, medicalAppointmentId} = Astro.params;
-
+const { petId, medicalAppointmentId } = Astro.params;
 ---
 
 <AppLayout>

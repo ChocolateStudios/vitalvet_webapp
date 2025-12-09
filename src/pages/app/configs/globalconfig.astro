@@ -1,11 +1,10 @@
 ---
 import AppLayout from "@/contexts/_shared/client/presentation/layouts/AppLayout.astro";
-import PetPage from "@/contexts/pets/client/presentation/pages/pet.page.astro";
+import GlobalConfigPage from "@/contexts/configs/client/presentation/pages/global-config.page.astro";
 
 export const prerender = false;
-const { petId } = Astro.params;
 ---
 
 <AppLayout>
-  <PetPage {petId} />
+    <GlobalConfigPage />
 </AppLayout>

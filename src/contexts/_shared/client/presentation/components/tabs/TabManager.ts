@@ -1,12 +1,24 @@
 import { tabsStore, closeTab, switchTab, switchSubTab, type MainTab, openTab } from '@/stores/tabs.store';
 
 class TabManager {
+    private static instance: TabManager | null = null;
     private tabBarEl: HTMLElement | null = null;
     private tabContainerEl: HTMLElement | null = null;
     private unsubscribe: (() => void) | null = null;
 
     constructor() {
+        if (TabManager.instance) {
+            TabManager.instance.destroy();
+        }
+        TabManager.instance = this;
         this.init();
+    }
+
+    destroy() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+            this.unsubscribe = null;
+        }
     }
 
     init() {
@@ -137,8 +149,19 @@ class TabManager {
                 container.innerHTML = doc.body.innerHTML || html;
             }
 
-            // Re-run scripts if necessary (Astro view transitions might handle this, but manual fetch needs care)
-            // For simple HTML partials, this is fine.
+            // Extract and execute scripts
+            const scripts = doc.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.textContent = oldScript.textContent;
+                newScript.async = false; // Ensure order is preserved
+                container.appendChild(newScript);
+            });
+
+            // Dispatch astro:page-load to trigger Astro components
+            document.dispatchEvent(new Event('astro:page-load'));
+
         } catch (error) {
             console.error('Error loading tab content:', error);
             container.innerHTML = '<div class="p-4 text-red-500">Error loading content</div>';

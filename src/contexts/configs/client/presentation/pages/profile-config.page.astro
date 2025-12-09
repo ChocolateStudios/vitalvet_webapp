@@ -1,0 +1,132 @@
+---
+import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SearchBar from "@/contexts/_shared/client/presentation/components/inputs/search-bar.component.astro";
+import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
+import { getGlobalModes } from "@/contexts/configs/server/application/get-global-modes.usecase";
+import { getProfileConfig } from "@/contexts/configs/server/application/get-profile-config.usecase";
+import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
+import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
+
+/*******************************
+ ***** User authentication *****
+********************************/
+// Probably never redirect from here because it would do so from the middleware
+const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+
+/****************************
+ ***** Page paramenters *****
+*****************************/
+// NO PARAMETERS HERE
+
+/************************************
+ ***** Get info to show on page *****
+*************************************/
+let profile: ProfileInfo | null = null;
+const getProfileResult = await getMyProfile(authenticatedUserId);
+
+if (getProfileResult.success) {
+    profile = getProfileResult.data;
+}
+
+const modesResult = await getGlobalModes();
+const modes = modesResult.data || [];
+
+const configResult = await getProfileConfig(profile!.id);
+const config = configResult.data;
+const currentModeId = config?.modeId;
+---
+
+<ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
+    <ContentTop>
+        Configuración <!-- MainTitle -->
+        <div slot="right" class="flex gap-4">
+            <SearchBar id="config-search" name="config-search" />
+        </div>
+    </ContentTop>
+
+    <!-- ------------------
+    ------ Main card ------
+    ------------------- -->
+    <SimpleCard class="flow-root p-6">
+        <h3 class="text-lg font-medium leading-6 text-gray-900">
+            Personalización
+        </h3>
+        <p class="mt-1 text-sm text-gray-500">
+            Configura tu experiencia visual y de navegación.
+        </p>
+
+        <div class="mt-6 space-y-6">
+            <div class="flex items-center justify-between">
+                <span class="flex-grow flex flex-col">
+                    <span
+                        class="text-sm font-medium text-gray-900"
+                        id="availability-label">Modo de Navegación</span
+                    >
+                    <span
+                        class="text-sm text-gray-500"
+                        id="availability-description"
+                        >Elige cómo quieres navegar por la aplicación.</span
+                    >
+                </span>
+
+                <select
+                    id="mode-selector"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md max-w-xs"
+                    data-profile-id={profile!.id}
+                    data-user-id={authenticatedUserId}
+                >
+                    <option value="" disabled selected={!currentModeId}
+                        >Seleccionar modo</option
+                    >
+                    {
+                        modes.map((mode) => (
+                            <option
+                                value={mode.id}
+                                selected={
+                                    String(mode.id) === String(currentModeId)
+                                }
+                            >
+                                {mode.name}
+                            </option>
+                        ))
+                    }
+                </select>
+            </div>
+        </div>
+    </SimpleCard>
+</ContentContainer>
+
+<script>
+    import { saveProfileConfig } from "@/contexts/configs/client/application/usecases/save-profile-config.usecase";
+
+    const selector = document.getElementById(
+        "mode-selector",
+    ) as HTMLSelectElement;
+
+    if (selector) {
+        selector.addEventListener("change", async (e) => {
+            const target = e.target as HTMLSelectElement;
+            const modeId = target.value;
+            const profileId = target.dataset.profileId;
+            const userId = target.dataset.userId;
+
+            if (profileId && userId) {
+                try {
+                    // Show saving state if desired
+                    await saveProfileConfig(profileId, modeId, userId);
+                    alert("Configuración guardada correctamente");
+                    // Optionally reload to apply changes if they are immediate
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Error saving config:", error);
+                    alert("Error al guardar la configuración");
+                }
+            }
+        });
+    }
+</script>

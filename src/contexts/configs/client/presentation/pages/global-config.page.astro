@@ -1,0 +1,31 @@
+---
+import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
+import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
+import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
+import SearchBar from "@/contexts/_shared/client/presentation/components/inputs/search-bar.component.astro";
+
+
+---
+
+<ContentContainer>
+    <!-- ----------------
+    ------ Top bar ------
+    ----------------- -->
+    <ContentTop>
+        Configuración <!-- MainTitle -->
+        <div slot="right" class="flex gap-4">
+            <SearchBar id="config-search" name="config-search" />
+            <ActionLink href={`/app/configs/newConfig`} style="submit">
+                Añadir configuración
+            </ActionLink>
+        </div>
+    </ContentTop>
+
+    <!-- ------------------
+    ------ Main card ------
+    ------------------- -->
+    <SimpleCard class="flow-root">
+        Hello world
+    </SimpleCard>
+</ContentContainer>

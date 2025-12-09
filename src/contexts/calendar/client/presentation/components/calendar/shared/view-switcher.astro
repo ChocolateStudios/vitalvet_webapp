@@ -1,14 +1,8 @@
 ---
 // import BaseCombobox from "@/contexts/_shared/client/presentation/components/(old)base-combobox.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
+import { viewOptions } from "@/contexts/calendar/client/presentation/components/calendar/calendar-constants";
 
-const viewOptions = [
-  { id: 'day', name: 'Día' },
-  { id: 'threeDays', name: '3 días' },
-  { id: 'week', name: 'Semana' },
-  { id: 'month', name: 'Mes' },
-  { id: 'year', name: 'Año' },
-];
 ---
 
 <div id="view-switcher-wrapper" class="w-48">
@@ -23,7 +17,9 @@ const viewOptions = [
 </div>
 
 <script>
-    document.addEventListener('astro:page-load', () => {
+    import { viewOptions } from "@/contexts/calendar/client/presentation/components/calendar/calendar-constants";
+
+    function initializePageScripts() {
         const wrapper = document.getElementById('view-switcher-wrapper');
         if (!wrapper || wrapper.dataset.initialized) return;
         wrapper.dataset.initialized = 'true';
@@ -64,14 +60,12 @@ const viewOptions = [
         });
 
         observer.observe(hiddenInput, { attributes: true });
-    });
+    }
 
-    // Definir el tipo de las opciones de vista para el script
-    const viewOptions = [
-      { id: 'day', name: 'Día' },
-      { id: 'threeDays', name: '3 días' },
-      { id: 'week', name: 'Semana' },
-      { id: 'month', name: 'Mes' },
-      { id: 'year', name: 'Año' },
-    ];
+    /************************************
+     ***** Run scripts on page load *****
+    *************************************/
+    document.addEventListener('astro:page-load', () => {
+        initializePageScripts();
+    });
 </script>
