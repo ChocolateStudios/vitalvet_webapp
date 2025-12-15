@@ -6,7 +6,7 @@ const ROLES_PATH = 'roles';
 
 export class RolesRepository {
     
-    static async getRoleById(roleId: string): Promise<RoleResource> {
+    static async getRoleById(roleId: string | number): Promise<RoleResource> {
         const roleRef = ref(db, `${ROLES_PATH}/${roleId}`);
         const snapshot = await get(roleRef);
 

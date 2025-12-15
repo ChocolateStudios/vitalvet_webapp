@@ -212,6 +212,7 @@ const medicalAppointmentInputs = [
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
@@ -220,39 +221,34 @@ const medicalAppointmentInputs = [
         /************************
          ***** Submit event *****
         *************************/
-
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
-            /********************
-             ***** Api Call *****
-            *********************/
+            /**********************************************
+            ***** Register/update medical appointment *****
+            ***********************************************/
+            const registerOrUpdateMedicalAppointment = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveMedicalAppointmentResource(Number(data.weight), data.observations, data.prescription, new Date(data.date), data.doctor ?? 0);
+                const editMode = !!forceUpdate || isEditMode;
 
-            // If all good, REGISTER/UPDATE
-            submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando cita médica...' : 'Actualizando cita médica...';
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'cita médica',
+                    submitButton,
+                    makeRequestFunc: async () => !editMode ? await createMedicalAppointment(formDataObj.petId!, resource) 
+                                                        : await updateMedicalAppointment(formDataObj.petId!, formDataObj.medicalAppointmentId!, resource),
+                    onSuccessFunc: (response: any) => {
+                        formDataObj.medicalAppointmentId = response.data.id;
 
-            const resource = new SaveMedicalAppointmentResource(Number(data.weight), data.observations, data.prescription, new Date(data.date), data.doctor ?? 0);
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} cita médica. Por favor, inténtalo de nuevo.`;
-
-            try {
-                const response = !isEditMode ? await createMedicalAppointment(formDataObj.petId!, resource) : 
-                                    await updateMedicalAppointment(formDataObj.petId!, formDataObj.medicalAppointmentId!, resource);
-
-                if (response.success) {
-                    window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
-                } else {
-                    formError.textContent = response.errorMessage ?? badErrorMessage;
-                }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} cita médica:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear cita médica' : 'Guardar cambios';
+                        if (!cancelRedirect) 
+                            window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
+                    },
+                });
             }
+
+            await registerOrUpdateMedicalAppointment();
         });
     }
 
@@ -260,7 +256,6 @@ const medicalAppointmentInputs = [
         /*******************************
          ***** Delete dialog logic *****
         ********************************/
-
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);

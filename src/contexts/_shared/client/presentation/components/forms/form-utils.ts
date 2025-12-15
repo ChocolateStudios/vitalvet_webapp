@@ -103,7 +103,7 @@ export const collectValidationRulesAndDeleteFromDOM = (form: HTMLFormElement): a
 
 
 
-const validErrorMessage = (message: string | null | undefined) => {
+export const validErrorMessage = (message: string | null | undefined) => {
     return (message && message !== 'Unexpected token \'<\', "<!doctype "... is not valid JSON') ? message : undefined;
 };
 

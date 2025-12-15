@@ -2,7 +2,7 @@ import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-r
 import { UsersRepository } from "@/contexts/auth/server/infrastructure/repositories/users.repository";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 
-export async function getAllProfilesByRoleId(roleId: string, userId?: string): Promise<UsecaseResult<any>> {
+export async function getAllProfilesByRoleId(roleId: string | number, userId?: string | number): Promise<UsecaseResult<any>> {
     if (!userId) {
         throw new Error('No se encontró user Id.');
     }

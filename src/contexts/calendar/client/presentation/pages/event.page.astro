@@ -170,6 +170,7 @@ const eventInputs = [
     import { SaveEventResource } from "@/contexts/calendar/server/interfaces/api/resources/save-event.resource";
     import { createEvent } from "@/contexts/calendar/client/usecases/create-event.usecase";
     import { updateEvent } from "@/contexts/calendar/client/usecases/update-event.usecase";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('event-form') as HTMLFormElement;
@@ -178,40 +179,34 @@ const eventInputs = [
         /************************
          ***** Submit event *****
         *************************/
-
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
-            /********************
-             ***** Api Call *****
-            *********************/
+            /*******************************
+             ***** Register/update event *****
+            *******************************/
+            const registerOrUpdateEvent = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveEventResource(data.title, new Date(data.startDateTime), new Date(data.endDateTime), data.description, data.doctorProfileId, data.petId, 'default-event-type');
+                const editMode = !!forceUpdate || isEditMode;
 
-            // If all good, REGISTER/UPDATE
-            submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando evento...' : 'Actualizando evento...';
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'evento',
+                    submitButton,
+                    makeRequestFunc: async () => !editMode ? await createEvent(resource)
+                                                     : await updateEvent(formDataObj.eventId!, resource),
+                    onSuccessFunc: (response: any) => {
+                        formDataObj.eventId = response.data.id;
 
-            const resource = new SaveEventResource(data.title, new Date(data.startDateTime), new Date(data.endDateTime), data.description, data.doctorProfileId, data.petId, 'default-event-type');
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} evento. Por favor, inténtalo de nuevo.`;
+                        if (!cancelRedirect) 
+                            window.location.href = '/app/calendar';
+                    },
+                });
+            };
 
-            try {
-                const response = !isEditMode
-                    ? await createEvent(resource)
-                    : await updateEvent(formDataObj.eventId!, resource);
-
-                if (response.success) {
-                    window.location.href = '/app/calendar';
-                } else {
-                    formError.textContent = response.errorMessage || badErrorMessage;
-                }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} evento:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear evento' : 'Guardar cambios';
-            }
+            await registerOrUpdateEvent();
         });;
     }
 
@@ -219,7 +214,6 @@ const eventInputs = [
         /*******************************
          ***** Delete dialog logic *****
         ********************************/
-
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);

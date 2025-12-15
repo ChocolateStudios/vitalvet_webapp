@@ -139,6 +139,7 @@ const profileInputs = [
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
+import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('profile-form') as HTMLFormElement;
@@ -147,38 +148,34 @@ const profileInputs = [
         /************************
          ***** Submit event *****
         *************************/
-
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
-            /********************
-             ***** Api Call *****
-            *********************/
+            /**************************************
+             ***** Register/update my profile *****
+            **************************************/
+            const registerOrUpdateMyProfile = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
+                const editMode = !!forceUpdate || isEditMode;
 
-            // If all good, REGISTER/UPDATE
-            submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando perfil...' : 'Actualizando perfil...';
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'perfil',
+                    submitButton,
+                    makeRequestFunc: async () => !editMode ? { success: false }
+                                                     : await updateMyProfile(resource),
+                    onSuccessFunc: (response: any) => {
+                        formDataObj.profileId = response.data.id;
 
-            const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} perfil. Por favor, inténtalo de nuevo.`;
+                        if (!cancelRedirect) 
+                            window.location.href = '/app/home';
+                    },
+                });
+            };
 
-            try {
-                const response = !isEditMode ? { success: false } : await updateMyProfile(resource);
-
-                if (response.success) {
-                    window.location.href = '/app/home';
-                } else {
-                    formError.textContent = response.errorMessage ?? badErrorMessage;
-                }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} perfil:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear perfil' : 'Guardar cambios';
-            }
+            await registerOrUpdateMyProfile();
         });
     }
 
@@ -186,7 +183,6 @@ const profileInputs = [
         /*******************************
          ***** Delete dialog logic *****
         ********************************/
-
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);

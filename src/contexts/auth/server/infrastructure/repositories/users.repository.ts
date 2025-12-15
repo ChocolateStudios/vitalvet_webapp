@@ -73,7 +73,7 @@ export class UsersRepository {
         return resource;
     }
 
-    static async updateUser(userId: string, data: SaveUserResource): Promise<AuthenticatedUserResource> {
+    static async updateUser(userId: string | number, data: SaveUserResource): Promise<AuthenticatedUserResource> {
         data.password = await hashPassword(data.password);
         
         const userRef = ref(db, `${USERS_PATH}/${userId}`);
@@ -94,14 +94,14 @@ export class UsersRepository {
         return resource;
     }
 
-    static async deleteUser(userId: string): Promise<UserResource> {
+    static async deleteUser(userId: string | number): Promise<UserResource> {
         const userToDelete = await this.getUser(userId); // Obtenemos el objeto antes de borrarlo para poder devolverlo
         const userRef = ref(db, `${USERS_PATH}/${userId}`);
         await remove(userRef);
         return userToDelete;
     }
 
-    static async getUser(userId: string): Promise<UserResource> {
+    static async getUser(userId: string | number): Promise<UserResource> {
         const userRef = ref(db, `${USERS_PATH}/${userId}`);
         const snapshot = await get(userRef);
 

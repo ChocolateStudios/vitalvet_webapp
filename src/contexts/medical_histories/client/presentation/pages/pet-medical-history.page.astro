@@ -6,7 +6,6 @@ import {
 } from "@/contexts/medical_histories/server/application/usecases/getall-medicalappointments-by-petid.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { formatDateToDdMmYyyyHhMm } from "@/contexts/_shared/client/utils/date-formatters/clasicdate-formatter.utils";
-import type { PetInfo } from "@/contexts/pets/client/usecases/get-pet.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/inputs/search-bar.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
@@ -14,6 +13,7 @@ import SimpleTable from "@/contexts/_shared/client/presentation/components/table
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 
 const { petId } = Astro.props;
 

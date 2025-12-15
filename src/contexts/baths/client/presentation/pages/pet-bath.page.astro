@@ -219,6 +219,7 @@ const imgsPreviewAndInputs = [
     import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
     import { uploadBathImage } from "@/contexts/baths/client/usecases/upload_get_delete-bath-image";
+    import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('bath-form') as HTMLFormElement | null;
@@ -234,68 +235,66 @@ const imgsPreviewAndInputs = [
             /************************
              ***** Upload photo *****
             ************************/
-            const uploadPhotos = async () => {
-                if (data.beforeImage.name || data.afterImage.name) {
-                    const resources: SaveFileResource[] = [
-                        ...(data.beforeImage.name ? [new SaveFileResource(data.beforeImage, 'beforeImage', data.beforeImage.name.split('.').pop(), data.beforeImage.type, data.beforeImage.size)] : []),
-                        ...(data.afterImage.name ? [new SaveFileResource(data.afterImage, 'afterImage', data.afterImage.name.split('.').pop(), data.afterImage.type, data.afterImage.size)] : []),
-                    ];
+           const uploadPhotos = async () => {
+                // There is no photo to upload
+                if (!data.beforeImage.name && !data.afterImage.name) return true;
+                
+                let uploadSuccessful = false;
 
-                    for (const resource of resources) {
-                        try {
-                            const imgResponse = await uploadBathImage(formDataObj.petId!, formDataObj.bathId!, resource);
+                const resources: SaveFileResource[] = [
+                    ...(data.beforeImage.name ? [new SaveFileResource(data.beforeImage, 'beforeImage', data.beforeImage.name.split('.').pop(), data.beforeImage.type, data.beforeImage.size)] : []),
+                    ...(data.afterImage.name ? [new SaveFileResource(data.afterImage, 'afterImage', data.afterImage.name.split('.').pop(), data.afterImage.type, data.afterImage.size)] : []),
+                ];
 
-                            if (!imgResponse.success) {
-                                formError.textContent = imgResponse.errorMessage ?? 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
-                                submitButton.disabled = false;
-                                submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-                                return;
-                            }
-                        } catch (error) {
-                            console.error('Error al subir la imagen del baño:', error);
+                for (const resource of resources) {
+                    await tryCreateEditRequestOrThrowError({
+                        isEditMode,
+                        formError,
+                        entityDisplayName: 'mascota',
+                        submitButton,
+                        actionMessage: 'subir la imagen de la',
+                        makeRequestFunc: async () => await uploadBathImage(formDataObj.petId!, formDataObj.bathId!, resource),
+                        onSuccessFunc: () => uploadSuccessful = true,
+                        onUnsuccessFunc: (response: any) => {
+                            formError.textContent = validErrorMessage(response.errorMessage) ?? 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
+                            uploadSuccessful = false;
+                        },
+                        onErrorFunc: () => {
                             formError.textContent = 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
-                            return;
-                        } finally {
-                            submitButton.disabled = false;
-                            submitButton.textContent = !isEditMode ? 'Crear mascota' : 'Guardar cambios';
-                        }
-                    }
+                            uploadSuccessful = false;
+                        },
+                    });
                 }
+
+                return uploadSuccessful;
             }
 
             if (isEditMode) {
-                await uploadPhotos();
+                const uploadOk = await uploadPhotos();
+                if (!uploadOk) return;
             }
         
             /********************************
              ***** Register/update Bath *****
             ********************************/
             const registerOrUpdateBath = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
-                submitButton.disabled = true;
-                submitButton.textContent = !isEditMode ? 'Creando baño...' : 'Actualizando baño...';
-
                 const resource = new SaveBathResource(new Date(data.date), data.observations, data.doctor ?? 0);
-                const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-                const badErrorMessage = `Error al ${actionMessage} baño. Por favor, inténtalo de nuevo.`;
                 const editMode = !!forceUpdate || isEditMode;
 
-                try {
-                    const response = !editMode ? await createBath(formDataObj.petId!, resource) 
-                                            : await updateBath(formDataObj.petId!, formDataObj.bathId!, resource);
-                    formDataObj.bathId = response.data.id;
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'baño',
+                    submitButton,
+                    makeRequestFunc: async () => !editMode ? createBath(formDataObj.petId!, resource)
+                                                     : await updateBath(formDataObj.petId!, formDataObj.bathId!, resource),
+                    onSuccessFunc: (response: any) => {
+                        formDataObj.bathId = response.data.id;
 
-                    if (!response.success) {
-                        formError.textContent = response.errorMessage ?? badErrorMessage;
-                    } else if (!cancelRedirect) {
-                        window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
-                    }
-                } catch (error) {
-                    console.error(`Error al ${actionMessage} baño:`, error);
-                    formError.textContent = badErrorMessage;
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = !isEditMode ? 'Crear baño' : 'Guardar cambios';
-                }
+                        if (!cancelRedirect) 
+                            window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
+                    },
+                });
             };
 
             await registerOrUpdateBath({cancelRedirect: !isEditMode});
@@ -311,7 +310,6 @@ const imgsPreviewAndInputs = [
         /*******************************
          ***** Delete dialog logic *****
         ********************************/
-
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);

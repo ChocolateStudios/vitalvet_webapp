@@ -165,6 +165,7 @@ const profileInputs = [
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { updateProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('profile-form') as HTMLFormElement;
@@ -178,35 +179,30 @@ const profileInputs = [
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
-            /********************
-             ***** Api Call *****
-            *********************/
+            /*************************************
+             ***** Register/update pet owner *****
+            *************************************/
+            const registerOrUpdatePetOwner = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
+                const editMode = !!forceUpdate || isEditMode;
 
-            // If all good, REGISTER/UPDATE
-            submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando dueño...' : 'Actualizando dueño...';
+                await tryCreateEditRequestOrThrowError({
+                    isEditMode,
+                    formError,
+                    entityDisplayName: 'dueño',
+                    submitButton,
+                    makeRequestFunc: async () => !editMode ? await createProfile(resource) 
+                                                     : await updateProfile(resource, formDataObj.ownerId!),
+                    onSuccessFunc: (response: any) => {
+                        formDataObj.ownerId = response.data.id;
 
-            const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
-            const actionMessage = !isEditMode ? 'crear' : 'actualizar';
-            const badErrorMessage = `Error al ${actionMessage} dueño. Por favor, inténtalo de nuevo.`;
+                        if (!cancelRedirect) 
+                            window.location.href = '/app/owners';
+                    },
+                });
+            };
 
-            try {
-                const response = !isEditMode
-                    ? await createProfile(resource)
-                    : await updateProfile(resource, formDataObj.ownerId!);
-
-                if (response.success) {
-                    window.location.href = '/app/owners';
-                } else {
-                    formError.textContent = response.errorMessage ?? badErrorMessage;
-                }
-            } catch (error) {
-                console.error(`Error al ${actionMessage} dueño:`, error);
-                formError.textContent = badErrorMessage;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = !isEditMode ? 'Crear dueño' : 'Guardar cambios';
-            }
+            await registerOrUpdatePetOwner();
         });
     }
 
@@ -214,7 +210,6 @@ const profileInputs = [
         /*******************************
          ***** Delete dialog logic *****
         ********************************/
-
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);

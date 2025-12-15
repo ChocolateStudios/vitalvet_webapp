@@ -107,7 +107,7 @@ export class ProfilesRepository {
         return this.getProfileByUserId(userId);
     }
 
-    static async getProfileByUserId(userId: string): Promise<ProfileResource> {
+    static async getProfileByUserId(userId: string | number): Promise<ProfileResource> {
         const profilesCollectionRef = ref(db, PROFILES_PATH);
 
         // Construye la consulta para filtrar por username en el servidor
@@ -200,7 +200,7 @@ export class ProfilesRepository {
             });
     }
 
-    static async getAllProfilesByRoleId(roleId: string): Promise<ProfileResource[]> {
+    static async getAllProfilesByRoleId(roleId: string | number): Promise<ProfileResource[]> {
         const profilesCollectionRef = ref(db, PROFILES_PATH);
 
         // Construye la consulta para filtrar por username en el servidor

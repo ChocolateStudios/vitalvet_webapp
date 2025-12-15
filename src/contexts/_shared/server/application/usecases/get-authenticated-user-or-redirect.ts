@@ -1,6 +1,6 @@
 import { getAuthenticatedUserId } from "./get-authenticated-user-id";
 
-export function getAuthenticatedUserIdOrRedirect(Astro: any): string
+export function getAuthenticatedUserIdOrRedirect(Astro: any): string | number
 {
     // 1. Obtener el token de la cookie en el servidor.
     const token = Astro.cookies.get('__session')?.value;
