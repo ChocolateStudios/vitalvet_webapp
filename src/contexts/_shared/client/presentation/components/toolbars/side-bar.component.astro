@@ -8,6 +8,7 @@ import LogoutIcon from "@/contexts/_shared/client/presentation/components/icons/
 import DoubleChevronRightIcon from "@/contexts/_shared/client/presentation/components/icons/DoubleChevronRightIcon.astro";
 import MenuIcon from "@/contexts/_shared/client/presentation/components/icons/MenuIcon.astro";
 import ConfigIcon from "@/contexts/_shared/client/presentation/components/icons/ConfigIcon.astro";
+import { IS_PRO } from "@/contexts/_shared/client/utils/global-constants";
 
 const currentPage = Astro.url.pathname;
 
@@ -28,18 +29,14 @@ const mobileOptionClass =
 
 const options = [
     [
-        { displayName: "Pacientes", href: "/app/home", icon: "patient" },
-        { displayName: "Calendario", href: "/app/calendar", icon: "calendar" },
-        { displayName: "Dueños", href: "/app/owners", icon: "owner" },
+        { displayName: "Pacientes", href: "/app/home", icon: "patient", },
+        ...(!IS_PRO ? [{ displayName: "Calendario", href: "/app/calendar", icon: "calendar", },] : []),
+        ...(!IS_PRO ? [{ displayName: "Dueños", href: "/app/owners", icon: "owner", },] : []),
     ],
     [
-        { displayName: "Perfil", href: "/app/profiles/myprofile", icon: "profile" },
-        { displayName: "Configuración", href: "/app/configs/myconfig", icon: "config" },
-        {
-            displayName: "Cerrar sesión",
-            href: "/api/auth/logout",
-            icon: "logout",
-        },
+        { displayName: "Perfil", href: "/app/profiles/myprofile", icon: "profile", },
+        ...(!IS_PRO ? [{ displayName: "Configuración", href: "/app/configs/myconfig", icon: "config", },] : []),
+        { displayName: "Cerrar sesión", href: "/api/auth/logout", icon: "logout", },
     ],
 ];
 ---
