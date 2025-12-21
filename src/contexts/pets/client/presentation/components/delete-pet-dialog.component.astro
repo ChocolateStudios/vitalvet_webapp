@@ -1,6 +1,8 @@
 ---
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import WarningIcon from "@/contexts/_shared/client/presentation/components/icons/WarningIcon.astro";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, shared: sharedTexts } = getTexts();
 
 const { petName } = Astro.props;
 ---
@@ -16,10 +18,19 @@ const { petName } = Astro.props;
                         <div class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10">
                             <WarningIcon />
                         </div>
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                            <h3 id="dialog-title" class="text-base font-semibold text-gray-900">Eliminar mascota</h3>
+                        <div
+                            class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left"
+                        >
+                            <h3
+                                id="dialog-title"
+                                class="text-base font-semibold text-gray-900"
+                            >
+                                {petsTexts.dialogs.deleteTitle}
+                            </h3>
                             <div class="mt-2">
-                                <p class="text-base text-gray-700">¿Estás seguro de que quieres eliminar la mascota {petName}? Una vez que elimines a la mascota, toda su información y citas se perderán para siempre. </p>
+                                <p class="text-base text-gray-700">
+                                    {petsTexts.dialogs.deleteConfirm(petName)}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -29,21 +40,23 @@ const { petName } = Astro.props;
                     ------ Action buttons ------
                     ------------------------ -->
                     <ActionButton id="confirm-delete-button" style="danger">
-                        Eliminar
+                        {sharedTexts.actions.delete}
                     </ActionButton>
                     <ActionButton id="cancel-delete-button">
-                        Cancelar
+                        {sharedTexts.actions.cancel}
                     </ActionButton>
                 </div>
             </div>
         </div>
     </div>
 </div>
-    
+
 
 <script>
     import { deletePet } from "@/contexts/pets/client/usecases/delete-pet.usecase";
     import { getFormDataObj, tryDeleteRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { getTexts } from "@/i18n";
+    const { pets: petsTexts, } = getTexts();
 
     function initializePageScripts() {
         const form = document.getElementById('pet-form') as HTMLFormElement | null;
@@ -58,18 +71,15 @@ const { petName } = Astro.props;
             confirmButton.disabled = false;
         }
 
-        const toggleDialog = (show: boolean) => {
-            dialog?.classList.toggle('hidden', !show);
-        }
-
         /**********************************************
          ***** Hide dialog on cancel button click *****
-        **********************************************/
+         **********************************************/
+        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
         cancelButton?.addEventListener('click', () => toggleDialog(false));
 
         /**********************
          ***** Delete pet *****
-        **********************/
+         **********************/
         confirmButton?.addEventListener('click', async () => {
             const formDataObj = getFormDataObj(form);
             const petId = formDataObj.petId;
@@ -77,46 +87,24 @@ const { petName } = Astro.props;
 
             await tryDeleteRequestOrThrowError({
                 textError: null,
-                entityDisplayName: 'mascota',
+                entityDisplayName: petsTexts.terms.entity,
                 deleteButton: confirmButton,
                 makeRequestFunc: async () => await deletePet(petId),
                 onSuccessFunc: () => window.location.href = '/app/home',
                 onErrorFunc: () => {
-                    alert('No se pudo eliminar la mascota.');
+                    alert(petsTexts.feedback.deleteError);
                     toggleDialog(false);
                 },
                 addToOnFinallyFunc: () => {
                     toggleDialog(false);
                 },
             });
-            // confirmButton.textContent = "Eliminando...";
-            // confirmButton.disabled = true;
-
-            // try {
-            //     const result = await deletePet(petId);
-            //     if (result.success) {
-            //         window.location.href = '/app/home';
-            //     } else {
-            //         alert(result.errorMessage || 'No se pudo eliminar la mascota.');
-            //         confirmButton.textContent = "Confirmar";
-            //         confirmButton.disabled = false;
-            //         toggleDialog(false);
-            //     }
-            // } catch (error) {
-            //     alert('No se pudo eliminar la mascota.');
-            //     confirmButton.textContent = "Confirmar";
-            //     confirmButton.disabled = false;
-            // } finally {
-            //     confirmButton.textContent = "Confirmar";
-            //     confirmButton.disabled = false;
-            //     toggleDialog(false);
-            // }
         });
     }
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
+     *************************************/
     document.addEventListener('astro:page-load', () => {
         initializePageScripts();
     });

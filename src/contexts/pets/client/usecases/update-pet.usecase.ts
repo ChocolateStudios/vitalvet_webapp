@@ -1,5 +1,7 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
 import type { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, } = getTexts();
 
 export async function updatePet(petId: string, pet: SavePetResource): Promise<UsecaseResult<any>> {
     try {
@@ -15,7 +17,7 @@ export async function updatePet(petId: string, pet: SavePetResource): Promise<Us
             const errorData = await response.json();
             return {
                 success: false,
-                errorMessage: errorData.message || "No se pudo actualizar la mascota",
+                errorMessage: errorData.message || petsTexts.feedback.updateError,
             };
         }
 

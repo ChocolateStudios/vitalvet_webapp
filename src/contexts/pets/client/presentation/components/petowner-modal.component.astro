@@ -1,25 +1,31 @@
 ---
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
-import BaseModal from "@/contexts/_shared/client/presentation/components/modals/base-modal.component.astro";
-import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/simple-form.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
+import { getTexts } from "@/i18n";
+const { profiles: profilesTexts, shared: sharedTexts } = getTexts();
 
 const ownerRoleId = import.meta.env.OWNER_ROLE_ID;
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const profileInputs = [
     {
         id: "owner-name",
         name: "owner-name",
         type: "text",
         autocomplete: "name",
-        label: "Nombres",
+        label: profilesTexts.labels.names,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
-            { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
+            {
+                validate: ((value: any) => value.length >= 3).toString(),
+                message: sharedTexts.validation.minLength(3),
+            },
         ],
         showMandatory: true,
     },
@@ -28,10 +34,16 @@ const profileInputs = [
         name: "owner-lastname",
         type: "text",
         autocomplete: "lastname",
-        label: "Apellidos",
+        label: profilesTexts.labels.lastnames,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El apellido es obligatorio' },
-            { validate: ((value: any) => value.length >= 3).toString(), message: 'El apellido debe tener al menos 3 caracteres' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
+            {
+                validate: ((value: any) => value.length >= 3).toString(),
+                message: sharedTexts.validation.minLength(3),
+            },
         ],
         showMandatory: true,
     },
@@ -40,9 +52,12 @@ const profileInputs = [
         name: "birthday",
         type: "date",
         autocomplete: "birthday",
-        label: "Fecha de nacimiento",
+        label: profilesTexts.labels.birthDate,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
         ],
         showMandatory: true,
     },
@@ -51,10 +66,17 @@ const profileInputs = [
         name: "owner-email",
         type: "email",
         autocomplete: "email",
-        label: "Correo electrónico",
+        label: profilesTexts.labels.email,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El correo es obligatorio' },
-            { validate: ((value: any) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)).toString(), message: 'Por favor, introduce un correo válido' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
+            {
+                validate: ((value: any) =>
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)).toString(),
+                message: sharedTexts.validation.invalidEmail,
+            },
         ],
         showMandatory: true,
     },
@@ -63,9 +85,12 @@ const profileInputs = [
         name: "owner-phone",
         type: "text",
         autocomplete: "phone",
-        label: "Teléfono",
+        label: profilesTexts.labels.phone,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El teléfono es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
         ],
         showMandatory: true,
     },
@@ -74,33 +99,33 @@ const profileInputs = [
         name: "role",
         type: "text",
         autocomplete: "role",
-        label: "Rol",
-        value: "Dueño",
+        label: profilesTexts.labels.role,
+        value: profilesTexts.roles.owner,
         readonly: true,
     },
-]
+];
 ---
-<FormModal id="owner-modal" title="Agregar nuevo dueño" dataset={{ ownerRoleId }}>
 
+<FormModal
+    id="owner-modal"
+    title={profilesTexts.actions.addOwner}
+    dataset={{ ownerRoleId }}
+>
     <!-- ---------------
     ------ Inputs ------
     ---------------- -->
     <div slot="body" class="flex flex-col">
-        {
-            profileInputs.map(input => 
-                <DynamicInput {...input} />
-            )
-        }
+        {profileInputs.map((input) => <DynamicInput {...input} />)}
     </div>
-    
+
     <!-- -----------------------
     ------ Action buttons ------
     ------------------------ -->
     <ActionButton id="owner-submit-button" type="submit" slot="footer">
-        Crear dueño
+        {profilesTexts.actions.createOwner}
     </ActionButton>
     <ActionButton dataModalClose slot="footer">
-        Cancelar
+        {sharedTexts.actions.cancel}
     </ActionButton>
 </FormModal>
 
@@ -108,48 +133,70 @@ const profileInputs = [
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
     import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { getTexts } from "@/i18n";
+    const { profiles: profilesTexts, } = getTexts();
 
     function initializeForm() {
-        const form = document.getElementById('owner-modal-form') as HTMLFormElement | null;
+        const form = document.getElementById(
+            "owner-modal-form",
+        ) as HTMLFormElement | null;
         if (!form) return;
-        
+
         /************************
          ***** Submit event *****
-        *************************/
+         *************************/
         // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
-        
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
+
             /*********************************
              ***** Prepare for api calls *****
-            *********************************/
+             *********************************/
             submitButton.disabled = true;
-            submitButton.textContent = !isEditMode ? 'Creando dueño...'  : 'Actualizando dueño...';
-                
-        
+            submitButton.textContent = !isEditMode
+                ? profilesTexts.actions.creatingOwner
+                : profilesTexts.actions.updatingOwner;
+
             /*********************************
              ***** Register/update Owner *****
-            *********************************/
-            const resource = new SaveProfileResource(data['owner-name'], data['owner-lastname'], data['owner-email'], data['owner-phone'], new Date(data.birthday), formDataObj.ownerRoleId!);
+             *********************************/
+            const resource = new SaveProfileResource(
+                data["owner-name"],
+                data["owner-lastname"],
+                data["owner-email"],
+                data["owner-phone"],
+                new Date(data.birthday),
+                formDataObj.ownerRoleId!,
+            );
             await tryCreateEditRequestOrThrowError({
                 isEditMode,
                 formError,
-                entityDisplayName: 'dueño',
+                entityDisplayName: profilesTexts.terms.owner,
                 submitButton,
-                makeRequestFunc: async () => !isEditMode ? await createProfile(resource)
-                                                    : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
+                makeRequestFunc: async () =>
+                    !isEditMode
+                        ? await createProfile(resource)
+                        : {
+                              success: false,
+                              errorMessage: "something was wrong",
+                          }, //await updatePet(formDataObj.petId!, ownerResource);
                 onSuccessFunc: (response: any) => {
                     formDataObj.profileId = response.data.id;
 
                     // 1. Dispara un evento con los datos del nuevo dueño para que la página principal lo escuche
-                    document.dispatchEvent(new CustomEvent('owner-created', {
-                        detail: { newOwner: response.data }
-                    }));
+                    document.dispatchEvent(
+                        new CustomEvent("owner-created", {
+                            detail: { newOwner: response.data },
+                        }),
+                    );
 
                     // 2. Dispara un evento para cerrar este modal específico
-                    document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                        detail: { id: 'owner-modal' }
-                    }));
+                    document.dispatchEvent(
+                        new CustomEvent("close-modal-by-id", {
+                            detail: { id: "owner-modal" },
+                        }),
+                    );
 
                     // 3. Limpia el formulario para la próxima vez
                     form.reset();
@@ -160,9 +207,8 @@ const profileInputs = [
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
-    document.addEventListener('astro:page-load', () => {
+     *************************************/
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
     });
-
 </script>

@@ -2,28 +2,35 @@
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
-
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, shared: sharedTexts } = getTexts();
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const profileInputs = [
     {
         id: "species-name",
         name: "species-name",
         type: "text",
         autocomplete: "species-name",
-        label: "Nombre",
+        label: petsTexts.auxiliary.species.nameLabel,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
-            { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
+            {
+                validate: ((value: any) => value.length >= 3).toString(),
+                message: sharedTexts.validation.minLength(3),
+            },
         ],
         showMandatory: true,
     },
-]
+];
 ---
-<FormModal id="species-modal" title="Agregar nueva especie">
 
+<FormModal id="species-modal" title={petsTexts.auxiliary.species.addTitle}>
     <!-- ---------------
     ------ Inputs ------
     ---------------- -->
@@ -34,15 +41,15 @@ const profileInputs = [
             )
         }
     </div>
-    
+
     <!-- -----------------------
     ------ Action buttons ------
     ------------------------ -->
     <ActionButton id="species-submit-button" type="submit" slot="footer">
-        Crear especie
+        {petsTexts.auxiliary.species.createAction}
     </ActionButton>
     <ActionButton dataModalClose slot="footer">
-        Cancelar
+        {sharedTexts.actions.cancel}
     </ActionButton>
 </FormModal>
 
@@ -50,6 +57,8 @@ const profileInputs = [
     import { SaveSpeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-species.resource";
     import { createSpecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { getTexts } from "@/i18n";
+    const { pets: petsTexts, } = getTexts();
 
     function initializeForm() {
         const form = document.getElementById('species-modal-form') as HTMLFormElement | null;
@@ -57,19 +66,19 @@ const profileInputs = [
 
         /************************
          ***** Submit event *****
-        *************************/
+         *************************/
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
-        
+
             /***********************************
              ***** Register/update Species *****
-            ***********************************/
+             ***********************************/
             const resource = new SaveSpeciesResource(data['species-name']);
             await tryCreateEditRequestOrThrowError({
                 isEditMode,
                 formError,
-                entityDisplayName: 'especie',
+                entityDisplayName: petsTexts.auxiliary.species.term,
                 submitButton,
                 makeRequestFunc: async () => !isEditMode ? await createSpecies(resource)
                                                     : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
@@ -94,9 +103,8 @@ const profileInputs = [
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
+     *************************************/
     document.addEventListener('astro:page-load', () => {
         initializeForm();
     });
-
 </script>

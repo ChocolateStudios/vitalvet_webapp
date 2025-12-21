@@ -1,4 +1,6 @@
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, } = getTexts();
 
 export async function deletePet(petId: string): Promise<UsecaseResult<any>> {
     try {
@@ -10,7 +12,7 @@ export async function deletePet(petId: string): Promise<UsecaseResult<any>> {
             const errorData = await response.json();
             return {
                 success: false,
-                errorMessage: errorData.message || "No se pudo eliminar la mascota",
+                errorMessage: errorData.message || petsTexts.feedback.deleteError,
             };
         }
 

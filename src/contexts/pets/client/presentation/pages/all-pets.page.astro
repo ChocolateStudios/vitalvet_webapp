@@ -8,21 +8,23 @@ import SimpleTable from "@/contexts/_shared/client/presentation/components/table
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import type { PetListItemInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts } = getTexts();
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
 getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 // NO PARAMETERS HERE
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let pets: PetListItemInfo[] = [];
 const getPetsResult = await getAllPets();
 
@@ -32,15 +34,14 @@ if (getPetsResult.success) {
 
 /*************************
  ***** Table headers *****
-**************************/
+ **************************/
 const tableHeaders = [
-    "Nombre (Dueño)",
-    "Especie",
-    "Raza",
+    petsTexts.fields.name.text,
+    petsTexts.auxiliary.species.label,
+    petsTexts.auxiliary.subspecies.label,
     "N° de citas",
     "N° de baños",
-]
-
+];
 ---
 
 <ContentContainer>
@@ -48,15 +49,15 @@ const tableHeaders = [
     ------ Top bar ------
     ----------------- -->
     <ContentTop>
-        Pacientes <!-- MainTitle -->
+        {petsTexts.titles.list} <!-- MainTitle -->
         <div slot="right" class="flex gap-4">
             <SearchBar id="pet-search" name="pet-search" />
             <ActionLink href="/app/pets/newPet" style="submit">
-                Añadir mascota
+                {petsTexts.actions.add}
             </ActionLink>
         </div>
     </ContentTop>
-    
+
     <!-- ------------------
     ------ Main card ------
     ------------------- -->
@@ -66,7 +67,13 @@ const tableHeaders = [
                 <!-- -------------------
                 ------ Main table ------
                 -------------------- -->
-                <SimpleTable id="pets-table" headers={tableHeaders} items={pets} itemsName="mascotas" noItemsMessage="No hay mascotas registradas.">
+                <SimpleTable
+                    id="pets-table"
+                    headers={tableHeaders}
+                    items={pets}
+                    itemsName={petsTexts.tables.itemsName}
+                    noItemsMessage={petsTexts.tables.noItems}
+                >
                     {
                         pets.map(pet => 
                             <tr class="relative hover:bg-gray-50 cursor-pointer">
@@ -92,7 +99,7 @@ const tableHeaders = [
     function initializePageScripts() {
         /****************************
          ***** Search bar logic *****
-        ****************************/
+         ****************************/
         const searchInput = document.getElementById("pet-search") as HTMLInputElement;
         const table = document.getElementById('pets-table');
         const tableRows = table?.querySelectorAll('tbody tr');
@@ -127,7 +134,7 @@ const tableHeaders = [
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
+     *************************************/
     document.addEventListener('astro:page-load', () => {
         initializePageScripts();
     });

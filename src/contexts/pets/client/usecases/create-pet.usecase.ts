@@ -1,5 +1,7 @@
 import type { SavePetResource } from "@/contexts/pets/server/interfaces/api/resources/save-pet.resource";
 import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, } = getTexts();
 
 export async function createPet(pet: SavePetResource): Promise<UsecaseResult<any>> {
     try {
@@ -10,13 +12,13 @@ export async function createPet(pet: SavePetResource): Promise<UsecaseResult<any
             },
             body: JSON.stringify(pet),
         });
-        
+
 
         if (!response.ok) {
             const errorData = await response.json();
             return {
                 success: false,
-                errorMessage: errorData.message || "No se pudo crear la mascota",
+                errorMessage: errorData.message || petsTexts.feedback.createError,
             };
         }
 

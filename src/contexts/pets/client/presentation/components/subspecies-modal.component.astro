@@ -2,25 +2,33 @@
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import FormModal from "@/contexts/_shared/client/presentation/components/modals/form-modal.component.astro";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, shared: sharedTexts } = getTexts();
 
 /*****************************
  ***** Modal paramenters *****
-*****************************/
+ *****************************/
 const { allSpecies } = Astro.props;
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const speciesInputs = [
     {
         id: "subspecies-name",
         name: "subspecies-name",
         type: "text",
         autocomplete: "subspecies-name",
-        label: "Nombres",
+        label: petsTexts.auxiliary.subspecies.nameLabel,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' },
-            { validate: ((value: any) => value.length >= 3).toString(), message: 'El nombre debe tener al menos 3 caracteres' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
+            {
+                validate: ((value: any) => value.length >= 3).toString(),
+                message: sharedTexts.validation.minLength(3),
+            },
         ],
         showMandatory: true,
     },
@@ -28,17 +36,23 @@ const speciesInputs = [
         id: "subspecies-species",
         name: "species",
         type: "combobox",
-        label: "Especie",
+        label: petsTexts.auxiliary.species.label,
         options: allSpecies ?? [],
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La especie es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: sharedTexts.validation.required,
+            },
         ],
         showMandatory: true,
     },
-]
+];
 ---
-<FormModal id="subspecies-modal" title="Agregar nuevo raza">
 
+<FormModal
+    id="subspecies-modal"
+    title={petsTexts.auxiliary.subspecies.addTitle}
+>
     <!-- ---------------
     ------ Inputs ------
     ---------------- -->
@@ -49,15 +63,15 @@ const speciesInputs = [
             )
         }
     </div>
-    
+
     <!-- -----------------------
     ------ Action buttons ------
     ------------------------ -->
     <ActionButton id="species-submit-button" type="submit" slot="footer">
-        Crear raza
+        {petsTexts.auxiliary.subspecies.createAction}
     </ActionButton>
     <ActionButton dataModalClose slot="footer">
-        Cancelar
+        {sharedTexts.actions.cancel}
     </ActionButton>
 </FormModal>
 
@@ -65,7 +79,9 @@ const speciesInputs = [
     import { SaveSubspeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-subspecies.resource";
     // import { updateSpecies } from "@/contexts/pets/client/usecases/update-species.usecase";
     import { createSubspecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
-import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { getTexts } from "@/i18n";
+    const { pets: petsTexts, } = getTexts();
 
     function initializePageScripts() {
         const form = document.getElementById('subspecies-modal-form') as HTMLFormElement | null;
@@ -73,19 +89,19 @@ import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/pres
 
         /************************
          ***** Submit event *****
-        *************************/
+         *************************/
         // Before this event, in base-form.astro validations were executed
         form.addEventListener('form:submit', async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
-            
+
             /***********************************
              ***** Register/update Subspecies *****
-            ***********************************/
+             ***********************************/
             const resource = new SaveSubspeciesResource(data['subspecies-name']);
             await tryCreateEditRequestOrThrowError({
                 isEditMode,
                 formError,
-                entityDisplayName: 'especie',
+                entityDisplayName: petsTexts.auxiliary.subspecies.term,
                 submitButton,
                 makeRequestFunc: async () => !isEditMode ? await createSubspecies(resource, data.species)
                                                     : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
@@ -109,9 +125,8 @@ import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/pres
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
+     *************************************/
     document.addEventListener('astro:page-load', () => {
         initializePageScripts();
     });
-
 </script>

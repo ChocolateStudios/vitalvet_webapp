@@ -1,9 +1,8 @@
 ---
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
-import {
-    colSpanClasses,
-    lgColSpanClasses,
-} from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.constants";
+import { colSpanClasses, lgColSpanClasses, } from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.constants";
+import { getTexts } from "@/i18n";
+const { pets: petsTexts, } = getTexts();
 
 export interface Props {
     pet: any;
@@ -19,14 +18,14 @@ const {
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const profileInputs = [
     {
         id: "name",
         name: "name",
         type: "text",
         autocomplete: "name",
-        label: "Nombre",
+        label: petsTexts.terms.name,
         value: pet?.name,
     },
     {
@@ -34,7 +33,7 @@ const profileInputs = [
         name: "owner",
         type: "text",
         autocomplete: "owner",
-        label: "Propietario",
+        label: petsTexts.terms.owner,
         value: pet?.ownerName,
     },
 ];
@@ -51,7 +50,7 @@ const profileInputs = [
 >
     {/* Header section with title and link to full profile */}
     <div class="flex flex-row items-center justify-between mb-3">
-        <h3 class="font-semibold">Datos de la mascota</h3>
+        <h3 class="font-semibold">{petsTexts.titles.detail}</h3>
         <a
             href={`/app/pets/${pet?.id}`}
             title={`Ver más de ${pet?.name}`}
@@ -79,7 +78,7 @@ const profileInputs = [
         <div class="w-30 h-30 shrink-0">
             <img
                 src={`/api/pets/${pet?.id}/image`}
-                alt={`Foto de ${pet?.name || "mascota"}`}
+                alt={`Foto de ${pet?.name || petsTexts.terms.entity}`}
                 class="rounded-full w-30 h-30 object-cover border-4 border-white shadow-md"
             />
         </div>
