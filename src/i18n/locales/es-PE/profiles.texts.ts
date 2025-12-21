@@ -5,6 +5,7 @@
 
 import { pluralize } from "../../pluralize";
 import { sharedTexts } from "./_shared.texts";
+import { Owner } from "./pets.texts";
 
 const shared = sharedTexts;
 
@@ -37,6 +38,6 @@ export const profilesTexts = {
     },
 
     roles: {
-        owner: "Dueño",
+        owner: Owner,
     },
 } as const;

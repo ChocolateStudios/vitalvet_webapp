@@ -4,7 +4,7 @@
 // ===========================
 
 import { pluralize } from "@/i18n/pluralize";
-import { sharedTexts } from "@/i18n/locales/es-PE/_shared.texts";
+import { createField, sharedTexts } from "@/i18n/locales/es-PE/_shared.texts";
 
 const shared = sharedTexts;
 
@@ -21,11 +21,11 @@ const EntityPlural = entityPlural.charAt(0).toUpperCase() + entityPlural.slice(1
 // =====================================
 // ENTIDAD: DUEÑO (Owner)
 // =====================================
-const owner = "dueño";
-const ownerPlural = pluralize(owner);
+const owner = "tutor";
+const ownerPlural = "tutores";
 const ownerArticle = "el";
 const ownerArticlePlural = "los";
-const Owner = owner.charAt(0).toUpperCase() + owner.slice(1);
+export const Owner = owner.charAt(0).toUpperCase() + owner.slice(1);
 const OwnerPlural = ownerPlural.charAt(0).toUpperCase() + ownerPlural.slice(1);
 
 // =====================================
@@ -47,15 +47,6 @@ const subspeciesArticle = "la";
 const subspeciesArticlePlural = "las";
 const Subspecies = subspecies.charAt(0).toUpperCase() + subspecies.slice(1);
 const SubspeciesPlural = subspeciesPlural.charAt(0).toUpperCase() + subspeciesPlural.slice(1);
-
-// Helper para evitar repetición de texto en definiciones de campos
-const createField = (text: string, gender: 'M' | 'F', validationsBuilder: (val: ReturnType<typeof shared.validate>) => Record<string, string>) => {
-    const v = shared.validate(text.charAt(0).toLowerCase() + text.slice(1), gender);
-    return {
-        text,
-        validations: validationsBuilder(v)
-    };
-};
 
 // =====================================
 // MENSAJES (combinan globales + términos locales)
@@ -123,21 +114,16 @@ export const petsTexts = {
 
     // Fields. Every field has props: { text, validations }
     fields: {
-        name: createField("Nombre", 'M', (val) => ({
-            required: val.required,
-            minLength: val.minLength(3),
-        })),
+        name: shared.fields.name,
         species: createField(Species, 'F', (val) => ({ // Especie es Femenino (La Especie)
             required: val.required,
         })),
         subspecies: createField(Subspecies, 'F', (val) => ({ // Raza es Femenino (La Raza)
             required: val.required,
         })),
-        birthday: createField("Fecha de nacimiento", 'F', (val) => ({ // Fecha es Femenino (La Fecha)
-            required: val.required,
-        })),
-        weight: "Peso (kg)",
-        age: "Edad (años)",
+        birthday: shared.fields.birthday,
+        weight: { text: "Peso (kg)" },
+        age: { text: "Edad (años y meses)" },
         owner: createField(Owner, 'M', (val) => ({ // Dueño es Masculino (El Dueño)
             required: val.required,
         })),

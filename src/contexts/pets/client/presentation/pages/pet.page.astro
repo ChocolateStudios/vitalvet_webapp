@@ -173,15 +173,13 @@ const detailInputs = [
         value: pet?.birthday ? (() => {
             const birthDate = new Date(pet.birthday);
             const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const m = today.getMonth() - birthDate.getMonth();
-            if (
-                m < 0 ||
-                (m === 0 && today.getDate() < birthDate.getDate())
-            ) {
-                age--;
+            let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+            if (today.getDate() < birthDate.getDate()) {
+                totalMonths--;
             }
-            return age;
+            const years = Math.floor(totalMonths / 12);
+            const months = totalMonths % 12;
+            return `${years} ${years === 1 ? "año" : "años"} y ${months} ${months === 1 ? "mes" : "meses"}`;
         })() : "",
         readonly: true,
         tooltip: "La edad se autocalcula según la fecha de nacimiento.",
@@ -290,7 +288,7 @@ const profileImgInput = {
             <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">
                 {petsTexts.titles.detailInfo}
             </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                 {
                     detailInputs.map((input) => (
                         <DynamicInput {...(input as any)} />
@@ -359,17 +357,13 @@ const profileImgInput = {
     }
 
     function initializeForm() {
-        const form = document.getElementById(
-            "pet-form",
-        ) as HTMLFormElement | null;
+        const form = document.getElementById("pet-form") as HTMLFormElement | null;
         if (!form) return;
 
         /***************************************************************
          ***** Calculate and show pet years based on date of birth *****
          ***************************************************************/
-        const birthdayInput = document.getElementById(
-            "birthday",
-        ) as HTMLInputElement;
+        const birthdayInput = document.getElementById("birthday") as HTMLInputElement;
         const petAgeInput = document.getElementById("age") as HTMLInputElement;
 
         if (birthdayInput && petAgeInput) {
@@ -385,15 +379,13 @@ const profileImgInput = {
                     today.setHours(0, 0, 0, 0);
 
                     if (!isNaN(birthDate.getTime()) && birthDate <= today) {
-                        let age = today.getFullYear() - birthDate.getFullYear();
-                        const m = today.getMonth() - birthDate.getMonth();
-                        if (
-                            m < 0 ||
-                            (m === 0 && today.getDate() < birthDate.getDate())
-                        ) {
-                            age--;
+                        let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+                        if (today.getDate() < birthDate.getDate()) {
+                            totalMonths--;
                         }
-                        petAgeInput.value = age.toString();
+                        const years = Math.floor(totalMonths / 12);
+                        const months = totalMonths % 12;
+                        petAgeInput.value = `${years} ${years === 1 ? "año" : "años"} y ${months} ${months === 1 ? "mes" : "meses"}`;
                     } else {
                         petAgeInput.value = "";
                     }

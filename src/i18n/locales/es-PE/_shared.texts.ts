@@ -112,13 +112,20 @@ const status = {
 // SUBSISTEMA DE VALIDACIONES DINÁMICAS
 // Factory Pattern para generar validaciones gramaticalmente correctas
 // =====================================
-const validate = (field: string, gender: 'M' | 'F' = 'M') => {
-    const article = gender === 'M' ? 'El' : 'La';
-    const requiredSuffix = gender === 'M' ? 'obligatorio' : 'obligatoria';
+const validate = (field: string, gender: 'M' | 'F' = 'M', customArticle?: string) => {
+    const isPlural = field.endsWith('s');
+    const article = customArticle ?? (gender === 'M'
+        ? (isPlural ? 'Los' : 'El')
+        : (isPlural ? 'Las' : 'La'));
+
+    const verb = isPlural ? 'son' : 'es';
+    const requiredSuffix = gender === 'M'
+        ? (isPlural ? 'obligatorios' : 'obligatorio')
+        : (isPlural ? 'obligatorias' : 'obligatoria');
 
     return {
         // Validaciones básicas (Getters para optimización)
-        get required() { return `${article} ${field} es ${requiredSuffix}`; },
+        get required() { return `${article} ${field} ${verb} ${requiredSuffix}`; },
         get invalidEmail() { return `${article} ${field} no es un correo electrónico válido`; },
         get invalidPhone() { return `${article} ${field} no es un número de teléfono válido`; },
         get invalidDate() { return `${article} ${field} no es una fecha válida`; },
@@ -137,6 +144,43 @@ const validate = (field: string, gender: 'M' | 'F' = 'M') => {
     };
 };
 
+// Helper para evitar repetición de texto en definiciones de campos
+export const createField = (text: string, gender: 'M' | 'F', validationsBuilder: (val: ReturnType<typeof validate>) => Record<string, string>) => {
+    const v = validate(text.charAt(0).toLowerCase() + text.slice(1), gender);
+    return {
+        text,
+        validations: validationsBuilder(v)
+    };
+};
+
+
+// =====================================
+// CAMPOS COMUNES
+// =====================================
+const fields = {
+    name: createField("Nombres", 'M', (val) => ({
+        required: val.required,
+        minLength: val.minLength(3),
+    })),
+    lastname: createField("Apellidos", 'M', (val) => ({
+        required: val.required,
+        minLength: val.minLength(3),
+    })),
+    birthday: createField("Fecha de nacimiento", 'F', (val) => ({ // Fecha es Femenino (La Fecha)
+        required: val.required,
+    })),
+    email: createField("Correo electrónico", 'M', (val) => ({
+        required: val.required,
+        invalidEmail: val.invalidEmail,
+    })),
+    phone: createField("Teléfono", 'M', (val) => ({
+        required: val.required,
+        invalidPhone: val.invalidPhone,
+    })),
+    role: createField("Rol", 'M', (val) => ({
+        required: val.required,
+    })),
+} as const;
 
 // =====================================
 // EXPORTACIÓN
@@ -149,4 +193,5 @@ export const sharedTexts = {
     dialogs,
     tables,
     status,
+    fields,
 } as const;

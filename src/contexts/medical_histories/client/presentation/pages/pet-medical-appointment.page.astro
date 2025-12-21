@@ -72,46 +72,45 @@ const medicalAppointmentInfoInputs = [
 ];
 
 const medicalAppointmentInputs = [
-    [
-        {
-            id: "weight",
-            name: "weight",
-            type: "number",
-            autocomplete: "weight",
-            label: "Peso (kg)",
-            value: medicalAppointment?.weight,
-            validations: [
-                { validate: ((value: any) => !!value).toString(), message: 'El peso es obligatorio' },
-                { validate: ((value: any) => !isNaN(Number(value))).toString(), message: 'El peso debe ser un número' },
-                { validate: ((value: any) => Number(value) > 0).toString(), message: 'El peso debe ser mayor a 0' }
-            ],
-            showMandatory: true,
-        },
-        {
-            id: "date",
-            name: "date",
-            type: "date",
-            autocomplete: "appointmentDate",
-            label: "Fecha de la cita",
-            value: medicalAppointment ? 
-                medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
-                : new Date().toISOString().split('T')[0],
-            validations: [
-                { validate: ((value: any) => !!value).toString(), message: 'La fecha de la cita es obligatoria' }
-            ],
-            showMandatory: true,
-        },
-    ],
+    {
+        id: "weight",
+        name: "weight",
+        type: "number",
+        autocomplete: "weight",
+        label: "Peso (kg)",
+        value: medicalAppointment?.weight,
+        validations: [
+            { validate: ((value: any) => !!value).toString(), message: 'El peso es obligatorio' },
+            { validate: ((value: any) => !isNaN(Number(value))).toString(), message: 'El peso debe ser un número' },
+            { validate: ((value: any) => Number(value) > 0).toString(), message: 'El peso debe ser mayor a 0' }
+        ],
+        showMandatory: true,
+    },
+    {
+        id: "date",
+        name: "date",
+        type: "date",
+        autocomplete: "appointmentDate",
+        label: "Fecha de la cita",
+        value: medicalAppointment ? 
+            medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
+            : new Date().toISOString().split('T')[0],
+        validations: [{ 
+            validate: ((value: any) => !!value).toString(), message: 'La fecha de la cita es obligatoria' 
+        }],
+        showMandatory: true,
+    },
     {
         id: "observations",
         name: "observations",
         label: "Observaciones",
         type: "textarea",
         value: medicalAppointment?.observations,
-        validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' }
-        ],
-            showMandatory: true,
+        validations: [{ 
+            validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' 
+        }],
+        showMandatory: true,
+        class: "col-span-full",
     },
     {
         id: "prescription",
@@ -119,10 +118,11 @@ const medicalAppointmentInputs = [
         label: "Receta / Tratamiento",
         type: "textarea",
         value: medicalAppointment?.prescription,
-        validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La receta/tratamiento es obligatoria' }
-        ],
-            showMandatory: true,
+        validations: [{ 
+            validate: ((value: any) => !!value).toString(), message: 'La receta/tratamiento es obligatoria' 
+        }],
+        showMandatory: true,
+        class: "col-span-full",
     },
 ];
 
@@ -171,17 +171,9 @@ const medicalAppointmentInputs = [
         ------------------------ -->
         <SimpleCard lgColSpan="4">
             <h4 class="mb-4">Detalles de la cita</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
             {
                 medicalAppointmentInputs.map(input => 
-                    Array.isArray(input) ?
-                    <div class="flex gap-4">
-                    {
-                        input.map(subinput => 
-                            <DynamicInput {...subinput} />
-                        )
-                    }
-                    </div>
-                    : 
                     <DynamicInput {...input} />
                 )
             }
