@@ -59,20 +59,25 @@ export class ImagePerEntityRepository {
 
     static async getFilesByEntityId(entityId: number | string, entityRecordId: number | string): Promise<FilePerEntityResource[]> {
         const filesRef = ref(db, FILE_PER_ENTITY_PATH);
-        const queryByEntityRecordId = query(filesRef, orderByChild('entityId'), equalTo(entityId), orderByChild('entityRecordId'), equalTo(entityRecordId));
+        // Firebase Realtime Database doesn't support multiple orderByChild in the same query
+        // So we query by entityId and filter by entityRecordId in memory
+        const queryByEntityId = query(filesRef, orderByChild('entityId'), equalTo(entityId));
 
-        const snapshot = await get(queryByEntityRecordId);
+        const snapshot = await get(queryByEntityId);
         if (!snapshot.exists()) return [];
 
         const filesData = snapshot.val();
 
-        const imagesList: FilePerEntityResource[] = Object.keys(filesData).map(key => ({
-            ...filesData[key],
-            id: key,
-            createdAt: new Date(filesData[key].createdAt),
-            updatedAt: new Date(filesData[key].updatedAt),
-        }));
+        // Filter by entityRecordId in memory
+        const filteredFiles = Object.keys(filesData)
+            .filter(key => filesData[key].entityRecordId === entityRecordId)
+            .map(key => ({
+                ...filesData[key],
+                id: key,
+                createdAt: new Date(filesData[key].createdAt),
+                updatedAt: new Date(filesData[key].updatedAt),
+            }));
 
-        return imagesList.map(image => FilePerEntityResource.fromModel(image));
+        return filteredFiles.map(file => FilePerEntityResource.fromModel(file));
     }
 }

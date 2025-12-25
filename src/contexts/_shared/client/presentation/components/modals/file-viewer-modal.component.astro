@@ -1,0 +1,190 @@
+---
+import BaseModal from "@/contexts/_shared/client/presentation/components/modals/base-modal.component.astro";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
+
+interface Props {
+    id?: string;
+}
+
+const { id = "file-viewer-modal" } = Astro.props;
+---
+
+<BaseModal id={id} title="">
+    <div slot="body">
+        <div class="space-y-4">
+            <!-- File name as title -->
+            <h3
+                id="viewer-file-name"
+                class="text-lg font-semibold text-gray-900 break-all"
+            >
+            </h3>
+
+            <!-- File viewer container -->
+            <div
+                id="file-viewer-container"
+                class="w-full min-h-[400px] flex items-center justify-center bg-gray-50 rounded-lg"
+            >
+                <!-- Image viewer -->
+                <img
+                    id="image-viewer"
+                    class="hidden max-w-full max-h-[600px] object-contain"
+                    alt="Document preview"
+                />
+
+                <!-- PDF viewer -->
+                <iframe id="pdf-viewer" class="hidden w-full h-[600px] border-0"
+                ></iframe>
+
+                <!-- Loading state -->
+                <div id="viewer-loading" class="text-gray-500">
+                    Cargando documento...
+                </div>
+
+                <!-- Error state -->
+                <div id="viewer-error" class="hidden text-red-500">
+                    No se pudo cargar el documento
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div slot="footer">
+        <ActionButton id="download-file-btn">
+            <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                ></path>
+            </svg>
+            Descargar
+        </ActionButton>
+        <ActionButton id="close-viewer-btn" style="submit">
+            Cerrar
+        </ActionButton>
+    </div>
+</BaseModal>
+
+<script>
+    document.addEventListener("astro:page-load", () => {
+        const modal = document.getElementById("file-viewer-modal");
+        const fileNameElement = document.getElementById("viewer-file-name");
+        const imageViewer = document.getElementById(
+            "image-viewer",
+        ) as HTMLImageElement;
+        const pdfViewer = document.getElementById(
+            "pdf-viewer",
+        ) as HTMLIFrameElement;
+        const loading = document.getElementById("viewer-loading");
+        const error = document.getElementById("viewer-error");
+        const downloadBtn = document.getElementById("download-file-btn");
+        const closeBtn = document.getElementById("close-viewer-btn");
+
+        let currentFileUrl = "";
+        let currentFileName = "";
+
+        function hideAllViewers() {
+            imageViewer?.classList.add("hidden");
+            pdfViewer?.classList.add("hidden");
+            loading?.classList.add("hidden");
+            error?.classList.add("hidden");
+        }
+
+        function getFileExtension(fileName: string): string {
+            return fileName.split(".").pop()?.toLowerCase() || "";
+        }
+
+        function isImage(extension: string): boolean {
+            return ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg"].includes(
+                extension,
+            );
+        }
+
+        function isPDF(extension: string): boolean {
+            return extension === "pdf";
+        }
+
+        function showFile(fileUrl: string, fileName: string) {
+            currentFileUrl = fileUrl;
+            currentFileName = fileName;
+
+            hideAllViewers();
+            loading?.classList.remove("hidden");
+
+            if (fileNameElement) fileNameElement.textContent = fileName;
+
+            const extension = getFileExtension(fileName);
+
+            if (isImage(extension)) {
+                imageViewer.onload = () => {
+                    hideAllViewers();
+                    imageViewer?.classList.remove("hidden");
+                };
+                imageViewer.onerror = () => {
+                    hideAllViewers();
+                    error?.classList.remove("hidden");
+                };
+                imageViewer.src = fileUrl;
+            } else if (isPDF(extension)) {
+                pdfViewer.onload = () => {
+                    hideAllViewers();
+                    pdfViewer?.classList.remove("hidden");
+                };
+                pdfViewer.onerror = () => {
+                    hideAllViewers();
+                    error?.classList.remove("hidden");
+                };
+                pdfViewer.src = fileUrl;
+            } else {
+                // Unsupported file type - just show download option
+                hideAllViewers();
+                if (error) {
+                    error.classList.remove("hidden");
+                    error.textContent =
+                        "Vista previa no disponible. Haga clic en Descargar para abrir el archivo.";
+                }
+            }
+        }
+
+        function closeModal() {
+            modal?.classList.add("hidden");
+            hideAllViewers();
+            imageViewer.src = "";
+            pdfViewer.src = "";
+            currentFileUrl = "";
+            currentFileName = "";
+        }
+
+        // Listen for open viewer event
+        document.addEventListener("open-file-viewer", (e: any) => {
+            const { fileUrl, fileName } = e.detail;
+            showFile(fileUrl, fileName);
+            modal?.classList.remove("hidden");
+        });
+
+        downloadBtn?.addEventListener("click", () => {
+            if (currentFileUrl) {
+                const link = document.createElement("a");
+                link.href = currentFileUrl;
+                link.download = currentFileName;
+                link.target = "_blank";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        closeBtn?.addEventListener("click", closeModal);
+
+        // Close on backdrop click
+        modal
+            ?.querySelector("[data-modal-backdrop]")
+            ?.addEventListener("click", closeModal);
+    });
+</script>

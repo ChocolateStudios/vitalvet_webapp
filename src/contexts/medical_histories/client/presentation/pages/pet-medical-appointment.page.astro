@@ -11,25 +11,32 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
+import SimpleTable from "@/contexts/_shared/client/presentation/components/tables/simple-table.component.astro";
+import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.astro";
 import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import UploadDocumentModal from "@/contexts/_shared/client/presentation/components/modals/upload-document-modal.component.astro";
+import FileViewerModal from "@/contexts/_shared/client/presentation/components/modals/file-viewer-modal.component.astro";
+import { getFilesByMedicalAppointment } from "@/contexts/files/server/application/usecases/get-files-by-medical-appointment.usecase";
+import type { FilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/file-per-entity.resource";
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 const { petId, medicalAppointmentId } = Astro.props;
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let pet: PetInfo | null = null;
 let medicalAppointment: MedicalAppointmentInfo | null = null;
 let doctorProfiles: any[] = [];
+let existingDocuments: FilePerEntityResource[] = [];
 
 const getPetResult = await getPet(petId);
 if (getPetResult.success) {
@@ -45,15 +52,35 @@ const getDoctorProfilesResult = await getAllProfilesByRoleId(import.meta.env.VET
 if (getDoctorProfilesResult.success) {
     doctorProfiles = getDoctorProfilesResult.data;
     doctorProfiles = doctorProfiles.map(dp => ({
-            id: dp.id,
+        id: dp.id,
             name: `${dp.name} ${dp.lastname} ${dp.me ? '(Tú)' : ''}`,
-            me: dp.me,
-        }));
+        me: dp.me,
+    }));
 }
+
+const getDocumentsResult = await getFilesByMedicalAppointment(petId, medicalAppointmentId);
+if (getDocumentsResult.success && getDocumentsResult.data) {
+    existingDocuments = getDocumentsResult.data;
+}
+
+// Format documents for table
+const documentItems = existingDocuments.map((doc) => ({
+    id: doc.id,
+    fileName: doc.fileName,
+    fileUrl: doc.fileUrl,
+    attributes: {
+        "data-file-id": doc.id.toString(),
+        "data-file-url": doc.fileUrl,
+    },
+    cells: [
+        doc.fileName,
+        "", // Actions column will be filled by client-side script
+    ],
+}));
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const medicalAppointmentInfoInputs = [
     {
         id: "doctor",
@@ -157,27 +184,64 @@ const medicalAppointmentInputs = [
             <div class="bg-white rounded-xl shadow-lg p-7 text-left">
                 <h3 class="font-semibold mb-3">Información de la cita</h3>
                 <div class="flex flex-col items-center w-full">
-                {
+                    {
                     medicalAppointmentInfoInputs.map(infoInput => 
-                        <DynamicInput {...infoInput} />
+                            <DynamicInput {...infoInput} />
                     )
-                }
+                    }
                 </div>
             </div>
         </div>
 
-        <!-- -----------------------
-        ------ Details card ------
-        ------------------------ -->
-        <SimpleCard lgColSpan="4">
-            <h4 class="mb-4">Detalles de la cita</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-            {
-                medicalAppointmentInputs.map(input => 
-                    <DynamicInput {...input} />
-                )
-            }
-        </SimpleCard>
+        <div class="col-span-4 flex flex-col gap-6 max-h-[calc(100vh-18rem)] overflow-y-auto pr-2">
+            <!-- -----------------------
+            ------ Details card ------
+            ------------------------ -->
+            <SimpleCard>
+                <h4 class="mb-4">Detalles de la cita</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                    {
+                    medicalAppointmentInputs.map(input => 
+                            <DynamicInput {...input} />
+                    )
+                    }
+                </div>
+            </SimpleCard>
+
+            <!-- -----------------------
+            ------ Documents card ------
+            ------------------------ -->
+            <SimpleCard>
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-semibold text-gray-800">Documentos</h4>
+                    <ActionButton style="submit" id="add-document-btn">
+                        <div class="flex items-center gap-2">
+                            <AddIcon class="w-4 h-4" />
+                            <span>Agregar documento</span>
+                        </div>
+                    </ActionButton>
+                </div>
+                <SimpleTable
+                    headers={["Nombre del archivo", "Acciones"]}
+                    items={documentItems}
+                    itemsName="documentos"
+                    noItemsMessage="No se han adjuntado documentos."
+                    id="documents-table"
+                >
+                    {
+                        documentItems.map((doc) => (
+                            <tr
+                                data-file-id={doc.id}
+                                data-file-url={doc.fileUrl}
+                            >
+                                <td class="px-4 py-2">{doc.fileName}</td>
+                                <td class="px-4 py-2" />
+                            </tr>
+                        ))
+                    }
+                </SimpleTable>
+            </SimpleCard>
+        </div>
 
         <!-- -----------------------
         ------ Action buttons ------
@@ -187,24 +251,273 @@ const medicalAppointmentInputs = [
                 { medicalAppointment ? "Guardar cambios" : "Crear cita médica" }
             </ActionButton>
             { medicalAppointment &&
-                <>
+                    <>
                     <ActionButton id="open-delete-dialog-button" type="danger">
-                        Eliminar
-                    </ActionButton>
-                    <DeletePetMedicalAppointmentDialog />
-                </>
+                            Eliminar
+                        </ActionButton>
+                        <DeletePetMedicalAppointmentDialog />
+                    </>
             }
         </div>
-        
+
         <div class="form-error col-span-full text-red-500"></div>
     </GridForm>
 </ContentContainer>
+
+<!-- Document Management Modals -->
+<UploadDocumentModal />
+<FileViewerModal />
 
 <script>
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
-    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
+    import { uploadMedicalAppointmentDocument } from "@/contexts/medical_histories/client/usecases/upload-medical-appointment-document.usecase";
+    import { deletePet } from "@/contexts/files/client/usecases/delete-file.usecase";
+
+    // Document management state
+    let documentsToAdd: { file: File; tempId: string }[] = [];
+    let documentsToDelete: string[] = [];
+    let currentDocuments: any[] = [];
+
+    function initializeDocumentManagement() {
+        const addDocumentBtn = document.getElementById("add-document-btn");
+        const uploadModal = document.getElementById("upload-document-modal");
+        const documentsTable = document.getElementById("documents-table");
+
+        if (!addDocumentBtn || !uploadModal) return;
+
+        // Load existing documents from table
+        loadExistingDocuments();
+
+        // Open upload modal
+        addDocumentBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            uploadModal?.classList.remove("hidden");
+        });
+
+        // Listen for document selection from upload modal
+        document.addEventListener("document-selected", (e: any) => {
+            const { file } = e.detail;
+            addDocumentToMemory(file);
+        });
+
+        // Render table with action buttons
+        renderDocumentTable();
+    }
+
+    function loadExistingDocuments() {
+        const tableBody = document.querySelector("#documents-table tbody");
+        if (!tableBody) return;
+
+        const rows = tableBody.querySelectorAll("tr");
+        rows.forEach((row) => {
+            const cells = row.querySelectorAll("td");
+            if (cells.length >= 2) {
+                const fileName = cells[0].textContent?.trim() || "";
+                const fileUrl = row.getAttribute("data-file-url") || "";
+                const fileId = row.getAttribute("data-file-id") || "";
+
+                if (fileId) {
+                    currentDocuments.push({
+                        id: fileId,
+                        fileName: fileName,
+                        fileUrl: fileUrl,
+                        isExisting: true,
+                    });
+                }
+            }
+        });
+    }
+
+    function addDocumentToMemory(file: File) {
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        documentsToAdd.push({ file, tempId });
+        currentDocuments.push({
+            id: tempId,
+            fileName: file.name,
+            fileUrl: "",
+            isExisting: false,
+        });
+        renderDocumentTable();
+        enableSubmitButton();
+    }
+
+    function markDocumentForDeletion(documentId: string) {
+        const docIndex = currentDocuments.findIndex((d) => d.id === documentId);
+        if (docIndex === -1) return;
+
+        const doc = currentDocuments[docIndex];
+
+        if (doc.isExisting) {
+            // Mark existing document for deletion
+            documentsToDelete.push(documentId);
+            currentDocuments.splice(docIndex, 1);
+        } else {
+            // Remove new document from memory
+            const tempIndex = documentsToAdd.findIndex(
+                (d) => d.tempId === documentId,
+            );
+            if (tempIndex !== -1) {
+                documentsToAdd.splice(tempIndex, 1);
+            }
+            currentDocuments.splice(docIndex, 1);
+        }
+
+        renderDocumentTable();
+        enableSubmitButton();
+    }
+
+    function renderDocumentTable() {
+        const tableBody = document.querySelector("#documents-table tbody");
+        if (!tableBody) return;
+
+        tableBody.innerHTML = "";
+
+        if (currentDocuments.length === 0) {
+            const emptyRow = document.createElement("tr");
+            emptyRow.innerHTML =
+                '<td colspan="2" class="text-center text-gray-500 py-4">No se han adjuntado documentos.</td>';
+            tableBody.appendChild(emptyRow);
+            return;
+        }
+
+        currentDocuments.forEach((doc) => {
+            const row = document.createElement("tr");
+            row.setAttribute("data-file-id", doc.id);
+            if (doc.fileUrl) row.setAttribute("data-file-url", doc.fileUrl);
+
+            // File name cell - clickable for existing docs
+            const nameCell = document.createElement("td");
+            nameCell.className = "px-4 py-2";
+            if (doc.isExisting && doc.fileUrl) {
+                nameCell.innerHTML = `<span class="cursor-pointer hover:underline text-blue-600" data-view-file="${doc.id}">${doc.fileName}</span>`;
+            } else {
+                nameCell.textContent = doc.fileName;
+            }
+
+            // Actions cell
+            const actionsCell = document.createElement("td");
+            actionsCell.className = "px-4 py-2";
+            const actionsDiv = document.createElement("div");
+            actionsDiv.className = "flex gap-2";
+
+            // Download button (only for existing docs)
+            if (doc.isExisting && doc.fileUrl) {
+                const downloadBtn = document.createElement("button");
+                downloadBtn.type = "button";
+                downloadBtn.className = "text-blue-600 hover:text-blue-800";
+                downloadBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                `;
+                downloadBtn.title = "Descargar";
+                downloadBtn.addEventListener("click", () =>
+                    downloadDocument(doc.fileUrl, doc.fileName),
+                );
+                actionsDiv.appendChild(downloadBtn);
+            }
+
+            // Delete button
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "text-red-600 hover:text-red-800";
+            deleteBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+            `;
+            deleteBtn.title = "Eliminar";
+            deleteBtn.addEventListener("click", () =>
+                markDocumentForDeletion(doc.id),
+            );
+            actionsDiv.appendChild(deleteBtn);
+
+            actionsCell.appendChild(actionsDiv);
+            row.appendChild(nameCell);
+            row.appendChild(actionsCell);
+            tableBody.appendChild(row);
+        });
+
+        // Add click handlers for file viewing
+        document.querySelectorAll("[data-view-file]").forEach((el) => {
+            el.addEventListener("click", (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const docId = target.getAttribute("data-view-file");
+                const doc = currentDocuments.find((d) => d.id === docId);
+                if (doc && doc.fileUrl) {
+                    openFileViewer(doc.fileUrl, doc.fileName);
+                }
+            });
+        });
+    }
+
+    function openFileViewer(fileUrl: string, fileName: string) {
+        document.dispatchEvent(
+            new CustomEvent("open-file-viewer", {
+                detail: { fileUrl, fileName },
+            }),
+        );
+    }
+
+    function downloadDocument(fileUrl: string, fileName: string) {
+        const link = document.createElement("a");
+        link.href = fileUrl;
+        link.download = fileName;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function enableSubmitButton() {
+        const submitButton = document.getElementById("submit-button") as HTMLButtonElement;
+        if (submitButton) submitButton.disabled = false;
+    }
+
+    async function uploadDocuments(petId: string, medicalAppointmentId: string, formError: HTMLElement) {
+        if (documentsToAdd.length === 0) return true;
+
+        let allUploadsSuccessful = true;
+
+        for (const { file, tempId } of documentsToAdd) {
+            const resource = new SaveFileResource(file, file.name.split(".").slice(0, -1).join("."), file.name.split(".").pop() || "", file.type, file.size);
+
+            const uploadResult = await uploadMedicalAppointmentDocument(petId, medicalAppointmentId, tempId, resource);
+
+            if (!uploadResult.success) {
+                formError.textContent =
+                    validErrorMessage(uploadResult.errorMessage) ??
+                    "Error al subir documento. Por favor, inténtalo de nuevo.";
+                allUploadsSuccessful = false;
+                break;
+            }
+        }
+
+        return allUploadsSuccessful;
+    }
+
+    async function deleteDocuments() {
+        if (documentsToDelete.length === 0) return true;
+
+        let allDeletionsSuccessful = true;
+
+        for (const docId of documentsToDelete) {
+            const deleteResult = await deletePet(docId);
+            if (!deleteResult.success) {
+                console.error(
+                    `Error deleting document ${docId}:`,
+                    deleteResult.errorMessage,
+                );
+                allDeletionsSuccessful = false;
+            }
+        }
+
+        return allDeletionsSuccessful;
+    }
 
     function initializeForm() {
         const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
@@ -212,14 +525,43 @@ const medicalAppointmentInputs = [
 
         /************************
          ***** Submit event *****
-        *************************/
+         ************************/
         // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
+
+            /****************************
+             ***** Upload documents *****
+             ****************************/
+            const processDocuments = async () => {
+                // No documents to process
+                if (documentsToAdd.length === 0 && documentsToDelete.length === 0) return true;
+
+                // Upload new documents
+                const uploadSuccess = await uploadDocuments(
+                    formDataObj.petId!,
+                    formDataObj.medicalAppointmentId!,
+                    formError,
+                );
+
+                if (!uploadSuccess) return false;
+
+                // Delete marked documents
+                const deleteSuccess = await deleteDocuments();
+
+                return uploadSuccess && deleteSuccess;
+            };
+
+            // If in edit mode, process documents first
+            if (isEditMode) {
+                const documentsOk = await processDocuments();
+                if (!documentsOk) return;
+            }
 
             /**********************************************
-            ***** Register/update medical appointment *****
-            ***********************************************/
+             ***** Register/update medical appointment *****
+             ***********************************************/
             const registerOrUpdateMedicalAppointment = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
                 const resource = new SaveMedicalAppointmentResource(Number(data.weight), data.observations, data.prescription, new Date(data.date), data.doctor ?? 0);
                 const editMode = !!forceUpdate || isEditMode;
@@ -234,20 +576,28 @@ const medicalAppointmentInputs = [
                     onSuccessFunc: (response: any) => {
                         formDataObj.medicalAppointmentId = response.data.id;
 
-                        if (!cancelRedirect) 
+                        if (!cancelRedirect)
                             window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
                     },
                 });
             }
 
-            await registerOrUpdateMedicalAppointment();
+            await registerOrUpdateMedicalAppointment({
+                cancelRedirect: !isEditMode,
+            });
+
+            // If creating new, process documents after appointment is created
+            if (!isEditMode) {
+                await processDocuments();
+                await registerOrUpdateMedicalAppointment({ forceUpdate: true });
+            }
         });
     }
 
     function initializeDeleteDialog() {
         /*******************************
          ***** Delete dialog logic *****
-        ********************************/
+         ********************************/
         const openDialogButton = document.getElementById('open-delete-dialog-button');
         const dialog = document.getElementById('delete-dialog');
         const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
@@ -257,9 +607,10 @@ const medicalAppointmentInputs = [
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
+     *************************************/
     document.addEventListener('astro:page-load', () => {
         initializeForm();
         initializeDeleteDialog();
+        initializeDocumentManagement();
     });
 </script>

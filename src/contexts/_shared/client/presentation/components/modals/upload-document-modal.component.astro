@@ -1,0 +1,178 @@
+---
+import BaseModal from "@/contexts/_shared/client/presentation/components/modals/base-modal.component.astro";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
+
+interface Props {
+    id?: string;
+}
+
+const { id = "upload-document-modal" } = Astro.props;
+---
+
+<BaseModal id={id} title="Agregar documento">
+    <div slot="body">
+        <div class="space-y-4">
+            <div>
+                <label
+                    for="document-file-input"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                    Seleccionar archivo
+                </label>
+                <input
+                    type="file"
+                    id="document-file-input"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2"
+                />
+            </div>
+            <div id="file-preview" class="hidden">
+                <p class="text-sm text-gray-600">
+                    Archivo seleccionado: <span
+                        id="file-name"
+                        class="font-medium"></span>
+                </p>
+                <p class="text-xs text-gray-500">
+                    Tamaño: <span id="file-size"></span>
+                </p>
+            </div>
+            <div id="file-error" class="hidden text-red-600 text-sm"></div>
+        </div>
+    </div>
+
+    <div slot="footer">
+        <ActionButton id="cancel-upload-btn">
+            Cancelar
+        </ActionButton>
+        <ActionButton id="confirm-upload-btn" type="submit" disabled>
+            Adjuntar
+        </ActionButton>
+    </div>
+</BaseModal>
+
+<script>
+    document.addEventListener("astro:page-load", () => {
+        const modal = document.getElementById("upload-document-modal");
+        const fileInput = document.getElementById(
+            "document-file-input",
+        ) as HTMLInputElement;
+        const filePreview = document.getElementById("file-preview");
+        const fileName = document.getElementById("file-name");
+        const fileSize = document.getElementById("file-size");
+        const fileError = document.getElementById("file-error");
+        const confirmBtn = document.getElementById(
+            "confirm-upload-btn",
+        ) as HTMLButtonElement;
+        const cancelBtn = document.getElementById("cancel-upload-btn");
+
+        let selectedFile: File | null = null;
+
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        const ALLOWED_EXTENSIONS = [
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".xls",
+            ".xlsx",
+            ".png",
+            ".jpg",
+            ".jpeg",
+        ];
+
+        function formatFileSize(bytes: number): string {
+            if (bytes < 1024) return bytes + " B";
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+            return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+        }
+
+        function validateFile(file: File): { valid: boolean; error?: string } {
+            const extension = "." + file.name.split(".").pop()?.toLowerCase();
+
+            if (!ALLOWED_EXTENSIONS.includes(extension)) {
+                return {
+                    valid: false,
+                    error: "Formato de archivo no permitido. Formatos aceptados: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG, JPEG",
+                };
+            }
+
+            if (file.size > MAX_FILE_SIZE) {
+                return {
+                    valid: false,
+                    error: "El archivo excede el tamaño máximo de 10MB",
+                };
+            }
+
+            return { valid: true };
+        }
+
+        fileInput?.addEventListener("change", (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+
+            if (!file) {
+                selectedFile = null;
+                filePreview?.classList.add("hidden");
+                fileError?.classList.add("hidden");
+                confirmBtn.disabled = true;
+                return;
+            }
+
+            const validation = validateFile(file);
+
+            if (!validation.valid) {
+                selectedFile = null;
+                filePreview?.classList.add("hidden");
+                fileError?.classList.remove("hidden");
+                if (fileError)
+                    fileError.textContent =
+                        validation.error || "Error de validación";
+                confirmBtn.disabled = true;
+                return;
+            }
+
+            selectedFile = file;
+            fileError?.classList.add("hidden");
+            filePreview?.classList.remove("hidden");
+            if (fileName) fileName.textContent = file.name;
+            if (fileSize) fileSize.textContent = formatFileSize(file.size);
+            confirmBtn.disabled = false;
+        });
+
+        confirmBtn?.addEventListener("click", () => {
+            if (selectedFile) {
+                document.dispatchEvent(
+                    new CustomEvent("document-selected", {
+                        detail: { file: selectedFile },
+                    }),
+                );
+
+                // Reset modal
+                fileInput.value = "";
+                selectedFile = null;
+                filePreview?.classList.add("hidden");
+                confirmBtn.disabled = true;
+                modal?.classList.add("hidden");
+            }
+        });
+
+        cancelBtn?.addEventListener("click", () => {
+            fileInput.value = "";
+            selectedFile = null;
+            filePreview?.classList.add("hidden");
+            fileError?.classList.add("hidden");
+            confirmBtn.disabled = true;
+            modal?.classList.add("hidden");
+        });
+
+        // Close on backdrop click
+        modal
+            ?.querySelector("[data-modal-backdrop]")
+            ?.addEventListener("click", () => {
+                fileInput.value = "";
+                selectedFile = null;
+                filePreview?.classList.add("hidden");
+                fileError?.classList.add("hidden");
+                confirmBtn.disabled = true;
+                modal?.classList.add("hidden");
+            });
+    });
+</script>
