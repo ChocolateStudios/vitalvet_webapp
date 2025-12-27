@@ -19,8 +19,13 @@ export async function updateMedicalAppointment(petId: string, medicalAppointment
             };
         }
 
+        const updatedMedicalAppointment = await response.json();
+
         return {
             success: true,
+            data: {
+                id: updatedMedicalAppointment.id,
+            }
         };
     } catch (error) {
         return {

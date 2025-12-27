@@ -19,8 +19,13 @@ export async function createMedicalAppointment(petId: string, medicalAppointment
             };
         }
 
+        const newMedicalAppointment = await response.json();
+
         return {
             success: true,
+            data: {
+                id: newMedicalAppointment.id,
+            }
         };
     } catch (error) {
         return {

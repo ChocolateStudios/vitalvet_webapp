@@ -1,0 +1,603 @@
+---
+import SimpleTable from "./simple-table.component.astro";
+
+/**
+ * ReactiveTable - A generic, interactive table component
+ *
+ * Features:
+ * - Dynamic row rendering (add/remove/update items)
+ * - Action columns (view, download, delete, custom actions)
+ * - Event-driven communication for external integration
+ * - Memory-based item management (pending actions before submit)
+ */
+
+export interface ReactiveTableItem {
+    id: string;
+    [key: string]: any;
+    isExisting?: boolean;
+}
+
+export interface ReactiveTableColumn {
+    key: string;
+    label?: string;
+    clickable?: boolean;
+    clickEvent?: string;
+    render?: (item: ReactiveTableItem) => string;
+}
+
+export interface ReactiveTableAction {
+    name: string;
+    label: string;
+    icon: string;
+    event?: string;
+    className?: string;
+    showFor?: "existing" | "new" | "all";
+}
+
+export interface Props {
+    id: string;
+    headers: string[];
+    itemsName?: string;
+    noItemsMessage?: string;
+    initialItems?: ReactiveTableItem[];
+    columns: ReactiveTableColumn[];
+    enableActions?: boolean;
+    actionColumnLabel?: string;
+    actions?: {
+        view?: boolean;
+        download?: boolean;
+        delete?: boolean;
+        custom?: ReactiveTableAction[];
+    };
+    rowDataAttributes?: string[];
+}
+
+const {
+    id,
+    headers,
+    itemsName = "items",
+    noItemsMessage = "No hay items para mostrar.",
+    initialItems = [],
+    columns,
+    enableActions = true,
+    actionColumnLabel = "Acciones",
+    actions = { view: false, download: false, delete: true },
+    rowDataAttributes = [],
+} = Astro.props as Props;
+
+// Prepare config for client-side script
+const tableConfig = {
+    id,
+    columns,
+    enableActions,
+    actions,
+    rowDataAttributes,
+    noItemsMessage,
+    itemsName,
+    headerCount: headers.length,
+};
+---
+
+<div
+    class="reactive-table-container"
+    data-reactive-table-id={id}
+    data-table-config={JSON.stringify(tableConfig)}
+>
+    <SimpleTable
+        id={id}
+        headers={headers}
+        items={initialItems.length > 0 ? initialItems : undefined}
+        itemsName={itemsName}
+        noItemsMessage={noItemsMessage}
+    >
+        {
+            initialItems.map((item) => (
+                <tr
+                    data-item-id={item.id}
+                    data-is-existing={item.isExisting ? "true" : "false"}
+                    {...Object.fromEntries(
+                        rowDataAttributes.map((attr) => [
+                            `data-${attr.toLowerCase()}`,
+                            item[attr] ?? "",
+                        ]),
+                    )}
+                >
+                    {columns.map((col) => (
+                        <td class="px-4 py-2">
+                            {col.clickable && item.isExisting ? (
+                                <span
+                                    class="cursor-pointer hover:underline text-blue-600"
+                                    data-click-action={col.clickEvent || "view"}
+                                    data-item-id={item.id}
+                                >
+                                    {item[col.key]}
+                                </span>
+                            ) : (
+                                item[col.key]
+                            )}
+                        </td>
+                    ))}
+                    {enableActions && <td class="px-4 py-2" />}
+                </tr>
+            ))
+        }
+    </SimpleTable>
+</div>
+
+<script>
+    /**
+     * ReactiveTable Manager - Global registry for reactive tables
+     */
+    interface ReactiveTableItem {
+        id: string;
+        [key: string]: any;
+        isExisting?: boolean;
+    }
+
+    interface ReactiveTableColumn {
+        key: string;
+        label?: string;
+        clickable?: boolean;
+        clickEvent?: string;
+    }
+
+    interface ReactiveTableAction {
+        name: string;
+        label: string;
+        icon: string;
+        event?: string;
+        className?: string;
+        showFor?: "existing" | "new" | "all";
+    }
+
+    interface TableConfig {
+        id: string;
+        columns: ReactiveTableColumn[];
+        enableActions: boolean;
+        actions: {
+            view?: boolean;
+            download?: boolean;
+            delete?: boolean;
+            custom?: ReactiveTableAction[];
+        };
+        rowDataAttributes: string[];
+        noItemsMessage: string;
+        itemsName: string;
+        headerCount: number;
+    }
+
+    interface ReactiveTableInstance {
+        getItems(): ReactiveTableItem[];
+        getPendingItems(): ReactiveTableItem[];
+        getDeletedItems(): string[];
+        addItem(item: ReactiveTableItem): void;
+        removeItem(itemId: string): void;
+        updateItem(itemId: string, updates: Partial<ReactiveTableItem>): void;
+        render(): void;
+        reset(): void;
+        hasChanges(): boolean;
+    }
+
+    class ReactiveTable implements ReactiveTableInstance {
+        private tableId: string;
+        private container: HTMLElement;
+        private tableBody: HTMLElement;
+        private config: TableConfig;
+        private items: ReactiveTableItem[] = [];
+        private pendingItems: ReactiveTableItem[] = [];
+        private deletedItemIds: string[] = [];
+
+        constructor(container: HTMLElement) {
+            this.container = container;
+            this.tableId = container.dataset.reactiveTableId!;
+            this.config = JSON.parse(container.dataset.tableConfig || "{}");
+            this.tableBody = container.querySelector("tbody")!;
+
+            this.loadInitialItems();
+            this.setupEventListeners();
+            this.render();
+        }
+
+        private loadInitialItems(): void {
+            const rows = this.tableBody.querySelectorAll("tr[data-item-id]");
+            rows.forEach((row) => {
+                const itemId = row.getAttribute("data-item-id");
+                const isExisting =
+                    row.getAttribute("data-is-existing") === "true";
+
+                if (itemId) {
+                    const item: ReactiveTableItem = {
+                        id: itemId,
+                        isExisting,
+                    };
+
+                    // Extract column data
+                    const cells = row.querySelectorAll("td");
+                    this.config.columns.forEach((col, index) => {
+                        if (cells[index]) {
+                            item[col.key] =
+                                cells[index].textContent?.trim() || "";
+                        }
+                    });
+
+                    // Extract data attributes
+                    this.config.rowDataAttributes.forEach((attr) => {
+                        const value = row.getAttribute(
+                            `data-${attr.toLowerCase()}`,
+                        );
+                        if (value) item[attr] = value;
+                    });
+
+                    this.items.push(item);
+                }
+            });
+        }
+
+        private setupEventListeners(): void {
+            // Listen for add item events
+            document.addEventListener(
+                `reactive-table:add-item:${this.tableId}`,
+                ((e: CustomEvent) => {
+                    this.addItem(e.detail);
+                }) as EventListener,
+            );
+
+            // Listen for remove item events
+            document.addEventListener(
+                `reactive-table:remove-item:${this.tableId}`,
+                ((e: CustomEvent) => {
+                    this.removeItem(e.detail.id);
+                }) as EventListener,
+            );
+        }
+
+        getItems(): ReactiveTableItem[] {
+            return [...this.items];
+        }
+
+        getPendingItems(): ReactiveTableItem[] {
+            return [...this.pendingItems];
+        }
+
+        getDeletedItems(): string[] {
+            return [...this.deletedItemIds];
+        }
+
+        addItem(item: ReactiveTableItem): void {
+            // Mark as new if not specified
+            if (item.isExisting === undefined) {
+                item.isExisting = false;
+            }
+
+            this.items.push(item);
+
+            if (!item.isExisting) {
+                this.pendingItems.push(item);
+            }
+
+            this.render();
+            this.emitEvent("item-added", { item });
+            this.emitEvent("changed", { action: "add", item });
+        }
+
+        removeItem(itemId: string): void {
+            const index = this.items.findIndex((i) => i.id === itemId);
+            if (index === -1) return;
+
+            const item = this.items[index];
+            this.items.splice(index, 1);
+
+            if (item.isExisting) {
+                // Track for server-side deletion
+                this.deletedItemIds.push(itemId);
+            } else {
+                // Remove from pending
+                const pendingIndex = this.pendingItems.findIndex(
+                    (i) => i.id === itemId,
+                );
+                if (pendingIndex !== -1) {
+                    this.pendingItems.splice(pendingIndex, 1);
+                }
+            }
+
+            this.render();
+            this.emitEvent("item-removed", { itemId, item });
+            this.emitEvent("changed", { action: "remove", itemId, item });
+        }
+
+        updateItem(itemId: string, updates: Partial<ReactiveTableItem>): void {
+            const item = this.items.find((i) => i.id === itemId);
+            if (!item) return;
+
+            Object.assign(item, updates);
+            this.render();
+            this.emitEvent("item-updated", { itemId, updates, item });
+            this.emitEvent("changed", { action: "update", itemId, item });
+        }
+
+        hasChanges(): boolean {
+            return (
+                this.pendingItems.length > 0 || this.deletedItemIds.length > 0
+            );
+        }
+
+        reset(): void {
+            // Reset to only existing items (not deleted)
+            this.items = this.items.filter((i) => i.isExisting);
+            this.pendingItems = [];
+            this.deletedItemIds = [];
+            this.render();
+        }
+
+        render(): void {
+            this.tableBody.innerHTML = "";
+
+            if (this.items.length === 0) {
+                const emptyRow = document.createElement("tr");
+                emptyRow.innerHTML = `
+                    <td colspan="${this.config.headerCount}" class="text-center text-gray-500 py-4">
+                        ${this.config.noItemsMessage}
+                    </td>
+                `;
+                this.tableBody.appendChild(emptyRow);
+                this.updateFooter();
+                return;
+            }
+
+            this.items.forEach((item) => {
+                const row = this.createRow(item);
+                this.tableBody.appendChild(row);
+            });
+
+            this.updateFooter();
+        }
+
+        private createRow(item: ReactiveTableItem): HTMLTableRowElement {
+            const row = document.createElement("tr");
+            row.setAttribute("data-item-id", item.id);
+            row.setAttribute(
+                "data-is-existing",
+                item.isExisting ? "true" : "false",
+            );
+
+            // Add data attributes
+            this.config.rowDataAttributes.forEach((attr) => {
+                if (item[attr]) {
+                    row.setAttribute(`data-${attr.toLowerCase()}`, item[attr]);
+                }
+            });
+
+            // Create cells for each column
+            this.config.columns.forEach((col) => {
+                const cell = document.createElement("td");
+                cell.className = "px-4 py-2";
+
+                if (col.clickable && item.isExisting) {
+                    const span = document.createElement("span");
+                    span.className =
+                        "cursor-pointer hover:underline text-blue-600";
+                    span.textContent = item[col.key] || "";
+                    span.addEventListener("click", () => {
+                        this.emitEvent(col.clickEvent || "cell-click", {
+                            item,
+                            column: col.key,
+                        });
+                    });
+                    cell.appendChild(span);
+                } else {
+                    cell.textContent = item[col.key] || "";
+                }
+
+                row.appendChild(cell);
+            });
+
+            // Add actions cell
+            if (this.config.enableActions) {
+                const actionsCell = this.createActionsCell(item);
+                row.appendChild(actionsCell);
+            }
+
+            return row;
+        }
+
+        private createActionsCell(
+            item: ReactiveTableItem,
+        ): HTMLTableCellElement {
+            const cell = document.createElement("td");
+            cell.className = "px-4 py-2";
+
+            const actionsDiv = document.createElement("div");
+            actionsDiv.className = "flex gap-2";
+
+            const { actions } = this.config;
+
+            // View action
+            if (actions.view && item.isExisting) {
+                actionsDiv.appendChild(
+                    this.createActionButton(
+                        {
+                            name: "view",
+                            label: "Ver",
+                            icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>`,
+                            className: "text-gray-600 hover:text-gray-800",
+                        },
+                        item,
+                    ),
+                );
+            }
+
+            // Download action
+            if (actions.download && item.isExisting) {
+                actionsDiv.appendChild(
+                    this.createActionButton(
+                        {
+                            name: "download",
+                            label: "Descargar",
+                            icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>`,
+                            className: "text-blue-600 hover:text-blue-800",
+                        },
+                        item,
+                    ),
+                );
+            }
+
+            // Delete action
+            if (actions.delete) {
+                actionsDiv.appendChild(
+                    this.createActionButton(
+                        {
+                            name: "delete",
+                            label: "Eliminar",
+                            icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>`,
+                            className: "text-red-600 hover:text-red-800",
+                        },
+                        item,
+                        () => this.removeItem(item.id),
+                    ),
+                );
+            }
+
+            // Custom actions
+            if (actions.custom) {
+                actions.custom.forEach((action) => {
+                    const shouldShow =
+                        action.showFor === "all" ||
+                        action.showFor === undefined ||
+                        (action.showFor === "existing" && item.isExisting) ||
+                        (action.showFor === "new" && !item.isExisting);
+
+                    if (shouldShow) {
+                        actionsDiv.appendChild(
+                            this.createActionButton(action, item),
+                        );
+                    }
+                });
+            }
+
+            cell.appendChild(actionsDiv);
+            return cell;
+        }
+
+        private createActionButton(
+            action: ReactiveTableAction,
+            item: ReactiveTableItem,
+            onClick?: () => void,
+        ): HTMLButtonElement {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className =
+                action.className || "text-gray-600 hover:text-gray-800";
+            button.innerHTML = action.icon;
+            button.title = action.label;
+
+            button.addEventListener("click", () => {
+                if (onClick) {
+                    onClick();
+                } else if (action.event) {
+                    this.emitEvent(action.event, { item, action: action.name });
+                } else {
+                    this.emitEvent(`action-${action.name}`, { item });
+                }
+            });
+
+            return button;
+        }
+
+        private updateFooter(): void {
+            const footer = this.container.querySelector("tfoot");
+            const noItemsDiv = this.container.querySelector(
+                ".reactive-table-container > div:last-child",
+            );
+
+            if (this.items.length > 0) {
+                // Show footer with count
+                if (footer) {
+                    footer.style.display = "";
+                    const countCell = footer.querySelector("td");
+                    if (countCell) {
+                        countCell.textContent = `Total de ${this.config.itemsName}: ${this.items.length}`;
+                    }
+                }
+            } else {
+                // Hide footer when empty
+                if (footer) {
+                    footer.style.display = "none";
+                }
+            }
+        }
+
+        private emitEvent(eventName: string, detail: any): void {
+            document.dispatchEvent(
+                new CustomEvent(`reactive-table:${eventName}:${this.tableId}`, {
+                    detail: { tableId: this.tableId, ...detail },
+                }),
+            );
+
+            // Also emit without table ID for global listeners
+            document.dispatchEvent(
+                new CustomEvent(`reactive-table:${eventName}`, {
+                    detail: { tableId: this.tableId, ...detail },
+                }),
+            );
+        }
+    }
+
+    // Global manager
+    interface ReactiveTableManager {
+        tables: Map<string, ReactiveTable>;
+        getTable(tableId: string): ReactiveTable | undefined;
+        registerTable(container: HTMLElement): ReactiveTable;
+    }
+
+    const manager: ReactiveTableManager = {
+        tables: new Map(),
+
+        getTable(tableId: string): ReactiveTable | undefined {
+            return this.tables.get(tableId);
+        },
+
+        registerTable(container: HTMLElement): ReactiveTable {
+            const tableId = container.dataset.reactiveTableId!;
+
+            if (this.tables.has(tableId)) {
+                return this.tables.get(tableId)!;
+            }
+
+            const table = new ReactiveTable(container);
+            this.tables.set(tableId, table);
+            return table;
+        },
+    };
+
+    // Expose to window
+    (window as any).ReactiveTableManager = manager;
+
+    // Initialize tables on page load
+    function initializeReactiveTables() {
+        const containers = document.querySelectorAll(
+            "[data-reactive-table-id]",
+        );
+        containers.forEach((container) => {
+            if (container instanceof HTMLElement) {
+                manager.registerTable(container);
+            }
+        });
+    }
+
+    // Support both regular load and Astro page transitions
+    document.addEventListener("astro:page-load", initializeReactiveTables);
+
+    // Also run on DOMContentLoaded for non-Astro contexts
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeReactiveTables);
+    } else {
+        initializeReactiveTables();
+    }
+</script>

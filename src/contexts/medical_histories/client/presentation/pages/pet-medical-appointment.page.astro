@@ -11,7 +11,7 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
-import SimpleTable from "@/contexts/_shared/client/presentation/components/tables/simple-table.component.astro";
+import ReactiveTable from "@/contexts/_shared/client/presentation/components/tables/reactive-table.component.astro";
 import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.astro";
 import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
 import UploadDocumentModal from "@/contexts/_shared/client/presentation/components/modals/upload-document-modal.component.astro";
@@ -65,17 +65,10 @@ if (getDocumentsResult.success && getDocumentsResult.data) {
 
 // Format documents for table
 const documentItems = existingDocuments.map((doc) => ({
-    id: doc.id,
+    id: doc.id.toString(),
     fileName: doc.fileName,
     fileUrl: doc.fileUrl,
-    attributes: {
-        "data-file-id": doc.id.toString(),
-        "data-file-url": doc.fileUrl,
-    },
-    cells: [
-        doc.fileName,
-        "", // Actions column will be filled by client-side script
-    ],
+    isExisting: true,
 }));
 
 /***********************
@@ -221,25 +214,25 @@ const medicalAppointmentInputs = [
                         </div>
                     </ActionButton>
                 </div>
-                <SimpleTable
+                <ReactiveTable
+                    id="documents-table"
                     headers={["Nombre del archivo", "Acciones"]}
-                    items={documentItems}
+                    initialItems={documentItems}
                     itemsName="documentos"
                     noItemsMessage="No se han adjuntado documentos."
-                    id="documents-table"
-                >
-                    {
-                        documentItems.map((doc) => (
-                            <tr
-                                data-file-id={doc.id}
-                                data-file-url={doc.fileUrl}
-                            >
-                                <td class="px-4 py-2">{doc.fileName}</td>
-                                <td class="px-4 py-2" />
-                            </tr>
-                        ))
-                    }
-                </SimpleTable>
+                    columns={[
+                        {
+                            key: "fileName",
+                            clickable: true,
+                            clickEvent: "view-file",
+                        },
+                    ]}
+                    rowDataAttributes={["fileUrl"]}
+                    actions={{
+                        download: true,
+                        delete: true,
+                    }}
+                />
             </SimpleCard>
         </div>
 
@@ -277,20 +270,20 @@ const medicalAppointmentInputs = [
     import { uploadMedicalAppointmentDocument } from "@/contexts/medical_histories/client/usecases/upload-medical-appointment-document.usecase";
     import { deletePet } from "@/contexts/files/client/usecases/delete-file.usecase";
 
-    // Document management state
-    let documentsToAdd: { file: File; tempId: string }[] = [];
-    let documentsToDelete: string[] = [];
-    let currentDocuments: any[] = [];
+    // Document management - maps tempId to File for pending uploads
+    let pendingFiles: Map<string, File> = new Map();
+
+    function getDocumentsTable() {
+        return (window as any).ReactiveTableManager?.getTable(
+            "documents-table",
+        );
+    }
 
     function initializeDocumentManagement() {
         const addDocumentBtn = document.getElementById("add-document-btn");
         const uploadModal = document.getElementById("upload-document-modal");
-        const documentsTable = document.getElementById("documents-table");
 
         if (!addDocumentBtn || !uploadModal) return;
-
-        // Load existing documents from table
-        loadExistingDocuments();
 
         // Open upload modal
         addDocumentBtn.addEventListener("click", (e) => {
@@ -301,157 +294,52 @@ const medicalAppointmentInputs = [
         // Listen for document selection from upload modal
         document.addEventListener("document-selected", (e: any) => {
             const { file } = e.detail;
-            addDocumentToMemory(file);
+            addDocumentToTable(file);
         });
 
-        // Render table with action buttons
-        renderDocumentTable();
-    }
-
-    function loadExistingDocuments() {
-        const tableBody = document.querySelector("#documents-table tbody");
-        if (!tableBody) return;
-
-        const rows = tableBody.querySelectorAll("tr");
-        rows.forEach((row) => {
-            const cells = row.querySelectorAll("td");
-            if (cells.length >= 2) {
-                const fileName = cells[0].textContent?.trim() || "";
-                const fileUrl = row.getAttribute("data-file-url") || "";
-                const fileId = row.getAttribute("data-file-id") || "";
-
-                if (fileId) {
-                    currentDocuments.push({
-                        id: fileId,
-                        fileName: fileName,
-                        fileUrl: fileUrl,
-                        isExisting: true,
-                    });
+        // Listen for view-file event from ReactiveTable
+        document.addEventListener(
+            "reactive-table:view-file:documents-table",
+            (e: any) => {
+                const { item } = e.detail;
+                if (item.fileUrl) {
+                    openFileViewer(item.fileUrl, item.fileName);
                 }
-            }
-        });
+            },
+        );
+
+        // Listen for download action from ReactiveTable
+        document.addEventListener(
+            "reactive-table:action-download:documents-table",
+            (e: any) => {
+                const { item } = e.detail;
+                if (item.fileUrl) {
+                    downloadDocument(item.fileUrl, item.fileName);
+                }
+            },
+        );
+
+        // Listen for table changes to enable submit button
+        document.addEventListener(
+            "reactive-table:changed:documents-table",
+            () => {
+                enableSubmitButton();
+            },
+        );
     }
 
-    function addDocumentToMemory(file: File) {
+    function addDocumentToTable(file: File) {
+        const table = getDocumentsTable();
+        if (!table) return;
+
         const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        documentsToAdd.push({ file, tempId });
-        currentDocuments.push({
+        pendingFiles.set(tempId, file);
+
+        table.addItem({
             id: tempId,
             fileName: file.name,
             fileUrl: "",
             isExisting: false,
-        });
-        renderDocumentTable();
-        enableSubmitButton();
-    }
-
-    function markDocumentForDeletion(documentId: string) {
-        const docIndex = currentDocuments.findIndex((d) => d.id === documentId);
-        if (docIndex === -1) return;
-
-        const doc = currentDocuments[docIndex];
-
-        if (doc.isExisting) {
-            // Mark existing document for deletion
-            documentsToDelete.push(documentId);
-            currentDocuments.splice(docIndex, 1);
-        } else {
-            // Remove new document from memory
-            const tempIndex = documentsToAdd.findIndex(
-                (d) => d.tempId === documentId,
-            );
-            if (tempIndex !== -1) {
-                documentsToAdd.splice(tempIndex, 1);
-            }
-            currentDocuments.splice(docIndex, 1);
-        }
-
-        renderDocumentTable();
-        enableSubmitButton();
-    }
-
-    function renderDocumentTable() {
-        const tableBody = document.querySelector("#documents-table tbody");
-        if (!tableBody) return;
-
-        tableBody.innerHTML = "";
-
-        if (currentDocuments.length === 0) {
-            const emptyRow = document.createElement("tr");
-            emptyRow.innerHTML =
-                '<td colspan="2" class="text-center text-gray-500 py-4">No se han adjuntado documentos.</td>';
-            tableBody.appendChild(emptyRow);
-            return;
-        }
-
-        currentDocuments.forEach((doc) => {
-            const row = document.createElement("tr");
-            row.setAttribute("data-file-id", doc.id);
-            if (doc.fileUrl) row.setAttribute("data-file-url", doc.fileUrl);
-
-            // File name cell - clickable for existing docs
-            const nameCell = document.createElement("td");
-            nameCell.className = "px-4 py-2";
-            if (doc.isExisting && doc.fileUrl) {
-                nameCell.innerHTML = `<span class="cursor-pointer hover:underline text-blue-600" data-view-file="${doc.id}">${doc.fileName}</span>`;
-            } else {
-                nameCell.textContent = doc.fileName;
-            }
-
-            // Actions cell
-            const actionsCell = document.createElement("td");
-            actionsCell.className = "px-4 py-2";
-            const actionsDiv = document.createElement("div");
-            actionsDiv.className = "flex gap-2";
-
-            // Download button (only for existing docs)
-            if (doc.isExisting && doc.fileUrl) {
-                const downloadBtn = document.createElement("button");
-                downloadBtn.type = "button";
-                downloadBtn.className = "text-blue-600 hover:text-blue-800";
-                downloadBtn.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                `;
-                downloadBtn.title = "Descargar";
-                downloadBtn.addEventListener("click", () =>
-                    downloadDocument(doc.fileUrl, doc.fileName),
-                );
-                actionsDiv.appendChild(downloadBtn);
-            }
-
-            // Delete button
-            const deleteBtn = document.createElement("button");
-            deleteBtn.type = "button";
-            deleteBtn.className = "text-red-600 hover:text-red-800";
-            deleteBtn.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-            `;
-            deleteBtn.title = "Eliminar";
-            deleteBtn.addEventListener("click", () =>
-                markDocumentForDeletion(doc.id),
-            );
-            actionsDiv.appendChild(deleteBtn);
-
-            actionsCell.appendChild(actionsDiv);
-            row.appendChild(nameCell);
-            row.appendChild(actionsCell);
-            tableBody.appendChild(row);
-        });
-
-        // Add click handlers for file viewing
-        document.querySelectorAll("[data-view-file]").forEach((el) => {
-            el.addEventListener("click", (e) => {
-                const target = e.currentTarget as HTMLElement;
-                const docId = target.getAttribute("data-view-file");
-                const doc = currentDocuments.find((d) => d.id === docId);
-                if (doc && doc.fileUrl) {
-                    openFileViewer(doc.fileUrl, doc.fileName);
-                }
-            });
         });
     }
 
@@ -478,15 +366,37 @@ const medicalAppointmentInputs = [
         if (submitButton) submitButton.disabled = false;
     }
 
-    async function uploadDocuments(petId: string, medicalAppointmentId: string, formError: HTMLElement) {
-        if (documentsToAdd.length === 0) return true;
+    async function uploadDocuments(
+        petId: string,
+        medicalAppointmentId: string,
+        formError: HTMLElement,
+    ) {
+        const table = getDocumentsTable();
+        if (!table) return true;
+
+        const pendingItems = table.getPendingItems();
+        if (pendingItems.length === 0) return true;
 
         let allUploadsSuccessful = true;
 
-        for (const { file, tempId } of documentsToAdd) {
-            const resource = new SaveFileResource(file, file.name.split(".").slice(0, -1).join("."), file.name.split(".").pop() || "", file.type, file.size);
+        for (const item of pendingItems) {
+            const file = pendingFiles.get(item.id);
+            if (!file) continue;
 
-            const uploadResult = await uploadMedicalAppointmentDocument(petId, medicalAppointmentId, tempId, resource);
+            const resource = new SaveFileResource(
+                file,
+                file.name.split(".").slice(0, -1).join("."),
+                file.name.split(".").pop() || "",
+                file.type,
+                file.size,
+            );
+
+            const uploadResult = await uploadMedicalAppointmentDocument(
+                petId,
+                medicalAppointmentId,
+                item.id,
+                resource,
+            );
 
             if (!uploadResult.success) {
                 formError.textContent =
@@ -501,11 +411,15 @@ const medicalAppointmentInputs = [
     }
 
     async function deleteDocuments() {
-        if (documentsToDelete.length === 0) return true;
+        const table = getDocumentsTable();
+        if (!table) return true;
+
+        const deletedIds = table.getDeletedItems();
+        if (deletedIds.length === 0) return true;
 
         let allDeletionsSuccessful = true;
 
-        for (const docId of documentsToDelete) {
+        for (const docId of deletedIds) {
             const deleteResult = await deletePet(docId);
             if (!deleteResult.success) {
                 console.error(
@@ -531,12 +445,11 @@ const medicalAppointmentInputs = [
             const { data, submitButton, isEditMode, formDataObj, formError } =
                 event.detail;
 
-            /****************************
-             ***** Upload documents *****
-             ****************************/
+            const table = getDocumentsTable();
+            const hasDocumentChanges = table?.hasChanges() ?? false;
+
             const processDocuments = async () => {
-                // No documents to process
-                if (documentsToAdd.length === 0 && documentsToDelete.length === 0) return true;
+                if (!hasDocumentChanges) return true;
 
                 // Upload new documents
                 const uploadSuccess = await uploadDocuments(
@@ -559,10 +472,7 @@ const medicalAppointmentInputs = [
                 if (!documentsOk) return;
             }
 
-            /**********************************************
-             ***** Register/update medical appointment *****
-             ***********************************************/
-            const registerOrUpdateMedicalAppointment = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
+            const registerOrUpdateMedicalAppointment = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
                 const resource = new SaveMedicalAppointmentResource(Number(data.weight), data.observations, data.prescription, new Date(data.date), data.doctor ?? 0);
                 const editMode = !!forceUpdate || isEditMode;
 
@@ -580,7 +490,7 @@ const medicalAppointmentInputs = [
                             window.location.href = `/app/pets/${formDataObj.petId!}/medical-history`;
                     },
                 });
-            }
+            };
 
             await registerOrUpdateMedicalAppointment({
                 cancelRedirect: !isEditMode,
