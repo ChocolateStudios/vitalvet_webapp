@@ -24,6 +24,17 @@ export class SaveMedicalAppointmentResource {
             petId: 0,
             createdAt: new Date(),
             updatedAt: new Date(),
+            isActive: true,
         }
+    }
+
+    public static fromJsonBody(body: any): SaveMedicalAppointmentResource {
+        return new SaveMedicalAppointmentResource(
+            body.weight,
+            body.observations,
+            body.prescription,
+            new Date(body.appointmentDate),
+            body.doctorProfileId,
+        );
     }
 }

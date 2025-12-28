@@ -131,7 +131,7 @@ const profileInputs = [
 
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
-    import { createProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+    import { createProfile } from "@/contexts/profiles/client/services/create-profile.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
     const { profiles: profilesTexts, } = getTexts();

@@ -1,7 +1,7 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro"
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
-import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
+import { getProfileByUserId } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
@@ -23,7 +23,7 @@ const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
  ***** Get info to show on page *****
 *************************************/
 let profile: ProfileInfo | null = null;
-const getProfileResult = await getMyProfile(authenticatedUserId);
+const getProfileResult = await getProfileByUserId(authenticatedUserId);
 
 if (getProfileResult.success) {
     profile = getProfileResult.data;
@@ -138,8 +138,8 @@ const profileInputs = [
 
 <script>
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
-    import { updateMyProfile } from "@/contexts/profiles/client/usecases/update-profile.usecase";
-import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { updateMyProfile } from "@/contexts/profiles/client/services/update-profile.service";
+    import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
         const form = document.getElementById('profile-form') as HTMLFormElement;

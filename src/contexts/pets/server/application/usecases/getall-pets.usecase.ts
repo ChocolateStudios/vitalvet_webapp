@@ -1,13 +1,13 @@
 import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
-import type { PetListItemInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import type { PetResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 import { SpeciesRepository } from "@/contexts/pets/server/infrastructure/repositories/species.repository";
 import { SubspeciesRepository } from "@/contexts/pets/server/infrastructure/repositories/subspecies.repository";
+import type { PetListItemResource } from "@/contexts/pets/server/interfaces/api/resources/pet-list-item.resource";
 
-export async function getAllPets(): Promise<UsecaseResult<PetListItemInfo[]>> {
+export async function getAllPets(): Promise<UsecaseResult<PetListItemResource[]>> {
     const pets = await PetsRepository.getAllPets();
 
     // Crear una lista de IDs únicos de los doctores para evitar consultas duplicadas.

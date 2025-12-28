@@ -12,12 +12,12 @@ import GridForm from "@/contexts/_shared/client/presentation/components/forms/gr
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 import ReactiveTable from "@/contexts/_shared/client/presentation/components/tables/reactive-table.component.astro";
-import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.astro";
-import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.component.astro";
 import UploadDocumentModal from "@/contexts/_shared/client/presentation/components/modals/upload-document-modal.component.astro";
 import FileViewerModal from "@/contexts/_shared/client/presentation/components/modals/file-viewer-modal.component.astro";
 import { getFilesByMedicalAppointment } from "@/contexts/files/server/application/usecases/get-files-by-medical-appointment.usecase";
 import type { FilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/file-per-entity.resource";
+import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 
 /*******************************
  ***** User authentication *****
@@ -33,7 +33,7 @@ const { petId, medicalAppointmentId } = Astro.props;
 /************************************
  ***** Get info to show on page *****
  *************************************/
-let pet: PetInfo | null = null;
+let pet: PetExtendedResource | null = null;
 let medicalAppointment: MedicalAppointmentInfo | null = null;
 let doctorProfiles: any[] = [];
 let existingDocuments: FilePerEntityResource[] = [];
@@ -263,12 +263,12 @@ const medicalAppointmentInputs = [
 
 <script>
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
-    import { createMedicalAppointment } from "@/contexts/medical_histories/client/usecases/create-medicalappointment.usecase";
-    import { updateMedicalAppointment } from "@/contexts/medical_histories/client/usecases/update-medicalappointment.usecase";
+    import { createMedicalAppointment } from "@/contexts/medical_histories/client/services/create-medicalappointment.service";
+    import { updateMedicalAppointment } from "@/contexts/medical_histories/client/services/update-medicalappointment.service";
     import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
-    import { uploadMedicalAppointmentDocument } from "@/contexts/medical_histories/client/usecases/upload-medical-appointment-document.usecase";
-    import { deletePet } from "@/contexts/files/client/usecases/delete-file.usecase";
+    import { uploadMedicalAppointmentDocument } from "@/contexts/medical_histories/client/services/upload-medical-appointment-document.service";
+    import { deleteFile } from "@/contexts/files/client/services/delete-file.service";
 
     // Document management - maps tempId to File for pending uploads
     let pendingFiles: Map<string, File> = new Map();
@@ -420,7 +420,7 @@ const medicalAppointmentInputs = [
         let allDeletionsSuccessful = true;
 
         for (const docId of deletedIds) {
-            const deleteResult = await deletePet(docId);
+            const deleteResult = await deleteFile(docId);
             if (!deleteResult.success) {
                 console.error(
                     `Error deleting document ${docId}:`,

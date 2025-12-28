@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import { RolesRepository } from "@/contexts/profiles/server/infrastructure/repositories/roles.repository";
 
 export async function getRoleById(roleId?: string): Promise<UsecaseResult<any>> {

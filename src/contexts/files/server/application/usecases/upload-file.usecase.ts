@@ -1,6 +1,6 @@
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/firebase/client";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import type { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 
 export async function uploadFile(file: SaveFileResource): Promise<UsecaseResult<any>> {

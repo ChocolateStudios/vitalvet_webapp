@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import { storage } from '@/firebase/client';
 import { ref, getStream, getMetadata, listAll } from 'firebase/storage';
 import path from 'path';

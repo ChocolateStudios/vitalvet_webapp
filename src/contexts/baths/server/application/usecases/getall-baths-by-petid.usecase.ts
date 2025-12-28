@@ -1,6 +1,6 @@
 import type { BathResource } from "@/contexts/baths/server/interfaces/api/resources/bath.resource";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import { BathsRepository } from "@/contexts/baths/server/infrastructure/repositories/baths.repository";
 
 export interface BathListItemInfo {

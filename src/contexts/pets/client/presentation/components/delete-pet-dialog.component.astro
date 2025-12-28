@@ -1,6 +1,6 @@
 ---
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
-import WarningIcon from "@/contexts/_shared/client/presentation/components/icons/WarningIcon.astro";
+import WarningIcon from "@/contexts/_shared/client/presentation/components/icons/WarningIcon.component.astro";
 import { getTexts } from "@/i18n";
 const { pets: petsTexts, shared: sharedTexts } = getTexts();
 
@@ -53,7 +53,7 @@ const { petName } = Astro.props;
 
 
 <script>
-    import { deletePet } from "@/contexts/pets/client/usecases/delete-pet.usecase";
+    import { deletePet } from "@/contexts/pets/client/services/delete-pet.service";
     import { getFormDataObj, tryDeleteRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
     const { pets: petsTexts, } = getTexts();

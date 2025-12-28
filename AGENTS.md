@@ -27,9 +27,8 @@
  │   ├── _shared/              # Lógica, tipos y componentes compartidos
  │   ├── [feature_name]/       # Contexto de una funcionalidad (ej. 'pets', 'auth')
  │   │   ├── client/           # Lógica y componentes para el lado del cliente (Astro)
- │   │   │   ├── application/
- │   │   │   ├── components/
- │   │   │   └── usecases/
+ │   │   │   ├── presentation/
+ │   │   │   └── services/
  │   │   └── server/           # Lógica para el lado del servidor (API Routes, SSR)
  │   │       ├── application/
  │   │       │   └── usecases/ # Orquestan la lógica de negocio

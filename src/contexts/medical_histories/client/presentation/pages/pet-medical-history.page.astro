@@ -1,9 +1,6 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
-import {
-    getAllMedicalAppointmentsByPetId,
-    type MedicalAppointmentListItemInfo,
-} from "@/contexts/medical_histories/server/application/usecases/getall-medicalappointments-by-petid.usecase";
+import { getAllMedicalAppointmentsByPetId, type MedicalAppointmentListItemInfo } from "@/contexts/medical_histories/server/application/usecases/getall-medicalappointments-by-petid.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { formatDateToDdMmYyyyHhMm } from "@/contexts/_shared/client/utils/date-formatters/clasicdate-formatter.utils";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
@@ -13,11 +10,11 @@ import SimpleTable from "@/contexts/_shared/client/presentation/components/table
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
-import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 
 const { petId } = Astro.props;
 
-let pet: PetInfo | null = null;
+let pet: PetExtendedResource | null = null;
 let medicalHistory: MedicalAppointmentListItemInfo[] = [];
 
 const getPetResult = await getPet(petId);

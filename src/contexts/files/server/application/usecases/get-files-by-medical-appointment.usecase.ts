@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { ServiceResult } from "@/contexts/_shared/client/services/service-result";
 import { ImagePerEntityRepository } from "@/contexts/files/server/infrastructure/repositories/file-per-entity.repository";
 import type { FilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/file-per-entity.resource";
 
@@ -7,7 +7,7 @@ const MEDICAL_APPOINTMENT_ENTITY_ID = "medical_appointment";
 export async function getFilesByMedicalAppointment(
     petId: string | number,
     medicalAppointmentId: string | number
-): Promise<UsecaseResult<FilePerEntityResource[]>> {
+): Promise<ServiceResult<FilePerEntityResource[]>> {
     try {
         const files = await ImagePerEntityRepository.getFilesByEntityId(
             MEDICAL_APPOINTMENT_ENTITY_ID,

@@ -1,22 +1,24 @@
 import { registerUser } from '@/contexts/auth/server/application/usecases/register-user.usecase';
+import { SaveUserResource } from '@/contexts/auth/server/interfaces/api/resources/save-user.resource';
 import type { APIRoute } from 'astro';
-// import { SaveUserResource } from '@/contexts/auth/server/interfaces/api/resources/save-user.resource';
-// import { UsersRepository } from '@/contexts/auth/server/infrastructure/repositories/users.repository';
 
 export const prerender = false;
+
+const expTime = import.meta.env.JWT_EXPIRATION_TIME;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
 
     try {
         const body = await request.json();
-        const authenticatedUser = await registerUser(body);
+        const saveResource = SaveUserResource.fromJsonBody(body);
+        const authenticatedUser = await registerUser(saveResource);
 
         // Establecemos el token en una cookie segura
         cookies.set('__session', authenticatedUser.data.token, {
             httpOnly: false, // TODO: cambiar a true
             secure: import.meta.env.PROD, // Solo en HTTPS para producción
             path: '/',
-            maxAge: 60 * 60 * 24 * 30, // 30 días
+            maxAge: 60 * 60 * 24 * expTime, // x días antes de expirar
         });
 
         authenticatedUser.data.token = '';

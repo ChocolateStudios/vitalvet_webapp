@@ -25,10 +25,10 @@ export const POST: APIRoute = async ({ request, params }) => {
         /*************************
         ***** Read form data *****
         *************************/
-        const { fields, fileContent, fileMimeType } = await parseMultipartFormData(request);
+        const formData = await parseMultipartFormData(request);
         
         /* *** Validations *** */
-        if (!fileContent) {
+        if (!formData.fileContent) {
             return new Response(JSON.stringify({ message: "File not found in form data" }), { status: 400 });
         }
 
@@ -36,12 +36,8 @@ export const POST: APIRoute = async ({ request, params }) => {
         ***** Assemble resource *****
         ****************************/
         const fileName = 'profilePhoto';
-        const extension = fields.extension as string;
-        const contentType = fileMimeType;
-        const size = fields.size as string;
         const storagePath = `${PET_STORAGE_ROUTE}/${petId}`;
-
-        const resource = new SaveFileResource(fileContent, fileName, extension, contentType, Number(size), storagePath);
+        const resource = SaveFileResource.fromMultipartFormData({ formData, customName: fileName, customStoragePath: storagePath });
 
         /* *** Call service *** */
         const result = await uploadFile(resource);

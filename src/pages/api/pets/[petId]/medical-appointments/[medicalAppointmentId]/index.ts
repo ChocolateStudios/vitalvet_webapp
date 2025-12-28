@@ -36,14 +36,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
 
     try {
         const body = await request.json();
-        const resource = new SaveMedicalAppointmentResource(
-            body.weight,
-            // body.details,
-            body.observations,
-            body.prescription,
-            new Date(body.appointmentDate),
-            body.doctorProfileId,
-        );
+        const resource = SaveMedicalAppointmentResource.fromJsonBody(body);
         const updatedPet = await MedicalAppointmentsRepository.updateMedicalAppointment(petId, medicalAppointmentId, resource);
         return new Response(JSON.stringify(updatedPet), {
             status: 200,

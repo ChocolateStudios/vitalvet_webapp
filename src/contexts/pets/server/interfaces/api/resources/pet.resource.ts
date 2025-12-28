@@ -1,5 +1,4 @@
 import { AuditableModel } from "@/contexts/_shared/server/models/auditable.model";
-import { PetStatus } from "@/contexts/pets/server/models/pet-status.enum";
 import type { Pet } from "@/contexts/pets/server/models/pet.model";
 
 export class PetResource extends AuditableModel {
@@ -29,4 +28,12 @@ export class PetResource extends AuditableModel {
         resource.updatedAt = model.updatedAt;
         return resource;
     }
+}
+
+
+export interface PetExtendedResource extends PetResource {
+    ownerName: string;
+    medicalAppointmentsCount: number;
+    bathsCount: number;
+    weight: number;
 }

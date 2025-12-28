@@ -78,7 +78,7 @@ const speciesInputs = [
 <script>
     import { SaveSubspeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-subspecies.resource";
     // import { updateSpecies } from "@/contexts/pets/client/usecases/update-species.usecase";
-    import { createSubspecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
+    import { createSubspecies } from "@/contexts/pets/client/services/create-species-subspecies.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
     const { pets: petsTexts, } = getTexts();

@@ -5,9 +5,7 @@ import type { APIRoute } from "astro";
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        const resource = new SaveSpeciesResource(
-            body.name,
-        );
+        const resource = SaveSpeciesResource.fromJsonBody(body);
         const newSpecies = await SpeciesRepository.createSpecies(resource);
         return new Response(JSON.stringify(newSpecies), {
             status: 201,

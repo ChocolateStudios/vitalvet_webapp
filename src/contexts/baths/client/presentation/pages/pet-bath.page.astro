@@ -11,7 +11,7 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
-import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 
 /*******************************
  ***** User authentication *****
@@ -27,7 +27,7 @@ const { petId, bathId } = Astro.props;
 /************************************
  ***** Get info to show on page *****
 *************************************/
-let pet: PetInfo | null = null;
+let pet: PetExtendedResource | null = null;
 let bath: BathInfo | null = null;
 let doctorProfiles: any[] = [];
 
@@ -215,10 +215,10 @@ const imgsPreviewAndInputs = [
 
 <script>
     import { SaveBathResource } from "@/contexts/baths/server/interfaces/api/resources/save-bath.resource";
-    import { createBath } from "@/contexts/baths/client/usecases/create-bath.usecase";
-    import { updateBath } from "@/contexts/baths/client/usecases/update-bath.usecase";
+    import { createBath } from "@/contexts/baths/client/services/create-bath.service";
+    import { updateBath } from "@/contexts/baths/client/services/update-bath.service";
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
-    import { uploadBathImage } from "@/contexts/baths/client/usecases/upload_get_delete-bath-image";
+    import { uploadBathImage } from "@/contexts/baths/client/services/upload_get_delete-bath-image.service";
     import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {

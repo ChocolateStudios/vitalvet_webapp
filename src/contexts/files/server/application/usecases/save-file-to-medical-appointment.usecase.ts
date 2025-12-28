@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import { uploadFile } from "@/contexts/files/server/application/usecases/upload-file.usecase";
 import { ImagePerEntityRepository } from "@/contexts/files/server/infrastructure/repositories/file-per-entity.repository";
 import { SaveFilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/save-file-per-entity.resource";

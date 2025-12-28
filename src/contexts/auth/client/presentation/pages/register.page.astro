@@ -75,9 +75,9 @@ const inputFields = [
 
 <script>
     import { SaveUserResource } from "@/contexts/auth/server/interfaces/api/resources/save-user.resource";
-    import { registerUser } from "@/contexts/auth/client/usecases/register-user.usecase";
+    import { registerUser } from "@/contexts/auth/client/services/register-user.service";
     import { SaveProfileResource } from "@/contexts/profiles/server/interfaces/api/resources/save-profile.resource";
-    import { createMyProfile } from "@/contexts/profiles/client/usecases/create-profile.usecase";
+    import { createMyProfile } from "@/contexts/profiles/client/services/create-profile.service";
     import { clearError, showError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializePageScripts() {

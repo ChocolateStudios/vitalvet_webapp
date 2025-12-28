@@ -11,6 +11,11 @@ export class SaveSpeciesResource {
         return {
             id: 0,
             name: this.name,
+            isActive: true,
         }
+    }
+
+    public static fromJsonBody(body: any): SaveSpeciesResource {
+        return new SaveSpeciesResource(body.name);
     }
 }

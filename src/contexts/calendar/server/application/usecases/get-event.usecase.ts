@@ -1,5 +1,5 @@
 import { EventsRepository } from "@/contexts/calendar/server/infrastructure/repositories/event.repository";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import { PetsRepository } from "@/contexts/pets/server/infrastructure/repositories/pets.repository";
 import { ProfilesRepository } from "@/contexts/profiles/server/infrastructure/repositories/profiles.repository";
 
@@ -39,7 +39,7 @@ export async function getEvent(eventId: string): Promise<UsecaseResult<EventInfo
         };
     }
     catch (error) {
-        console.error(error);
+        // console.error(error);
         
         return {
             data: undefined,

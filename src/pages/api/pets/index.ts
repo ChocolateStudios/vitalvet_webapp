@@ -20,15 +20,8 @@ export const GET: APIRoute = async ({ request }) => {
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
+        const resource = SavePetResource.fromJsonBody(body);
         
-        const resource = new SavePetResource(
-            body.name,
-            body.imgUrl,
-            new Date(body.birthday),
-            body.status,
-            body.ownerProfileId,
-            body.subspeciesId,
-        );
         const newPet = await PetsRepository.registerPet(resource);
         return new Response(JSON.stringify(newPet), {
             status: 201,

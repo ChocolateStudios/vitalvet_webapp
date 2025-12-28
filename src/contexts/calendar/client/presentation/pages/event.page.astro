@@ -38,7 +38,7 @@ if (eventId) {
 
 const getPetsResult = await getAllPets();
 if (getPetsResult.success) {
-    pets = getPetsResult.data?.map(p => ({ id: p.id, name: p.name })) ?? [];
+    pets = getPetsResult.data?.map((p: any) => ({ id: p.id, name: p.name })) ?? [];
 }
 
 const getDoctorsResult = await getAllProfilesByRoleId(import.meta.env.VETERINARIAN_ROLE_ID, authenticatedUserId);
@@ -168,8 +168,8 @@ const eventInputs = [
 
 <script>
     import { SaveEventResource } from "@/contexts/calendar/server/interfaces/api/resources/save-event.resource";
-    import { createEvent } from "@/contexts/calendar/client/usecases/create-event.usecase";
-    import { updateEvent } from "@/contexts/calendar/client/usecases/update-event.usecase";
+    import { createEvent } from "@/contexts/calendar/client/services/create-event.service";
+    import { updateEvent } from "@/contexts/calendar/client/services/update-event.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {

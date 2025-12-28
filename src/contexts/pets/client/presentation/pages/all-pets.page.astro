@@ -7,8 +7,8 @@ import ActionLink from "@/contexts/_shared/client/presentation/components/action
 import SimpleTable from "@/contexts/_shared/client/presentation/components/tables/simple-table.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import type { PetListItemInfo } from "@/contexts/pets/client/usecases/_interfaces";
 import { getTexts } from "@/i18n";
+import type { PetListItemResource } from "@/contexts/pets/server/interfaces/api/resources/pet-list-item.resource";
 const { pets: petsTexts } = getTexts();
 
 /*******************************
@@ -25,7 +25,7 @@ getAuthenticatedUserIdOrRedirect(Astro);
 /************************************
  ***** Get info to show on page *****
  *************************************/
-let pets: PetListItemInfo[] = [];
+let pets: PetListItemResource[] = [];
 const getPetsResult = await getAllPets();
 
 if (getPetsResult.success) {

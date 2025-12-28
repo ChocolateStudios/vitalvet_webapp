@@ -42,7 +42,7 @@ const inputFields = [
 </AuthContainer>
 
 <script>
-    import { recoverUser } from "@/contexts/auth/client/usecases/recover-user.usecase";
+    import { recoverUser } from "@/contexts/auth/client/services/recover-user.service";
 
     function initializePageScripts() {
         const form = document.getElementById('recover-form') as HTMLFormElement | null;

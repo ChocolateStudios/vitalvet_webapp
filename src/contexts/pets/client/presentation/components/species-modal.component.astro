@@ -55,7 +55,7 @@ const profileInputs = [
 
 <script>
     import { SaveSpeciesResource } from "@/contexts/pets/server/interfaces/api/resources/save-species.resource";
-    import { createSpecies } from "@/contexts/pets/client/usecases/create-species-subspecies.usecase";
+    import { createSpecies } from "@/contexts/pets/client/services/create-species-subspecies.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
     const { pets: petsTexts, } = getTexts();

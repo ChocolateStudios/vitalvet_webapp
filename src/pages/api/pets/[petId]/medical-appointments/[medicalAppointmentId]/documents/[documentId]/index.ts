@@ -18,30 +18,15 @@ export const POST: APIRoute = async ({ request, params }) => {
 
         const formData = await request.formData();
 
-        const fileContent = formData.get("file") as globalThis.File | null;
-        if (!fileContent) {
+        if (!formData.get("file")) {
             return new Response(
                 JSON.stringify({ message: "File not found in form data" }),
                 { status: 400 }
             );
         }
-
-        const fileName = formData.get("filename") as string;
-        const extension = formData.get("extension") as string;
-        const contentType = formData.get("contentType") as string;
-        const size = formData.get("size") as string;
-
-        // Storage path for medical appointment documents
+        
         const storagePath = `medical-appointments/${petId}/${medicalAppointmentId}/documents`;
-
-        const resource = new SaveFileResource(
-            fileContent,
-            fileName,
-            extension,
-            contentType,
-            Number(size),
-            storagePath
-        );
+        const resource = SaveFileResource.fromFormData({ formData, customStoragePath: storagePath });
 
         const result = await saveFileToMedicalAppointment(resource, petId, medicalAppointmentId);
 

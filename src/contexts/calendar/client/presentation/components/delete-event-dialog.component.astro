@@ -31,8 +31,9 @@ const eventId = Astro.url.pathname.split('/').pop(); // A bit hacky, consider pa
 
 <script>
     import { getFormDataObj } from '@/contexts/_shared/client/presentation/components/forms/form-utils';
-    import { deleteEvent } from '@/contexts/calendar/client/usecases/delete-event.usecase';
+    import { deleteEvent } from '@/contexts/calendar/client/services/delete-event.service';
 
+    // TODO: improve this
     function initializePageScripts() {
         const form = document.getElementById('event-form') as HTMLFormElement | null;
         const dialog = document.getElementById('delete-dialog');
@@ -44,7 +45,7 @@ const eventId = Astro.url.pathname.split('/').pop(); // A bit hacky, consider pa
         cancelButton?.addEventListener('click', () => toggleDialog(false));
 
         confirmButton?.addEventListener('click', async () => {
-            const formDataObj = getFormDataObj(form);
+            const formDataObj = getFormDataObj(form!);
             const eventId = formDataObj.petId;
             if (!eventId) return;
             confirmButton.disabled = true;

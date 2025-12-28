@@ -7,7 +7,7 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 import { getGlobalModes } from "@/contexts/configs/server/application/get-global-modes.usecase";
 import { getProfileConfig } from "@/contexts/configs/server/application/get-profile-config.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
-import { getMyProfile } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
+import { getProfileByUserId } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 
 /*******************************
  ***** User authentication *****
@@ -24,7 +24,7 @@ const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
  ***** Get info to show on page *****
 *************************************/
 let profile: ProfileInfo | null = null;
-const getProfileResult = await getMyProfile(authenticatedUserId);
+const getProfileResult = await getProfileByUserId(authenticatedUserId);
 
 if (getProfileResult.success) {
     profile = getProfileResult.data;
@@ -84,7 +84,7 @@ const currentModeId = config?.modeId;
                         >Seleccionar modo</option
                     >
                     {
-                        modes.map((mode) => (
+                        modes.map((mode: any) => (
                             <option
                                 value={mode.id}
                                 selected={
@@ -102,7 +102,7 @@ const currentModeId = config?.modeId;
 </ContentContainer>
 
 <script>
-    import { saveProfileConfig } from "@/contexts/configs/client/application/usecases/save-profile-config.usecase";
+    import { saveProfileConfig } from "@/contexts/configs/client/services/save-profile-config.service";
 
     const selector = document.getElementById(
         "mode-selector",

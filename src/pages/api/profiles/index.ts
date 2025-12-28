@@ -8,14 +8,7 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
         
-        const saveResource = new SaveProfileResource(
-            body.name,
-            body.lastname,
-            body.email,
-            body.phone,
-            new Date(body.birthday),
-            body.roleId,
-        );
+        const saveResource = SaveProfileResource.fromJsonBody(body);
         
         const newProfile = await createProfile(saveResource);
         return new Response(JSON.stringify(newProfile.data), {
@@ -28,17 +21,3 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
     }
 };
-
-// export const GET: APIRoute = async ({ locals }) => {
-//     try {
-//         const profile = await getMyProfile(locals.authenticatedUserId);
-//         return new Response(JSON.stringify(profile.data), {
-//             status: 200,
-//             headers: { 'Content-Type': 'application/json' }
-//         });
-//     } catch (error) {
-//         const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-//         console.error("Error fetching profile:", errorMessage); // Loguear el error real para depuración
-//         return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
-//     }
-// };

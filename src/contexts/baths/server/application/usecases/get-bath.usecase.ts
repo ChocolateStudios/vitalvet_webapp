@@ -1,6 +1,6 @@
 import type { Bath } from "@/contexts/baths/server/models/bath.model";
 import { BathsRepository } from "@/contexts/baths/server/infrastructure/repositories/baths.repository";
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 
 export interface BathInfo extends Bath {
     bathNumber: number,

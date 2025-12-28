@@ -1,0 +1,93 @@
+---
+import type { EventListItemResource } from "@/contexts/calendar/server/interfaces/api/resources/event-list-item.resource";
+
+const { data } = Astro.props;
+const { selectedDate, events } = data;
+
+const weekStartDay = 1; // 1 = Lunes
+const daysOfWeekNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+const current = new Date(selectedDate);
+const dayOfWeek = current.getDay();
+// Ajustar para que la semana empiece en lunes. Si es domingo (0), queremos retroceder 6 días.
+const difference = (dayOfWeek - weekStartDay + 7) % 7;
+const firstDayOfWeek = new Date(
+    current.getFullYear(),
+    current.getMonth(),
+    current.getDate() - difference
+);
+
+const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(firstDayOfWeek);
+    day.setDate(day.getDate() + i);
+    const dateString = day.toISOString().split("T")[0];
+    return {
+        date: day,
+        name: daysOfWeekNames[day.getDay()],
+        isToday: day.toDateString() === new Date().toDateString(),
+        events: events.filter(
+            (e: EventListItemResource) =>
+                e.startDateTime.toISOString().split("T")[0] === dateString
+        ),
+    };
+});
+
+
+const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+---
+
+<div class="border rounded-lg">
+    <div class="grid grid-cols-[auto_1fr]">
+        <!-- Eje de Tiempo -->
+        <div class="col-start-1 row-start-2 border-r">
+            {timeSlots.map(time => (
+                <div class="h-16 text-right pr-2 text-xs text-gray-500 border-t">{time}</div>
+            ))}
+        </div>
+
+        <!-- Cuadrícula de la Semana -->
+        <div class="col-start-2 row-start-2 grid grid-cols-7">
+            {weekDays.map(day => (
+                <div class="border-l">
+                    {timeSlots.map((time, index) => (
+                        <div class="h-16 border-t"></div>
+                    ))}
+                </div>
+            ))}
+        </div>
+
+        <!-- Encabezado de Días -->
+        <div class="col-start-2 row-start-1 grid grid-cols-7 text-center font-semibold text-sm sticky top-0 bg-white z-10 shadow-sm">
+            {weekDays.map(day => (
+                <div class:list={["py-2 border-l", { "bg-blue-100": day.isToday }]}>
+                    <div>{day.name}</div>
+                    <div class:list={["text-lg", { "text-blue-600": day.isToday }]}>{day.date.getDate()}</div>
+                </div>
+            ))}
+        </div>
+
+        <!-- Contenedor de Eventos -->
+        <div class="col-start-2 row-start-2 grid grid-cols-7 relative">
+            {weekDays.map((day, dayIndex) => (
+                <div class="relative">
+                    {day.events.map((event: EventListItemResource) => {
+                        const startHour = event.startDateTime.getHours();
+                        const duration = 1; // Asumimos 1 hora de duración
+                        const top = (startHour - 8) * 4; // 4rem (h-16) por hora, desde las 8am
+                        const height = duration * 4;
+                        return (
+                            <div
+                                class="absolute w-full p-1"
+                                style={{ top: `${top}rem`, height: `${height}rem` }}
+                            >
+                                <a href={`/app/calendar/events/${event.id}`} class="bg-blue-200 text-blue-900 text-xs rounded-lg p-1 h-full overflow-hidden block cursor-pointer">
+                                    {event.title}
+                                </a>
+                            </div>
+                        )
+                    })}
+                </div>
+            ))}
+        </div>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { UsecaseResult } from "@/contexts/_shared/server/application/usecases/usecase-result";
 import { getStreamFile } from "@/contexts/files/server/application/usecases/get-stream-file.usecase";
 import { uploadFile } from "@/contexts/files/server/application/usecases/upload-file.usecase";
 import type { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";

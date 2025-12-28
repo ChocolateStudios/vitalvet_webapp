@@ -8,18 +8,11 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const formData = await request.formData();
 
-        const fileContent = formData.get("file") as globalThis.File | null;
-        if (!fileContent) {
+        if (!formData.get("file")) {
             return new Response(JSON.stringify({ message: "File not found in form data" }), { status: 400 });
         }
 
-        const fileName = formData.get("filename") as string;
-        const extension = formData.get("extension") as string;
-        const contentType = formData.get("contentType") as string;
-        const size = formData.get("size") as string;
-        const storagePath = formData.get("path") as string;
-
-        const resource = new SaveFileResource(fileContent, fileName, extension, contentType, Number(size), storagePath);
+        const resource = SaveFileResource.fromFormData({ formData });
 
         const result = await uploadFile(resource);
 

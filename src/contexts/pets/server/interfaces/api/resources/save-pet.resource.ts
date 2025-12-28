@@ -35,6 +35,18 @@ export class SavePetResource {
             subspeciesId: this.subspeciesId,
             createdAt: new Date(),
             updatedAt: new Date(),
+            isActive: true,
         }
+    }
+
+    public static fromJsonBody(body: any): SavePetResource {
+        return new SavePetResource(
+            body.name,
+            body.imgUrl,
+            new Date(body.birthday),
+            body.status,
+            body.ownerProfileId,
+            body.subspeciesId,
+        );
     }
 }

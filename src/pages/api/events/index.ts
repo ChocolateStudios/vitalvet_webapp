@@ -48,7 +48,7 @@ export const GET: APIRoute = async ({ url }) => {
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        const resource = new SaveEventResource(body.title, new Date(body.startDateTime), new Date(body.endDateTime), body.description, body.doctorProfileId, body.petId, body.eventTypeId);
+        const resource = SaveEventResource.fromJsonBody(body);
 
         const newEvent = await EventsRepository.create(resource);
         return new Response(JSON.stringify(newEvent), {

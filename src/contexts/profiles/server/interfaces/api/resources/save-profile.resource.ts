@@ -30,7 +30,19 @@ export class SaveProfileResource {
             avatarURL: this.avatarURL,
             userId: "",
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            isActive: true,
         }
+    }
+
+    public static fromJsonBody(body: any): SaveProfileResource {
+        return new SaveProfileResource(
+            body.name,
+            body.lastname,
+            body.email,
+            body.phone,
+            new Date(body.birthday),
+            body.roleId,
+        );
     }
 }

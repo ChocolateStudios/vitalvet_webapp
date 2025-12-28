@@ -2,10 +2,7 @@
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { formatDateToDdMmYyyyHhMm } from "@/contexts/_shared/client/utils/date-formatters/clasicdate-formatter.utils";
-import {
-    getAllBathsByPetId,
-    type BathListItemInfo,
-} from "@/contexts/baths/server/application/usecases/getall-baths-by-petid.usecase";
+import { getAllBathsByPetId, type BathListItemInfo } from "@/contexts/baths/server/application/usecases/getall-baths-by-petid.usecase";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import SearchBar from "@/contexts/_shared/client/presentation/components/inputs/search-bar.component.astro";
 import ActionLink from "@/contexts/_shared/client/presentation/components/actions/action-link.component.astro";
@@ -13,7 +10,7 @@ import SimpleTable from "@/contexts/_shared/client/presentation/components/table
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
-import type { PetInfo } from "@/contexts/pets/client/usecases/_interfaces";
+import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 
 /*******************************
@@ -30,7 +27,7 @@ const { petId } = Astro.props;
 /************************************
  ***** Get info to show on page *****
  *************************************/
-let pet: PetInfo | null = null;
+let pet: PetExtendedResource | null = null;
 let bathsHistory: BathListItemInfo[] = [];
 
 const getPetResult = await getPet(petId);

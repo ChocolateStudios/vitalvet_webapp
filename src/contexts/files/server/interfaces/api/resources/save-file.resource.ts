@@ -27,4 +27,26 @@ export class SaveFileResource {
             storagePath: this.storagePath,
         };
     }
+
+    public static fromFormData({ formData, customName, customStoragePath }: { formData: FormData, customName?: string, customStoragePath?: string }): SaveFileResource {
+        return new SaveFileResource(
+            formData.get('file') as globalThis.File,
+            customName || formData.get('filename') as string,
+            formData.get('extension') as string,
+            formData.get('contentType') as string,
+            Number(formData.get('size')),
+            customStoragePath || formData.get('path') as string
+        );
+    }
+
+    public static fromMultipartFormData({ formData, customName, customStoragePath }: { formData: any, customName?: string, customStoragePath?: string }): SaveFileResource {
+        return new SaveFileResource(
+            formData.fileContent,
+            customName || formData.fields.filename,
+            formData.fields.extension,
+            formData.fileMimeType,
+            formData.fields.size,
+            customStoragePath || formData.fields.path
+        );
+    }
 }

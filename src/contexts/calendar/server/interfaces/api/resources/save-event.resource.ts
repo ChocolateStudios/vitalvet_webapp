@@ -25,6 +25,19 @@ export class SaveEventResource {
             id: 0,
             createdAt: new Date(),
             updatedAt: new Date(),
+            isActive: true,
         }
+    }
+
+    public static fromJsonBody(body: any): SaveEventResource {
+        return new SaveEventResource(
+            body.title,
+            new Date(body.startDateTime),
+            new Date(body.endDateTime),
+            body.description,
+            body.doctorProfileId,
+            body.petId,
+            body.eventTypeId,
+        );
     }
 }

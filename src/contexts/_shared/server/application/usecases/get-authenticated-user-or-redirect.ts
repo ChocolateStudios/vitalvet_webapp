@@ -7,6 +7,7 @@ export function getAuthenticatedUserIdOrRedirect(Astro: any): string | number
 
     if (!token) {
         // Si no hay token, redirigir al login.
+        console.log("No hay token, redirigiendo a login");
         return Astro.redirect('/auth/login');
     }
 
@@ -14,6 +15,7 @@ export function getAuthenticatedUserIdOrRedirect(Astro: any): string | number
 
     if (authenticatedUserId instanceof Response) {
         // Si la autenticación falla, redirigir al login.
+        console.log("Autenticación fallida, redirigiendo a login");
         return Astro.redirect('/auth/login');
     }
 

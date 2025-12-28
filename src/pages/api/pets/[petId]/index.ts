@@ -12,14 +12,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
 
     try {
         const body = await request.json();
-        const resource = new SavePetResource(
-            body.name,
-            body.imgUrl,
-            new Date(body.birthday),
-            body.status,
-            body.ownerProfileId,
-            body.subspeciesId,
-        );
+        const resource = SavePetResource.fromJsonBody(body);
         const updatedPet = await PetsRepository.updatePet(petId, resource);
         return new Response(JSON.stringify(updatedPet), {
             status: 200,

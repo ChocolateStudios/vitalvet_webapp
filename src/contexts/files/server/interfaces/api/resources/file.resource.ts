@@ -22,6 +22,7 @@ export class FileResource extends AuditableModel {
             publicURL: model.publicURL,
             createdAt: model.createdAt,
             updatedAt: model.updatedAt,
+            isActive: model.isActive,
         };
     }
 }

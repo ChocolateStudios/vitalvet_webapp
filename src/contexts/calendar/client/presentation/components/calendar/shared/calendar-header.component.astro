@@ -1,0 +1,21 @@
+---
+import ChevronLeftIcon from "@/contexts/calendar/client/presentation/components/icons/ChevronLeftIcon.component.astro";
+import ChevronRightIcon from "@/contexts/calendar/client/presentation/components/icons/ChevronRightIcon.component.astro";
+
+const { data } = Astro.props;
+const { selectedDate } = data;
+const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+---
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold text-gray-800">
+        {monthNames[selectedDate.getMonth()]} {selectedDate.getFullYear()}
+    </h2>
+    <div class="flex space-x-2">
+        <button class="p-2 rounded-full hover:bg-gray-100" title="Mes anterior">
+            <ChevronLeftIcon />
+        </button>
+        <button class="p-2 rounded-full hover:bg-gray-100" title="Mes siguiente">
+            <ChevronRightIcon />
+        </button>
+    </div>
+</div>

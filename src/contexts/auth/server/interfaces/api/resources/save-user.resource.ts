@@ -14,9 +14,16 @@ export class SaveUserResource {
             id: 0,
             username: this.username,
             password: this.password,
-            stringId: ""
+            isActive: true,
         };
 
         return user;
+    }
+
+    public static fromJsonBody(body: any): SaveUserResource {
+        return new SaveUserResource(
+            body.username,
+            body.password,
+        );
     }
 }
