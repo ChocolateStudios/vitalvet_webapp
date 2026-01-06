@@ -2,7 +2,7 @@ import type { ServiceResult } from "@/contexts/_shared/client/services/service-r
 import { ImagePerEntityRepository } from "@/contexts/files/server/infrastructure/repositories/file-per-entity.repository";
 import type { FilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/file-per-entity.resource";
 
-const MEDICAL_APPOINTMENT_ENTITY_ID = "medical_appointment";
+const MEDICAL_APPOINTMENT_ENTITY_ID = "7";
 
 export async function getFilesByMedicalAppointment(
     petId: string | number,

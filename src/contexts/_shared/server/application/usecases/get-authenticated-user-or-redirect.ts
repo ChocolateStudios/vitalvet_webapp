@@ -1,7 +1,7 @@
+import { UsersRepository } from "@/contexts/auth/server/infrastructure/repositories/users.repository";
 import { getAuthenticatedUserId } from "./get-authenticated-user-id";
 
-export function getAuthenticatedUserIdOrRedirect(Astro: any): string | number
-{
+export async function getAuthenticatedUserIdOrRedirect(Astro: any): Promise<string | number> {
     // 1. Obtener el token de la cookie en el servidor.
     const token = Astro.cookies.get('__session')?.value;
 
@@ -16,6 +16,18 @@ export function getAuthenticatedUserIdOrRedirect(Astro: any): string | number
     if (authenticatedUserId instanceof Response) {
         // Si la autenticación falla, redirigir al login.
         console.log("Autenticación fallida, redirigiendo a login");
+        return Astro.redirect('/auth/login');
+    }
+
+    try {
+        const user = await UsersRepository.getUser(authenticatedUserId);
+        if (!user) {
+            console.log('No se encontró el usuario.');
+            return Astro.redirect('/auth/login');
+        }
+    }
+    catch (error) {
+        console.log("Error al obtener el usuario autenticado, redirigiendo a login");
         return Astro.redirect('/auth/login');
     }
 

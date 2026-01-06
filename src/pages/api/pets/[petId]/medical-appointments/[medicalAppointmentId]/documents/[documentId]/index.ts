@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { saveFileToMedicalAppointment } from "@/contexts/files/server/application/usecases/save-file-to-medical-appointment.usecase";
 import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 import { deleteFile } from "@/contexts/files/server/application/usecases/delete-file.usecase";
+import { parseMultipartFormData } from "@/contexts/_shared/server/utils/form-data.util";
 
 export const prerender = false;
 
@@ -16,20 +17,28 @@ export const POST: APIRoute = async ({ request, params }) => {
             );
         }
 
-        const formData = await request.formData();
-
-        if (!formData.get("file")) {
-            return new Response(
-                JSON.stringify({ message: "File not found in form data" }),
-                { status: 400 }
-            );
+        /*************************
+        ***** Read form data *****
+        *************************/
+        const formData = await parseMultipartFormData(request);
+        
+        /* *** Validations *** */
+        if (!formData.fileContent) {
+            return new Response(JSON.stringify({ message: "File not found in form data" }), { status: 400 });
         }
         
-        const storagePath = `medical-appointments/${petId}/${medicalAppointmentId}/documents`;
-        const resource = SaveFileResource.fromFormData({ formData, customStoragePath: storagePath });
+        /****************************
+        ***** Assemble resource *****
+        ****************************/
+        const storagePath = `pets/${petId}/medical-appointments/${medicalAppointmentId}/documents`;
+        const resource = SaveFileResource.fromMultipartFormData({ formData, customStoragePath: storagePath });
 
+        /* *** Call service *** */
         const result = await saveFileToMedicalAppointment(resource, petId, medicalAppointmentId);
 
+        /**************************
+        ***** Return response *****
+        **************************/
         if (result.success) {
             return new Response(JSON.stringify(result.data), {
                 status: 201,

@@ -2,7 +2,10 @@
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import DeletePetMedicalAppointmentDialog from "@/contexts/medical_histories/client/presentation/components/delete-pet-medical-appointment-dialog.component.astro";
-import { getMedicalAppointment, type MedicalAppointmentInfo } from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
+import {
+    getMedicalAppointment,
+    type MedicalAppointmentInfo,
+} from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
@@ -11,10 +14,7 @@ import ContentTop from "@/contexts/_shared/client/presentation/components/conten
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
 import PetMiniprofileCard from "@/contexts/pets/client/presentation/components/pet-miniprofile-card.component.astro";
 import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/simple-card.component.astro";
-import ReactiveTable from "@/contexts/_shared/client/presentation/components/tables/reactive-table.component.astro";
-import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.component.astro";
-import UploadDocumentModal from "@/contexts/_shared/client/presentation/components/modals/upload-document-modal.component.astro";
-import FileViewerModal from "@/contexts/_shared/client/presentation/components/modals/file-viewer-modal.component.astro";
+import DocumentsTable from "@/contexts/_shared/client/presentation/components/tables/documents-table.component.astro";
 import { getFilesByMedicalAppointment } from "@/contexts/files/server/application/usecases/get-files-by-medical-appointment.usecase";
 import type { FilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/file-per-entity.resource";
 import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/resources/pet.resource";
@@ -23,7 +23,7 @@ import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/
  ***** User authentication *****
  ********************************/
 // Probably never redirect from here because it would do so from the middleware
-const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
@@ -43,22 +43,31 @@ if (getPetResult.success) {
     pet = getPetResult.data ?? null;
 }
 
-const getMedicalAppointmentResult = await getMedicalAppointment(petId, medicalAppointmentId);
+const getMedicalAppointmentResult = await getMedicalAppointment(
+    petId,
+    medicalAppointmentId,
+);
 if (getMedicalAppointmentResult.data) {
     medicalAppointment = getMedicalAppointmentResult.data ?? null;
 }
 
-const getDoctorProfilesResult = await getAllProfilesByRoleId(import.meta.env.VETERINARIAN_ROLE_ID, authenticatedUserId);
+const getDoctorProfilesResult = await getAllProfilesByRoleId(
+    import.meta.env.VETERINARIAN_ROLE_ID,
+    authenticatedUserId,
+);
 if (getDoctorProfilesResult.success) {
     doctorProfiles = getDoctorProfilesResult.data;
-    doctorProfiles = doctorProfiles.map(dp => ({
+    doctorProfiles = doctorProfiles.map((dp) => ({
         id: dp.id,
-            name: `${dp.name} ${dp.lastname} ${dp.me ? '(Tú)' : ''}`,
+        name: `${dp.name} ${dp.lastname} ${dp.me ? "(Tú)" : ""}`,
         me: dp.me,
     }));
 }
 
-const getDocumentsResult = await getFilesByMedicalAppointment(petId, medicalAppointmentId);
+const getDocumentsResult = await getFilesByMedicalAppointment(
+    petId,
+    medicalAppointmentId,
+);
 if (getDocumentsResult.success && getDocumentsResult.data) {
     existingDocuments = getDocumentsResult.data;
 }
@@ -80,12 +89,17 @@ const medicalAppointmentInfoInputs = [
         name: "doctor",
         type: "combobox",
         label: "Veterinario",
-        value: medicalAppointment ? 
-            medicalAppointment?.doctorProfileId.toString()
-            : (doctorProfiles && doctorProfiles.length > 0) ? doctorProfiles.find(dp => dp.me === true)?.id.toString() : "",
+        value: medicalAppointment
+            ? medicalAppointment?.doctorProfileId.toString()
+            : doctorProfiles && doctorProfiles.length > 0
+              ? doctorProfiles.find((dp) => dp.me === true)?.id.toString()
+              : "",
         options: doctorProfiles ?? [],
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El veterinario es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -100,9 +114,18 @@ const medicalAppointmentInputs = [
         label: "Peso (kg)",
         value: medicalAppointment?.weight,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El peso es obligatorio' },
-            { validate: ((value: any) => !isNaN(Number(value))).toString(), message: 'El peso debe ser un número' },
-            { validate: ((value: any) => Number(value) > 0).toString(), message: 'El peso debe ser mayor a 0' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El peso es obligatorio",
+            },
+            {
+                validate: ((value: any) => !isNaN(Number(value))).toString(),
+                message: "El peso debe ser un número",
+            },
+            {
+                validate: ((value: any) => Number(value) > 0).toString(),
+                message: "El peso debe ser mayor a 0",
+            },
         ],
         showMandatory: true,
     },
@@ -112,12 +135,19 @@ const medicalAppointmentInputs = [
         type: "date",
         autocomplete: "appointmentDate",
         label: "Fecha de la cita",
-        value: medicalAppointment ? 
-            medicalAppointment.appointmentDate ? (new Date(medicalAppointment.appointmentDate)).toISOString().split('T')[0] : ""
-            : new Date().toISOString().split('T')[0],
-        validations: [{ 
-            validate: ((value: any) => !!value).toString(), message: 'La fecha de la cita es obligatoria' 
-        }],
+        value: medicalAppointment
+            ? medicalAppointment.appointmentDate
+                ? new Date(medicalAppointment.appointmentDate)
+                      .toISOString()
+                      .split("T")[0]
+                : ""
+            : new Date().toISOString().split("T")[0],
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La fecha de la cita es obligatoria",
+            },
+        ],
         showMandatory: true,
     },
     {
@@ -126,9 +156,12 @@ const medicalAppointmentInputs = [
         label: "Observaciones",
         type: "textarea",
         value: medicalAppointment?.observations,
-        validations: [{ 
-            validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' 
-        }],
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "Las observaciones son obligatorias",
+            },
+        ],
         showMandatory: true,
         class: "col-span-full",
     },
@@ -138,14 +171,16 @@ const medicalAppointmentInputs = [
         label: "Receta / Tratamiento",
         type: "textarea",
         value: medicalAppointment?.prescription,
-        validations: [{ 
-            validate: ((value: any) => !!value).toString(), message: 'La receta/tratamiento es obligatoria' 
-        }],
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La receta/tratamiento es obligatoria",
+            },
+        ],
         showMandatory: true,
         class: "col-span-full",
     },
 ];
-
 ---
 
 <ContentContainer>
@@ -155,10 +190,9 @@ const medicalAppointmentInputs = [
     <ContentTop backHref={`/app/pets/${petId}/medical-history`}>
         {
             // Main Title
-            medicalAppointment ? 
-                `Cita médica N° ${medicalAppointment?.appointmentNumber}`
-                :
-                "Nueva cita médica"
+            medicalAppointment
+                ? `Cita médica N° ${medicalAppointment?.appointmentNumber}`
+                : "Nueva cita médica"
         }
     </ContentTop>
 
@@ -166,10 +200,17 @@ const medicalAppointmentInputs = [
     ------ Main form ------
     ------------------- -->
     <!-- (Important to set editMode) -->
-    <GridForm id="medicalappointment-form" editMode={!!medicalAppointment} lgCols={6} dataset={{ petId: pet?.id, medicalAppointmentId: medicalAppointment?.id }}>
+    <GridForm
+        id="medicalappointment-form"
+        editMode={!!medicalAppointment}
+        lgCols={6}
+        dataset={{
+            petId: pet?.id,
+            medicalAppointmentId: medicalAppointment?.id,
+        }}
+    >
         <!-- Left Side -->
         <div class="lg:col-span-2 flex flex-col gap-6">
-
             <!-- ----------------------------------
             ------ 🐶 Pet mini profiled card ------
             ----------------------------------- -->
@@ -178,15 +219,17 @@ const medicalAppointmentInputs = [
                 <h3 class="font-semibold mb-3">Información de la cita</h3>
                 <div class="flex flex-col items-center w-full">
                     {
-                    medicalAppointmentInfoInputs.map(infoInput => 
+                        medicalAppointmentInfoInputs.map((infoInput) => (
                             <DynamicInput {...infoInput} />
-                    )
+                        ))
                     }
                 </div>
             </div>
         </div>
 
-        <div class="col-span-4 flex flex-col gap-6 max-h-[calc(100vh-18rem)] overflow-y-auto pr-2">
+        <div
+            class="col-span-4 flex flex-col gap-6 max-h-[calc(100vh-18rem)] overflow-y-auto pr-2"
+        >
             <!-- -----------------------
             ------ Details card ------
             ------------------------ -->
@@ -194,9 +237,9 @@ const medicalAppointmentInputs = [
                 <h4 class="mb-4">Detalles de la cita</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                     {
-                    medicalAppointmentInputs.map(input => 
+                        medicalAppointmentInputs.map((input) => (
                             <DynamicInput {...input} />
-                    )
+                        ))
                     }
                 </div>
             </SimpleCard>
@@ -205,51 +248,31 @@ const medicalAppointmentInputs = [
             ------ Documents card ------
             ------------------------ -->
             <SimpleCard>
-                <div class="flex justify-between items-center mb-4">
-                    <h4 class="font-semibold text-gray-800">Documentos</h4>
-                    <ActionButton style="submit" id="add-document-btn">
-                        <div class="flex items-center gap-2">
-                            <AddIcon class="w-4 h-4" />
-                            <span>Agregar documento</span>
-                        </div>
-                    </ActionButton>
-                </div>
-                <ReactiveTable
-                    id="documents-table"
-                    headers={["Nombre del archivo", "Acciones"]}
-                    initialItems={documentItems}
-                    itemsName="documentos"
-                    noItemsMessage="No se han adjuntado documentos."
-                    columns={[
-                        {
-                            key: "fileName",
-                            clickable: true,
-                            clickEvent: "view-file",
-                        },
-                    ]}
-                    rowDataAttributes={["fileUrl"]}
-                    actions={{
-                        download: true,
-                        delete: true,
-                    }}
-                />
+                <DocumentsTable id="documents" initialItems={documentItems} />
             </SimpleCard>
         </div>
 
         <!-- -----------------------
         ------ Action buttons ------
         ------------------------ -->
-        <div class="col-span-full flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4">
+        <div
+            class="col-span-full flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4"
+        >
             <ActionButton id="submit-button" type="submit" disabled>
-                { medicalAppointment ? "Guardar cambios" : "Crear cita médica" }
+                {medicalAppointment ? "Guardar cambios" : "Crear cita médica"}
             </ActionButton>
-            { medicalAppointment &&
+            {
+                medicalAppointment && (
                     <>
-                    <ActionButton id="open-delete-dialog-button" type="danger">
+                        <ActionButton
+                            id="open-delete-dialog-button"
+                            type="danger"
+                        >
                             Eliminar
                         </ActionButton>
                         <DeletePetMedicalAppointmentDialog />
                     </>
+                )
             }
         </div>
 
@@ -257,112 +280,30 @@ const medicalAppointmentInputs = [
     </GridForm>
 </ContentContainer>
 
-<!-- Document Management Modals -->
-<UploadDocumentModal />
-<FileViewerModal />
-
 <script>
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/services/create-medicalappointment.service";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/services/update-medicalappointment.service";
-    import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import {
+        tryCreateEditRequestOrThrowError,
+        validErrorMessage,
+    } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
     import { uploadMedicalAppointmentDocument } from "@/contexts/medical_histories/client/services/upload-medical-appointment-document.service";
     import { deleteFile } from "@/contexts/files/client/services/delete-file.service";
 
-    // Document management - maps tempId to File for pending uploads
-    let pendingFiles: Map<string, File> = new Map();
+    const DOCUMENTS_TABLE_ID = "documents";
 
-    function getDocumentsTable() {
-        return (window as any).ReactiveTableManager?.getTable(
-            "documents-table",
+    function getDocumentsTableManager() {
+        return (window as any).DocumentsTableRegistry?.getManager(
+            DOCUMENTS_TABLE_ID,
         );
-    }
-
-    function initializeDocumentManagement() {
-        const addDocumentBtn = document.getElementById("add-document-btn");
-        const uploadModal = document.getElementById("upload-document-modal");
-
-        if (!addDocumentBtn || !uploadModal) return;
-
-        // Open upload modal
-        addDocumentBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            uploadModal?.classList.remove("hidden");
-        });
-
-        // Listen for document selection from upload modal
-        document.addEventListener("document-selected", (e: any) => {
-            const { file } = e.detail;
-            addDocumentToTable(file);
-        });
-
-        // Listen for view-file event from ReactiveTable
-        document.addEventListener(
-            "reactive-table:view-file:documents-table",
-            (e: any) => {
-                const { item } = e.detail;
-                if (item.fileUrl) {
-                    openFileViewer(item.fileUrl, item.fileName);
-                }
-            },
-        );
-
-        // Listen for download action from ReactiveTable
-        document.addEventListener(
-            "reactive-table:action-download:documents-table",
-            (e: any) => {
-                const { item } = e.detail;
-                if (item.fileUrl) {
-                    downloadDocument(item.fileUrl, item.fileName);
-                }
-            },
-        );
-
-        // Listen for table changes to enable submit button
-        document.addEventListener(
-            "reactive-table:changed:documents-table",
-            () => {
-                enableSubmitButton();
-            },
-        );
-    }
-
-    function addDocumentToTable(file: File) {
-        const table = getDocumentsTable();
-        if (!table) return;
-
-        const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        pendingFiles.set(tempId, file);
-
-        table.addItem({
-            id: tempId,
-            fileName: file.name,
-            fileUrl: "",
-            isExisting: false,
-        });
-    }
-
-    function openFileViewer(fileUrl: string, fileName: string) {
-        document.dispatchEvent(
-            new CustomEvent("open-file-viewer", {
-                detail: { fileUrl, fileName },
-            }),
-        );
-    }
-
-    function downloadDocument(fileUrl: string, fileName: string) {
-        const link = document.createElement("a");
-        link.href = fileUrl;
-        link.download = fileName;
-        link.target = "_blank";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 
     function enableSubmitButton() {
-        const submitButton = document.getElementById("submit-button") as HTMLButtonElement;
+        const submitButton = document.getElementById(
+            "submit-button",
+        ) as HTMLButtonElement;
         if (submitButton) submitButton.disabled = false;
     }
 
@@ -371,12 +312,13 @@ const medicalAppointmentInputs = [
         medicalAppointmentId: string,
         formError: HTMLElement,
     ) {
-        const table = getDocumentsTable();
-        if (!table) return true;
+        const manager = getDocumentsTableManager();
+        if (!manager) return true;
 
-        const pendingItems = table.getPendingItems();
+        const pendingItems = manager.getPendingItems();
         if (pendingItems.length === 0) return true;
 
+        const pendingFiles = manager.getPendingFiles();
         let allUploadsSuccessful = true;
 
         for (const item of pendingItems) {
@@ -407,14 +349,18 @@ const medicalAppointmentInputs = [
             }
         }
 
+        if (allUploadsSuccessful) {
+            manager.clearPendingFiles();
+        }
+
         return allUploadsSuccessful;
     }
 
     async function deleteDocuments() {
-        const table = getDocumentsTable();
-        if (!table) return true;
+        const manager = getDocumentsTableManager();
+        if (!manager) return true;
 
-        const deletedIds = table.getDeletedItems();
+        const deletedIds = manager.getDeletedItems();
         if (deletedIds.length === 0) return true;
 
         let allDeletionsSuccessful = true;
@@ -434,8 +380,18 @@ const medicalAppointmentInputs = [
     }
 
     function initializeForm() {
-        const form = document.getElementById('medicalappointment-form') as HTMLFormElement | null;
+        const form = document.getElementById(
+            "medicalappointment-form",
+        ) as HTMLFormElement | null;
         if (!form) return;
+
+        // Listen for table changes to enable submit button
+        document.addEventListener(
+            `documents-table:changed:${DOCUMENTS_TABLE_ID}`,
+            () => {
+                enableSubmitButton();
+            },
+        );
 
         /************************
          ***** Submit event *****
@@ -445,8 +401,8 @@ const medicalAppointmentInputs = [
             const { data, submitButton, isEditMode, formDataObj, formError } =
                 event.detail;
 
-            const table = getDocumentsTable();
-            const hasDocumentChanges = table?.hasChanges() ?? false;
+            const manager = getDocumentsTableManager();
+            const hasDocumentChanges = manager?.hasChanges() ?? false;
 
             const processDocuments = async () => {
                 if (!hasDocumentChanges) return true;
@@ -472,17 +428,35 @@ const medicalAppointmentInputs = [
                 if (!documentsOk) return;
             }
 
-            const registerOrUpdateMedicalAppointment = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
-                const resource = new SaveMedicalAppointmentResource(Number(data.weight), data.observations, data.prescription, new Date(data.date), data.doctor ?? 0);
+            const registerOrUpdateMedicalAppointment = async ({
+                forceUpdate,
+                cancelRedirect,
+            }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveMedicalAppointmentResource(
+                    Number(data.weight),
+                    data.observations,
+                    data.prescription,
+                    new Date(data.date),
+                    data.doctor ?? 0,
+                );
                 const editMode = !!forceUpdate || isEditMode;
 
                 await tryCreateEditRequestOrThrowError({
                     isEditMode,
                     formError,
-                    entityDisplayName: 'cita médica',
+                    entityDisplayName: "cita médica",
                     submitButton,
-                    makeRequestFunc: async () => !editMode ? await createMedicalAppointment(formDataObj.petId!, resource) 
-                                                        : await updateMedicalAppointment(formDataObj.petId!, formDataObj.medicalAppointmentId!, resource),
+                    makeRequestFunc: async () =>
+                        !editMode
+                            ? await createMedicalAppointment(
+                                  formDataObj.petId!,
+                                  resource,
+                              )
+                            : await updateMedicalAppointment(
+                                  formDataObj.petId!,
+                                  formDataObj.medicalAppointmentId!,
+                                  resource,
+                              ),
                     onSuccessFunc: (response: any) => {
                         formDataObj.medicalAppointmentId = response.data.id;
 
@@ -508,19 +482,21 @@ const medicalAppointmentInputs = [
         /*******************************
          ***** Delete dialog logic *****
          ********************************/
-        const openDialogButton = document.getElementById('open-delete-dialog-button');
-        const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
+        const openDialogButton = document.getElementById(
+            "open-delete-dialog-button",
+        );
+        const dialog = document.getElementById("delete-dialog");
+        const toggleDialog = (show: boolean) =>
+            dialog?.classList.toggle("hidden", !show);
 
-        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+        openDialogButton?.addEventListener("click", () => toggleDialog(true));
     }
 
     /************************************
      ***** Run scripts on page load *****
      *************************************/
-    document.addEventListener('astro:page-load', () => {
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
         initializeDeleteDialog();
-        initializeDocumentManagement();
     });
 </script>

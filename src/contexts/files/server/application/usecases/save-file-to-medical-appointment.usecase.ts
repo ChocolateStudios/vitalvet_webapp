@@ -5,7 +5,7 @@ import { SaveFilePerEntityResource } from "@/contexts/files/server/interfaces/ap
 import type { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
 import type { FilePerEntityResource } from "@/contexts/files/server/interfaces/api/resources/file-per-entity.resource";
 
-const MEDICAL_APPOINTMENT_ENTITY_ID = "medical_appointment";
+const MEDICAL_APPOINTMENT_ENTITY_ID = "7";
 
 export async function saveFileToMedicalAppointment(
     file: SaveFileResource,

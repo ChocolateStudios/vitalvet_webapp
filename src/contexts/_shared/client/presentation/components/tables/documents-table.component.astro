@@ -1,0 +1,278 @@
+---
+import ReactiveTable from "@/contexts/_shared/client/presentation/components/tables/reactive-table.component.astro";
+import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
+import AddIcon from "@/contexts/_shared/client/presentation/components/icons/AddIcon.component.astro";
+import UploadDocumentModal from "@/contexts/_shared/client/presentation/components/modals/upload-document-modal.component.astro";
+import FileViewerModal from "@/contexts/_shared/client/presentation/components/modals/file-viewer-modal.component.astro";
+
+interface DocumentItem {
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    isExisting: boolean;
+}
+
+interface Props {
+    id: string;
+    initialItems?: DocumentItem[];
+    title?: string;
+    showAddButton?: boolean;
+}
+
+const {
+    id,
+    initialItems = [],
+    title = "Documentos",
+    showAddButton = true,
+} = Astro.props;
+
+const tableId = `${id}-table`;
+const addButtonId = `${id}-add-btn`;
+---
+
+<div class="documents-table-container" data-documents-table-id={id}>
+    <div class="flex justify-between items-center mb-4">
+        <h4 class="font-semibold text-gray-800">{title}</h4>
+        {
+            showAddButton && (
+                <ActionButton style="submit" id={addButtonId}>
+                    <div class="flex items-center gap-2">
+                        <AddIcon class="w-4 h-4" />
+                        <span>Agregar documento</span>
+                    </div>
+                </ActionButton>
+            )
+        }
+    </div>
+    <ReactiveTable
+        id={tableId}
+        headers={["Nombre del archivo", "Acciones"]}
+        initialItems={initialItems}
+        itemsName="documentos"
+        noItemsMessage="No se han adjuntado documentos."
+        columns={[
+            {
+                key: "fileName",
+                clickable: true,
+                clickEvent: "view-file",
+            },
+        ]}
+        rowDataAttributes={["fileUrl"]}
+        actions={{
+            download: true,
+            delete: true,
+        }}
+    />
+</div>
+
+<!-- Document Management Modals -->
+<UploadDocumentModal />
+<FileViewerModal />
+
+<script>
+    /**
+     * DocumentsTableManager
+     *
+     * Manages document tables with upload, view, download, and delete functionality.
+     * Each instance is associated with a specific table ID.
+     */
+    class DocumentsTableManager {
+        private tableId: string;
+        private containerId: string;
+        private addButtonId: string;
+        private pendingFiles: Map<string, File> = new Map();
+        private initialized: boolean = false;
+
+        constructor(containerId: string) {
+            this.containerId = containerId;
+            this.tableId = `${containerId}-table`;
+            this.addButtonId = `${containerId}-add-btn`;
+        }
+
+        /**
+         * Initialize the document management functionality
+         */
+        initialize(): void {
+            if (this.initialized) return;
+
+            const container = document.querySelector(
+                `[data-documents-table-id="${this.containerId}"]`,
+            );
+            if (!container) return;
+
+            const addDocumentBtn = document.getElementById(this.addButtonId);
+            const uploadModal = document.getElementById(
+                "upload-document-modal",
+            );
+
+            // Open upload modal
+            if (addDocumentBtn && uploadModal) {
+                addDocumentBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    uploadModal.classList.remove("hidden");
+                });
+            }
+
+            // Listen for document selection from upload modal
+            document.addEventListener("document-selected", (e: any) => {
+                const { file } = e.detail;
+                this.addDocumentToTable(file);
+            });
+
+            // Listen for view-file event from ReactiveTable
+            document.addEventListener(
+                `reactive-table:view-file:${this.tableId}`,
+                (e: any) => {
+                    const { item } = e.detail;
+                    if (item.fileUrl) {
+                        this.openFileViewer(item.fileUrl, item.fileName);
+                    }
+                },
+            );
+
+            // Listen for download action from ReactiveTable
+            document.addEventListener(
+                `reactive-table:action-download:${this.tableId}`,
+                (e: any) => {
+                    const { item } = e.detail;
+                    if (item.fileUrl) {
+                        this.downloadDocument(item.fileUrl, item.fileName);
+                    }
+                },
+            );
+
+            // Listen for table changes and emit a custom event
+            document.addEventListener(
+                `reactive-table:changed:${this.tableId}`,
+                () => {
+                    document.dispatchEvent(
+                        new CustomEvent(
+                            `documents-table:changed:${this.containerId}`,
+                        ),
+                    );
+                },
+            );
+
+            this.initialized = true;
+        }
+
+        /**
+         * Get the ReactiveTable instance
+         */
+        getTable(): any {
+            return (window as any).ReactiveTableManager?.getTable(this.tableId);
+        }
+
+        /**
+         * Add a document to the table (pending upload)
+         */
+        addDocumentToTable(file: File): void {
+            const table = this.getTable();
+            if (!table) return;
+
+            const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            this.pendingFiles.set(tempId, file);
+
+            table.addItem({
+                id: tempId,
+                fileName: file.name,
+                fileUrl: "",
+                isExisting: false,
+            });
+        }
+
+        /**
+         * Open the file viewer modal
+         */
+        openFileViewer(fileUrl: string, fileName: string): void {
+            document.dispatchEvent(
+                new CustomEvent("open-file-viewer", {
+                    detail: { fileUrl, fileName },
+                }),
+            );
+        }
+
+        /**
+         * Download a document
+         */
+        downloadDocument(fileUrl: string, fileName: string): void {
+            const link = document.createElement("a");
+            link.href = fileUrl;
+            link.download = fileName;
+            link.target = "_blank";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /**
+         * Get pending files that need to be uploaded
+         */
+        getPendingFiles(): Map<string, File> {
+            return this.pendingFiles;
+        }
+
+        /**
+         * Get pending items from the table
+         */
+        getPendingItems(): any[] {
+            return this.getTable()?.getPendingItems() ?? [];
+        }
+
+        /**
+         * Get deleted item IDs from the table
+         */
+        getDeletedItems(): string[] {
+            return this.getTable()?.getDeletedItems() ?? [];
+        }
+
+        /**
+         * Check if the table has changes
+         */
+        hasChanges(): boolean {
+            return this.getTable()?.hasChanges() ?? false;
+        }
+
+        /**
+         * Clear pending files after successful upload
+         */
+        clearPendingFiles(): void {
+            this.pendingFiles.clear();
+        }
+    }
+
+    /**
+     * Global registry for DocumentsTableManager instances
+     */
+    class DocumentsTableRegistry {
+        private static managers: Map<string, DocumentsTableManager> = new Map();
+
+        static getManager(containerId: string): DocumentsTableManager {
+            if (!this.managers.has(containerId)) {
+                const manager = new DocumentsTableManager(containerId);
+                this.managers.set(containerId, manager);
+            }
+            return this.managers.get(containerId)!;
+        }
+
+        static initializeAll(): void {
+            document
+                .querySelectorAll("[data-documents-table-id]")
+                .forEach((container) => {
+                    const containerId = (container as HTMLElement).dataset
+                        .documentsTableId;
+                    if (containerId) {
+                        this.getManager(containerId).initialize();
+                    }
+                });
+        }
+    }
+
+    // Expose to window for external access
+    (window as any).DocumentsTableRegistry = DocumentsTableRegistry;
+
+    // Initialize on page load
+    document.addEventListener("astro:page-load", () => {
+        DocumentsTableRegistry.initializeAll();
+    });
+</script>

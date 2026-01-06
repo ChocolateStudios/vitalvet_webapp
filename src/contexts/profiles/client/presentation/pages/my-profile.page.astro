@@ -1,6 +1,6 @@
 ---
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro"
-import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro"
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
+import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import { getProfileByUserId } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
@@ -10,18 +10,18 @@ import SimpleForm from "@/contexts/_shared/client/presentation/components/forms/
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
-const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 // NO PARAMETERS HERE
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let profile: ProfileInfo | null = null;
 const getProfileResult = await getProfileByUserId(authenticatedUserId);
 
@@ -31,7 +31,7 @@ if (getProfileResult.success) {
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const profileInputs = [
     {
         id: "name",
@@ -41,7 +41,10 @@ const profileInputs = [
         label: "Nombres",
         value: profile?.name,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El nombre es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -53,7 +56,10 @@ const profileInputs = [
         label: "Apellidos",
         value: profile?.lastname,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El apellido es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El apellido es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -63,9 +69,14 @@ const profileInputs = [
         type: "date",
         autocomplete: "birthday",
         label: "Fecha de nacimiento",
-        value: profile?.birthday ? (new Date(profile.birthday)).toISOString().split('T')[0] : "",
+        value: profile?.birthday
+            ? new Date(profile.birthday).toISOString().split("T")[0]
+            : "",
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La fecha de nacimiento es obligatoria",
+            },
         ],
         showMandatory: true,
     },
@@ -77,8 +88,14 @@ const profileInputs = [
         label: "Correo electrónico",
         value: profile?.email,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El correo electrónico es obligatorio' },
-            { validate: ((value: any) => value.includes('@')).toString(), message: 'El correo electrónico debe contener un @' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El correo electrónico es obligatorio",
+            },
+            {
+                validate: ((value: any) => value.includes("@")).toString(),
+                message: "El correo electrónico debe contener un @",
+            },
         ],
         showMandatory: true,
     },
@@ -90,7 +107,10 @@ const profileInputs = [
         label: "Teléfono",
         value: profile?.phone,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El teléfono es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El teléfono es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -103,7 +123,7 @@ const profileInputs = [
         value: profile?.roleName,
         readonly: true,
     },
-]
+];
 ---
 
 <ContentContainer>
@@ -116,22 +136,24 @@ const profileInputs = [
     ------ Main form ------
     ------------------- -->
     <!-- (Important to set editMode) -->
-    <SimpleForm id="profile-form" editMode={!!profile} dataset={{ profileId: profile?.id, roleId: profile?.roleId }}>
-        <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
-            {
-                profileInputs.map(input => 
-                    <DynamicInput {...input} />
-                )
-            }
-            
+    <SimpleForm
+        id="profile-form"
+        editMode={!!profile}
+        dataset={{ profileId: profile?.id, roleId: profile?.roleId }}
+    >
+        <div
+            class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg"
+        >
+            {profileInputs.map((input) => <DynamicInput {...input} />)}
+
             <!-- ----------------------
             ------ Action button ------
             ----------------------- -->
             <ActionButton id="submit-button" type="submit">
-                { profile ? "Guardar cambios" : "Crear perfil" }
+                {profile ? "Guardar cambios" : "Crear perfil"}
             </ActionButton>
         </div>
-        
+
         <div class="form-error text-red-500"></div>
     </SimpleForm>
 </ContentContainer>
@@ -142,35 +164,47 @@ const profileInputs = [
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
-        const form = document.getElementById('profile-form') as HTMLFormElement;
+        const form = document.getElementById("profile-form") as HTMLFormElement;
         if (!form) return;
 
         /************************
          ***** Submit event *****
-        *************************/
+         *************************/
         // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
 
             /**************************************
              ***** Register/update my profile *****
-            **************************************/
-            const registerOrUpdateMyProfile = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
-                const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
+             **************************************/
+            const registerOrUpdateMyProfile = async ({
+                forceUpdate,
+                cancelRedirect,
+            }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveProfileResource(
+                    data.name,
+                    data.lastname,
+                    data.email,
+                    data.phone,
+                    new Date(data.birthday),
+                    formDataObj.roleId!,
+                );
                 const editMode = !!forceUpdate || isEditMode;
 
                 await tryCreateEditRequestOrThrowError({
                     isEditMode,
                     formError,
-                    entityDisplayName: 'perfil',
+                    entityDisplayName: "perfil",
                     submitButton,
-                    makeRequestFunc: async () => !editMode ? { success: false }
-                                                     : await updateMyProfile(resource),
+                    makeRequestFunc: async () =>
+                        !editMode
+                            ? { success: false }
+                            : await updateMyProfile(resource),
                     onSuccessFunc: (response: any) => {
                         formDataObj.profileId = response.data.id;
 
-                        if (!cancelRedirect) 
-                            window.location.href = '/app/home';
+                        if (!cancelRedirect) window.location.href = "/app/home";
                     },
                 });
             };
@@ -182,20 +216,22 @@ const profileInputs = [
     function initializeDeleteDialog() {
         /*******************************
          ***** Delete dialog logic *****
-        ********************************/
-        const openDialogButton = document.getElementById('open-delete-dialog-button');
-        const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
+         ********************************/
+        const openDialogButton = document.getElementById(
+            "open-delete-dialog-button",
+        );
+        const dialog = document.getElementById("delete-dialog");
+        const toggleDialog = (show: boolean) =>
+            dialog?.classList.toggle("hidden", !show);
 
-        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+        openDialogButton?.addEventListener("click", () => toggleDialog(true));
     }
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
-    document.addEventListener('astro:page-load', () => {
+     *************************************/
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
         initializeDeleteDialog();
     });
-
 </script>

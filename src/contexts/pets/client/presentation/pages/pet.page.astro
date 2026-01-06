@@ -9,7 +9,10 @@ import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/u
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
 import ModalManager from "@/contexts/_shared/client/presentation/components/modals/modal-manager.component.astro";
 import PetOwnerModal from "@/contexts/pets/client/presentation/components/petowner-modal.component.astro";
-import { getAllSpecies, getAllSubspecies, } from "@/contexts/pets/server/application/usecases/getall-species-subspecies.usecase";
+import {
+    getAllSpecies,
+    getAllSubspecies,
+} from "@/contexts/pets/server/application/usecases/getall-species-subspecies.usecase";
 import SpeciesModal from "@/contexts/pets/client/presentation/components/species-modal.component.astro";
 import SubspeciesModal from "@/contexts/pets/client/presentation/components/subspecies-modal.component.astro";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
@@ -26,7 +29,7 @@ const { pets: petsTexts, shared: sharedTexts } = getTexts();
  ***** User authentication *****
  ********************************/
 // Probably never redirect from here because it would do so from the middleware
-const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
@@ -100,15 +103,20 @@ const detailInputs = [
             ? pet?.ownerProfileId.toString()
             : ownerProfiles.find((op) => !!op.me)?.id.toString() || "",
         options: ownerProfiles ?? [],
-        actions: [{
-            text: petsTexts.auxiliary.owners.addTitle,
-            onClick: "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'owner-modal' } }))",
-            icon: AddIcon,
-        }],
-        validations: [{
-            validate: ((value: any) => !!value).toString(),
-            message: petsTexts.fields.owner.validations.required,
-        }],
+        actions: [
+            {
+                text: petsTexts.auxiliary.owners.addTitle,
+                onClick:
+                    "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'owner-modal' } }))",
+                icon: AddIcon,
+            },
+        ],
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: petsTexts.fields.owner.validations.required,
+            },
+        ],
         showMandatory: true,
     },
     {
@@ -117,11 +125,15 @@ const detailInputs = [
         type: "date",
         autocomplete: "birthday",
         label: petsTexts.fields.birthday.text,
-        value: pet?.birthday ? new Date(pet.birthday).toISOString().split("T")[0] : "",
-        validations: [{
-            validate: ((value: any) => !!value).toString(),
-            message: petsTexts.fields.birthday.validations.required,
-        }],
+        value: pet?.birthday
+            ? new Date(pet.birthday).toISOString().split("T")[0]
+            : "",
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: petsTexts.fields.birthday.validations.required,
+            },
+        ],
         showMandatory: true,
     },
     {
@@ -133,16 +145,20 @@ const detailInputs = [
             .find((ss) => ss.id === pet?.subspeciesId)
             ?.speciesId?.toString(),
         options: allSpecies,
-        actions: [{
-            text: "Agregar nueva especie",
-            onClick:
-                "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'species-modal' } }))",
-            icon: AddIcon,
-        }],
-        validations: [{
-            validate: ((value: any) => !!value).toString(),
-            message: petsTexts.fields.species.validations.required,
-        }],
+        actions: [
+            {
+                text: "Agregar nueva especie",
+                onClick:
+                    "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'species-modal' } }))",
+                icon: AddIcon,
+            },
+        ],
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: petsTexts.fields.species.validations.required,
+            },
+        ],
         showMandatory: true,
     },
     {
@@ -152,16 +168,20 @@ const detailInputs = [
         label: petsTexts.fields.subspecies.text,
         value: pet?.subspeciesId?.toString(),
         options: allSubspecies,
-        actions: [{
-            text: petsTexts.auxiliary.subspecies.addTitle,
-            onClick:
-                "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'subspecies-modal' } }))",
-            icon: AddIcon,
-        }],
-        validations: [{
-            validate: ((value: any) => !!value).toString(),
-            message: petsTexts.fields.subspecies.validations.required,
-        }],
+        actions: [
+            {
+                text: petsTexts.auxiliary.subspecies.addTitle,
+                onClick:
+                    "document.dispatchEvent(new CustomEvent('open-modal', { detail: { id: 'subspecies-modal' } }))",
+                icon: AddIcon,
+            },
+        ],
+        validations: [
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: petsTexts.fields.subspecies.validations.required,
+            },
+        ],
         showMandatory: true,
     },
     {
@@ -170,17 +190,21 @@ const detailInputs = [
         type: "text",
         autocomplete: "age",
         label: petsTexts.fields.age.text,
-        value: pet?.birthday ? (() => {
-            const birthDate = new Date(pet.birthday);
-            const today = new Date();
-            let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
-            if (today.getDate() < birthDate.getDate()) {
-                totalMonths--;
-            }
-            const years = Math.floor(totalMonths / 12);
-            const months = totalMonths % 12;
-            return `${years} ${years === 1 ? "año" : "años"} y ${months} ${months === 1 ? "mes" : "meses"}`;
-        })() : "",
+        value: pet?.birthday
+            ? (() => {
+                  const birthDate = new Date(pet.birthday);
+                  const today = new Date();
+                  let totalMonths =
+                      (today.getFullYear() - birthDate.getFullYear()) * 12 +
+                      (today.getMonth() - birthDate.getMonth());
+                  if (today.getDate() < birthDate.getDate()) {
+                      totalMonths--;
+                  }
+                  const years = Math.floor(totalMonths / 12);
+                  const months = totalMonths % 12;
+                  return `${years} ${years === 1 ? "año" : "años"} y ${months} ${months === 1 ? "mes" : "meses"}`;
+              })()
+            : "",
         readonly: true,
         tooltip: "La edad se autocalcula según la fecha de nacimiento.",
     },
@@ -192,7 +216,10 @@ const detailInputs = [
         label: petsTexts.fields.weight.text,
         value: pet && pet.medicalAppointmentsCount > 0 ? pet.weight : "",
         readonly: true,
-        tooltip: pet && pet.medicalAppointmentsCount > 0 ? "El peso se obtuvo de la última cita médica." : "El peso se obtendrá cuando se registre la primera cita médica.",
+        tooltip:
+            pet && pet.medicalAppointmentsCount > 0
+                ? "El peso se obtuvo de la última cita médica."
+                : "El peso se obtendrá cuando se registre la primera cita médica.",
     },
     {
         id: "status",
@@ -200,7 +227,10 @@ const detailInputs = [
         type: "switch",
         trueLabel: petsTexts.fields.status.active,
         falseLabel: petsTexts.fields.status.inactive,
-        value: pet?.status === PetStatus.Inactive ? PetStatus.Inactive : PetStatus.Active,
+        value:
+            pet?.status === PetStatus.Inactive
+                ? PetStatus.Inactive
+                : PetStatus.Active,
         trueValue: PetStatus.Active,
         falseValue: PetStatus.Inactive,
         trueTooltip: petsTexts.status.alive,
@@ -299,17 +329,27 @@ const profileImgInput = {
             <!-- -----------------------
             ------ Action buttons ------
             ------------------------ -->
-            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
+            <div
+                class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4"
+            >
                 {
                     pet && (
                         <>
-                            <ActionLink href={`/app/pets/${petId}/baths-history`}>
+                            <ActionLink
+                                href={`/app/pets/${petId}/baths-history`}
+                            >
                                 Baños{" "}
-                                {pet?.bathsCount > 0 ? `(${pet.bathsCount})` : ""}
+                                {pet?.bathsCount > 0
+                                    ? `(${pet.bathsCount})`
+                                    : ""}
                             </ActionLink>
-                            <ActionLink href={`/app/pets/${petId}/medical-history`}>
+                            <ActionLink
+                                href={`/app/pets/${petId}/medical-history`}
+                            >
                                 Historial médico{" "}
-                                {pet?.medicalAppointmentsCount > 0 ? `(${pet.medicalAppointmentsCount})` : ""}
+                                {pet?.medicalAppointmentsCount > 0
+                                    ? `(${pet.medicalAppointmentsCount})`
+                                    : ""}
                             </ActionLink>
                         </>
                     )
@@ -320,7 +360,10 @@ const profileImgInput = {
                 {
                     pet && (
                         <>
-                            <ActionButton id="open-delete-dialog-button" type="danger">
+                            <ActionButton
+                                id="open-delete-dialog-button"
+                                type="danger"
+                            >
                                 {sharedTexts.actions.delete}
                             </ActionButton>
                             <DeletePetDialog petName={pet?.name} />
@@ -357,13 +400,17 @@ const profileImgInput = {
     }
 
     function initializeForm() {
-        const form = document.getElementById("pet-form") as HTMLFormElement | null;
+        const form = document.getElementById(
+            "pet-form",
+        ) as HTMLFormElement | null;
         if (!form) return;
 
         /***************************************************************
          ***** Calculate and show pet years based on date of birth *****
          ***************************************************************/
-        const birthdayInput = document.getElementById("birthday") as HTMLInputElement;
+        const birthdayInput = document.getElementById(
+            "birthday",
+        ) as HTMLInputElement;
         const petAgeInput = document.getElementById("age") as HTMLInputElement;
 
         if (birthdayInput && petAgeInput) {
@@ -379,7 +426,10 @@ const profileImgInput = {
                     today.setHours(0, 0, 0, 0);
 
                     if (!isNaN(birthDate.getTime()) && birthDate <= today) {
-                        let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+                        let totalMonths =
+                            (today.getFullYear() - birthDate.getFullYear()) *
+                                12 +
+                            (today.getMonth() - birthDate.getMonth());
                         if (today.getDate() < birthDate.getDate()) {
                             totalMonths--;
                         }

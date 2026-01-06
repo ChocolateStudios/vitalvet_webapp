@@ -11,18 +11,18 @@ import { getProfileByUserId } from "@/contexts/profiles/server/application/useca
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
-const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 // NO PARAMETERS HERE
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let profile: ProfileInfo | null = null;
 const getProfileResult = await getProfileByUserId(authenticatedUserId);
 

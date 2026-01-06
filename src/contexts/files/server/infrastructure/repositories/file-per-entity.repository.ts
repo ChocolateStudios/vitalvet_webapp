@@ -18,8 +18,6 @@ export class ImagePerEntityRepository {
             throw new Error('Could not generate ID for new image.');
         }
 
-        newFile.id = imageId;
-
         const dataToSave = {
             ...newFile,
             createdAt: newFile.createdAt.toISOString(),
@@ -27,6 +25,8 @@ export class ImagePerEntityRepository {
         };
 
         await set(newFileRef, dataToSave);
+
+        newFile.id = imageId;
 
         return FilePerEntityResource.fromModel(newFile);
     }

@@ -17,7 +17,7 @@ import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/
  ***** User authentication *****
 ********************************/
 // Probably never redirect from here because it would do so from the middleware
-const authenticatedUserId = getAuthenticatedUserIdOrRedirect(Astro);
+const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****

@@ -15,7 +15,7 @@ const { pets: petsTexts } = getTexts();
  ***** User authentication *****
  ********************************/
 // Probably never redirect from here because it would do so from the middleware
-getAuthenticatedUserIdOrRedirect(Astro);
+await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
