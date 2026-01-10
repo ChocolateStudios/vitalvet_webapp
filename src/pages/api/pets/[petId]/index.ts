@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { SavePetResource } from '@/contexts/pets/server/interfaces/api/resources/save-pet.resource';
 import { PetsRepository } from '@/contexts/pets/server/infrastructure/repositories/pets.repository';
+import { DELETEPet } from '@/contexts/pets/server/interfaces/api/endpoints/delete-pet.endpoint';
 
 export const prerender = false;
 
@@ -45,17 +46,6 @@ export const GET: APIRoute = async ({ params }) => {
     }
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
-    const { petId } = params;
-    if (!petId) {
-        return new Response(JSON.stringify({ message: 'Pet ID is required' }), { status: 400 });
-    }
-
-    try {
-        await PetsRepository.deletePet(petId);
-        return new Response(null, { status: 204 });
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-        return new Response(JSON.stringify({ message: errorMessage }), { status: 500 });
-    }
+export const DELETE: APIRoute = async (data) => {
+    return await DELETEPet(data);
 };

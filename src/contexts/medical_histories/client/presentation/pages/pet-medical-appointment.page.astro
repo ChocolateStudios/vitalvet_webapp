@@ -2,10 +2,7 @@
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import DeletePetMedicalAppointmentDialog from "@/contexts/medical_histories/client/presentation/components/delete-pet-medical-appointment-dialog.component.astro";
-import {
-    getMedicalAppointment,
-    type MedicalAppointmentInfo,
-} from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
+import { getMedicalAppointment, type MedicalAppointmentInfo } from "@/contexts/medical_histories/server/application/usecases/get-medicalappointment.usecase";
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
@@ -284,10 +281,7 @@ const medicalAppointmentInputs = [
     import { SaveMedicalAppointmentResource } from "@/contexts/medical_histories/server/interfaces/api/resources/save-medical-appointment.resource";
     import { createMedicalAppointment } from "@/contexts/medical_histories/client/services/create-medicalappointment.service";
     import { updateMedicalAppointment } from "@/contexts/medical_histories/client/services/update-medicalappointment.service";
-    import {
-        tryCreateEditRequestOrThrowError,
-        validErrorMessage,
-    } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
     import { uploadMedicalAppointmentDocument } from "@/contexts/medical_histories/client/services/upload-medical-appointment-document.service";
     import { deleteFile } from "@/contexts/files/client/services/delete-file.service";
@@ -301,17 +295,11 @@ const medicalAppointmentInputs = [
     }
 
     function enableSubmitButton() {
-        const submitButton = document.getElementById(
-            "submit-button",
-        ) as HTMLButtonElement;
+        const submitButton = document.getElementById("submit-button") as HTMLButtonElement;
         if (submitButton) submitButton.disabled = false;
     }
 
-    async function uploadDocuments(
-        petId: string,
-        medicalAppointmentId: string,
-        formError: HTMLElement,
-    ) {
+    async function uploadDocuments(petId: string, medicalAppointmentId: string, formError: HTMLElement) {
         const manager = getDocumentsTableManager();
         if (!manager) return true;
 
@@ -380,26 +368,18 @@ const medicalAppointmentInputs = [
     }
 
     function initializeForm() {
-        const form = document.getElementById(
-            "medicalappointment-form",
-        ) as HTMLFormElement | null;
+        const form = document.getElementById("medicalappointment-form") as HTMLFormElement | null;
         if (!form) return;
 
         // Listen for table changes to enable submit button
-        document.addEventListener(
-            `documents-table:changed:${DOCUMENTS_TABLE_ID}`,
-            () => {
-                enableSubmitButton();
-            },
-        );
+        document.addEventListener(`documents-table:changed:${DOCUMENTS_TABLE_ID}`, () => enableSubmitButton());
 
         /************************
          ***** Submit event *****
          ************************/
-        // Before this event, in base-form.astro validations were executed
+        // Before this event, in base-form.component.astro validations were executed
         form.addEventListener("form:submit", async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } =
-                event.detail;
+            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
 
             const manager = getDocumentsTableManager();
             const hasDocumentChanges = manager?.hasChanges() ?? false;
@@ -428,10 +408,7 @@ const medicalAppointmentInputs = [
                 if (!documentsOk) return;
             }
 
-            const registerOrUpdateMedicalAppointment = async ({
-                forceUpdate,
-                cancelRedirect,
-            }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
+            const registerOrUpdateMedicalAppointment = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
                 const resource = new SaveMedicalAppointmentResource(
                     Number(data.weight),
                     data.observations,

@@ -5,6 +5,7 @@ export interface Props {
     items?: any[];
     itemsName?: string;
     noItemsMessage?: string;
+    fullHeight?: boolean;
 }
 
 const {
@@ -13,6 +14,7 @@ const {
     items,
     itemsName,
     noItemsMessage,
+    fullHeight,
 } = Astro.props as Props;
 
 ---

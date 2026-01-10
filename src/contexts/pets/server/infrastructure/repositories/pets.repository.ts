@@ -44,7 +44,7 @@ export class PetsRepository {
         return PetResource.fromModel(newPet);
     }
 
-    static async updatePet(petId: string, data: SavePetResource): Promise<PetResource> {
+    static async updatePet(petId: string | number, data: SavePetResource): Promise<PetResource> {
         const petRef = ref(db, `${PETS_PATH}/${petId}`);
         const snapshot = await get(petRef);
         if (!snapshot.exists()) {
@@ -67,7 +67,7 @@ export class PetsRepository {
         return this.getPet(petId);
     }
 
-    static async deletePet(petId: string): Promise<PetResource> {
+    static async deletePet(petId: string | number): Promise<PetResource> {
         const petToDelete = await this.getPet(petId); // Obtenemos el objeto antes de borrarlo para poder devolverlo
         const petRef = ref(db, `${PETS_PATH}/${petId}`);
 
@@ -91,7 +91,7 @@ export class PetsRepository {
         return petToDelete;
     }
 
-    static async getPet(petId: string): Promise<PetResource> {
+    static async getPet(petId: string | number): Promise<PetResource> {
         const petRef = ref(db, `${PETS_PATH}/${petId}`);
         const snapshot = await get(petRef);
 

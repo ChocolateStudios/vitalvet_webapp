@@ -5,7 +5,10 @@ import DeletePetBathDialog from "@/contexts/baths/client/presentation/components
 import { getPet } from "@/contexts/pets/server/application/usecases/get-pet.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import { getBath, type BathInfo } from "@/contexts/baths/server/application/usecases/get-bath.usecase";
+import {
+    getBath,
+    type BathInfo,
+} from "@/contexts/baths/server/application/usecases/get-bath.usecase";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
@@ -15,18 +18,18 @@ import type { PetExtendedResource } from "@/contexts/pets/server/interfaces/api/
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 const { petId, bathId } = Astro.props;
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let pet: PetExtendedResource | null = null;
 let bath: BathInfo | null = null;
 let doctorProfiles: any[] = [];
@@ -41,31 +44,39 @@ if (getBathResult.data) {
     bath = getBathResult.data ?? null;
 }
 
-const getDoctorProfilesResult = await getAllProfilesByRoleId(import.meta.env.VETERINARIAN_ROLE_ID, authenticatedUserId);
+const getDoctorProfilesResult = await getAllProfilesByRoleId(
+    import.meta.env.VETERINARIAN_ROLE_ID,
+    authenticatedUserId,
+);
 if (getDoctorProfilesResult.success) {
     doctorProfiles = getDoctorProfilesResult.data;
-    doctorProfiles = doctorProfiles.map(dp => ({
-            id: dp.id,
-            name: `${dp.name} ${dp.lastname} ${dp.me ? '(Tú)' : ''}`,
-            me: dp.me,
-        }));
+    doctorProfiles = doctorProfiles.map((dp) => ({
+        id: dp.id,
+        name: `${dp.name} ${dp.lastname} ${dp.me ? "(Tú)" : ""}`,
+        me: dp.me,
+    }));
 }
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const bathInfoInputs = [
     {
         id: "doctor",
         name: "doctor",
         type: "combobox",
         label: "Veterinario",
-        value: bath ? 
-            bath?.doctorProfileId.toString()
-            : (doctorProfiles && doctorProfiles.length > 0) ? doctorProfiles.find(dp => dp.me === true)?.id.toString() : "",
+        value: bath
+            ? bath?.doctorProfileId.toString()
+            : doctorProfiles && doctorProfiles.length > 0
+              ? doctorProfiles.find((dp) => dp.me === true)?.id.toString()
+              : "",
         options: doctorProfiles ?? [],
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El veterinario es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -77,9 +88,14 @@ const bathInputs = [
         name: "date",
         type: "date",
         label: "Fecha",
-        value: bath ? (new Date(bath.bathDate)).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        value: bath
+            ? new Date(bath.bathDate).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La fecha es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La fecha es obligatoria",
+            },
         ],
         showMandatory: true,
     },
@@ -90,7 +106,10 @@ const bathInputs = [
         label: "Observaciones",
         value: bath?.observations,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'Las observaciones son obligatorias' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "Las observaciones son obligatorias",
+            },
         ],
         showMandatory: true,
     },
@@ -98,7 +117,7 @@ const bathInputs = [
 
 const imgsPreviewAndInputs = [
     {
-        input : {
+        input: {
             id: "beforeImage",
             name: "beforeImage",
             type: "file",
@@ -113,7 +132,7 @@ const imgsPreviewAndInputs = [
         },
     },
     {
-        input : {
+        input: {
             id: "afterImage",
             name: "afterImage",
             type: "file",
@@ -128,7 +147,6 @@ const imgsPreviewAndInputs = [
         },
     },
 ];
-
 ---
 
 <ContentContainer>
@@ -138,10 +156,7 @@ const imgsPreviewAndInputs = [
     <ContentTop backHref={`/app/pets/${petId}/baths-history`}>
         {
             // Main Title
-            bath ? 
-                `Baño N° ${bath?.bathNumber}`
-                :
-                "Nuevo baño"
+            bath ? `Baño N° ${bath?.bathNumber}` : "Nuevo baño"
         }
     </ContentTop>
 
@@ -149,10 +164,14 @@ const imgsPreviewAndInputs = [
     ------ Main form ------
     ------------------- -->
     <!-- (Important to set editMode) -->
-    <GridForm id="bath-form" editMode={!!bath} lgCols={6} dataset={{ petId: pet?.id, bathId: bath?.id }}>
+    <GridForm
+        id="bath-form"
+        editMode={!!bath}
+        lgCols={6}
+        dataset={{ petId: pet?.id, bathId: bath?.id }}
+    >
         <!-- Left Side -->
         <div class="lg:col-span-2 flex flex-col gap-6">
-
             <!-- ----------------------------------
             ------ 🐶 Pet mini profiled card ------
             ----------------------------------- -->
@@ -160,34 +179,33 @@ const imgsPreviewAndInputs = [
             <div class="bg-white rounded-xl shadow-lg p-7 text-left">
                 <h3 class="font-semibold mb-3">Información del baño</h3>
                 <div class="flex flex-col items-center w-full">
-                {
-                    bathInfoInputs.map(infoInput => 
-                        <DynamicInput {...infoInput} />
-                    )
-                }
+                    {
+                        bathInfoInputs.map((infoInput) => (
+                            <DynamicInput {...infoInput} />
+                        ))
+                    }
                 </div>
             </div>
         </div>
-
 
         <!-- -----------------------
         ------ Details card ------
         ------------------------ -->
         <SimpleCard lgColSpan="4">
             <h4 class="mb-4">Datos del baño</h4>
-            {
-                bathInputs.map(inputs => 
-                    <DynamicInput {...inputs} />
-                )
-            }
+            {bathInputs.map((inputs) => <DynamicInput {...inputs} />)}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
                 {
-                    imgsPreviewAndInputs.map(imgsPreviewAndInput => 
+                    imgsPreviewAndInputs.map((imgsPreviewAndInput) => (
                         <div class="flex flex-col items-center gap-4 w-full">
                             <DynamicInput {...imgsPreviewAndInput.input} />
-                            <img {...imgsPreviewAndInput.preview} class="w-full h-40 object-contain rounded-lg mt-2 bg-gray-100 transition-all duration-300" data-image-preview />
+                            <img
+                                {...imgsPreviewAndInput.preview}
+                                class="w-full h-40 object-contain rounded-lg mt-2 bg-gray-100 transition-all duration-300"
+                                data-image-preview
+                            />
                         </div>
-                    )
+                    ))
                 }
             </div>
         </SimpleCard>
@@ -195,20 +213,27 @@ const imgsPreviewAndInputs = [
         <!-- -----------------------
         ------ Action buttons ------
         ------------------------ -->
-        <div class="col-span-full flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4">
+        <div
+            class="col-span-full flex sm:flex-wrap sm:flex-row sm:justify-end mt-7 gap-4"
+        >
             <ActionButton id="submit-button" type="submit" disabled>
-                { bath ? "Guardar cambios" : "Crear baño" }
+                {bath ? "Guardar cambios" : "Crear baño"}
             </ActionButton>
-            { bath &&
-                <>
-                    <ActionButton id="open-delete-dialog-button" type="danger">
-                        Eliminar
-                    </ActionButton>
-                    <DeletePetBathDialog />
-                </>
+            {
+                bath && (
+                    <>
+                        <ActionButton
+                            id="open-delete-dialog-button"
+                            type="danger"
+                        >
+                            Eliminar
+                        </ActionButton>
+                        <DeletePetBathDialog />
+                    </>
+                )
             }
         </div>
-        
+
         <div class="form-error col-span-full text-red-500"></div>
     </GridForm>
 </ContentContainer>
@@ -219,89 +244,137 @@ const imgsPreviewAndInputs = [
     import { updateBath } from "@/contexts/baths/client/services/update-bath.service";
     import { SaveFileResource } from "@/contexts/files/server/interfaces/api/resources/save-file.resource";
     import { uploadBathImage } from "@/contexts/baths/client/services/upload_get_delete-bath-image.service";
-    import { tryCreateEditRequestOrThrowError, validErrorMessage } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
+    import {
+        tryCreateEditRequestOrThrowError,
+        validErrorMessage,
+    } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
-        const form = document.getElementById('bath-form') as HTMLFormElement | null;
+        const form = document.getElementById(
+            "bath-form",
+        ) as HTMLFormElement | null;
         if (!form) return;
 
         /************************
          ***** Submit event *****
-        *************************/
-        // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
-        
+         *************************/
+        // Before this event, in base-form.component.astro validations were executed
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
+
             /************************
              ***** Upload photo *****
-            ************************/
-           const uploadPhotos = async () => {
+             ************************/
+            const uploadPhotos = async () => {
                 // There is no photo to upload
-                if (!data.beforeImage.name && !data.afterImage.name) return true;
-                
+                if (!data.beforeImage.name && !data.afterImage.name)
+                    return true;
+
                 let uploadSuccessful = false;
 
                 const resources: SaveFileResource[] = [
-                    ...(data.beforeImage.name ? [new SaveFileResource(data.beforeImage, 'beforeImage', data.beforeImage.name.split('.').pop(), data.beforeImage.type, data.beforeImage.size)] : []),
-                    ...(data.afterImage.name ? [new SaveFileResource(data.afterImage, 'afterImage', data.afterImage.name.split('.').pop(), data.afterImage.type, data.afterImage.size)] : []),
+                    ...(data.beforeImage.name
+                        ? [
+                              new SaveFileResource(
+                                  data.beforeImage,
+                                  "beforeImage",
+                                  data.beforeImage.name.split(".").pop(),
+                                  data.beforeImage.type,
+                                  data.beforeImage.size,
+                              ),
+                          ]
+                        : []),
+                    ...(data.afterImage.name
+                        ? [
+                              new SaveFileResource(
+                                  data.afterImage,
+                                  "afterImage",
+                                  data.afterImage.name.split(".").pop(),
+                                  data.afterImage.type,
+                                  data.afterImage.size,
+                              ),
+                          ]
+                        : []),
                 ];
 
                 for (const resource of resources) {
                     await tryCreateEditRequestOrThrowError({
                         isEditMode,
                         formError,
-                        entityDisplayName: 'mascota',
+                        entityDisplayName: "mascota",
                         submitButton,
-                        actionMessage: 'subir la imagen de la',
-                        makeRequestFunc: async () => await uploadBathImage(formDataObj.petId!, formDataObj.bathId!, resource),
-                        onSuccessFunc: () => uploadSuccessful = true,
+                        actionMessage: "subir la imagen de la",
+                        makeRequestFunc: async () =>
+                            await uploadBathImage(
+                                formDataObj.petId!,
+                                formDataObj.bathId!,
+                                resource,
+                            ),
+                        onSuccessFunc: () => (uploadSuccessful = true),
                         onUnsuccessFunc: (response: any) => {
-                            formError.textContent = validErrorMessage(response.errorMessage) ?? 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
+                            formError.textContent =
+                                validErrorMessage(response.errorMessage) ??
+                                "Error al subir la imagen del baño. Por favor, inténtalo de nuevo.";
                             uploadSuccessful = false;
                         },
                         onErrorFunc: () => {
-                            formError.textContent = 'Error al subir la imagen del baño. Por favor, inténtalo de nuevo.';
+                            formError.textContent =
+                                "Error al subir la imagen del baño. Por favor, inténtalo de nuevo.";
                             uploadSuccessful = false;
                         },
                     });
                 }
 
                 return uploadSuccessful;
-            }
+            };
 
             if (isEditMode) {
                 const uploadOk = await uploadPhotos();
                 if (!uploadOk) return;
             }
-        
+
             /********************************
              ***** Register/update Bath *****
-            ********************************/
-            const registerOrUpdateBath = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
-                const resource = new SaveBathResource(new Date(data.date), data.observations, data.doctor ?? 0);
+             ********************************/
+            const registerOrUpdateBath = async ({
+                forceUpdate,
+                cancelRedirect,
+            }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveBathResource(
+                    new Date(data.date),
+                    data.observations,
+                    data.doctor ?? 0,
+                );
                 const editMode = !!forceUpdate || isEditMode;
 
                 await tryCreateEditRequestOrThrowError({
                     isEditMode,
                     formError,
-                    entityDisplayName: 'baño',
+                    entityDisplayName: "baño",
                     submitButton,
-                    makeRequestFunc: async () => !editMode ? createBath(formDataObj.petId!, resource)
-                                                     : await updateBath(formDataObj.petId!, formDataObj.bathId!, resource),
+                    makeRequestFunc: async () =>
+                        !editMode
+                            ? createBath(formDataObj.petId!, resource)
+                            : await updateBath(
+                                  formDataObj.petId!,
+                                  formDataObj.bathId!,
+                                  resource,
+                              ),
                     onSuccessFunc: (response: any) => {
                         formDataObj.bathId = response.data.id;
 
-                        if (!cancelRedirect) 
+                        if (!cancelRedirect)
                             window.location.href = `/app/pets/${formDataObj.petId!}/baths-history`;
                     },
                 });
             };
 
-            await registerOrUpdateBath({cancelRedirect: !isEditMode});
+            await registerOrUpdateBath({ cancelRedirect: !isEditMode });
 
             if (!isEditMode) {
                 await uploadPhotos();
-                await registerOrUpdateBath({forceUpdate: true});
+                await registerOrUpdateBath({ forceUpdate: true });
             }
         });
     }
@@ -309,24 +382,29 @@ const imgsPreviewAndInputs = [
     function initializeDeleteDialog() {
         /*******************************
          ***** Delete dialog logic *****
-        ********************************/
-        const openDialogButton = document.getElementById('open-delete-dialog-button');
-        const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
+         ********************************/
+        const openDialogButton = document.getElementById(
+            "open-delete-dialog-button",
+        );
+        const dialog = document.getElementById("delete-dialog");
+        const toggleDialog = (show: boolean) =>
+            dialog?.classList.toggle("hidden", !show);
 
-        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+        openDialogButton?.addEventListener("click", () => toggleDialog(true));
     }
 
     function adjustImagePreviews() {
-        const previewImages = document.querySelectorAll<HTMLImageElement>('[data-image-preview]');
+        const previewImages = document.querySelectorAll<HTMLImageElement>(
+            "[data-image-preview]",
+        );
         const TALL_IMAGE_THRESHOLD = 1.2; // La imagen es un 20% más alta que ancha
-        const DEFAULT_HEIGHT_CLASS = 'h-40';
-        const TALL_HEIGHT_CLASS = 'h-96'; // Altura mayor para imágenes verticales
+        const DEFAULT_HEIGHT_CLASS = "h-40";
+        const TALL_HEIGHT_CLASS = "h-96"; // Altura mayor para imágenes verticales
 
-        previewImages.forEach(img => {
+        previewImages.forEach((img) => {
             const handleImageLoad = () => {
                 // Si la imagen no tiene src (placeholder), no hacemos nada.
-                if (!img.currentSrc.includes('http')) return;
+                if (!img.currentSrc.includes("http")) return;
 
                 const { naturalWidth, naturalHeight } = img;
                 if (naturalWidth > 0 && naturalHeight > 0) {
@@ -347,15 +425,15 @@ const imgsPreviewAndInputs = [
                 handleImageLoad();
             } else {
                 // Si no, esperamos a que se cargue.
-                img.addEventListener('load', handleImageLoad);
+                img.addEventListener("load", handleImageLoad);
             }
         });
     }
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
-    document.addEventListener('astro:page-load', () => {
+     *************************************/
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
         initializeDeleteDialog();
         adjustImagePreviews();

@@ -1,5 +1,5 @@
 ---
-import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro"
+import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
 import type { ProfileInfo } from "@/contexts/profiles/client/usecases/get-profile.usecase";
 import { getProfileById } from "@/contexts/profiles/server/application/usecases/get-profile.usecase";
@@ -12,18 +12,18 @@ import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/appl
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
 await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 const { ownerId } = Astro.props;
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let profile: ProfileInfo | null = null;
 let role: any;
 
@@ -39,7 +39,7 @@ if (getRoleResult.success) {
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const profileInputs = [
     {
         id: "name",
@@ -49,7 +49,10 @@ const profileInputs = [
         label: "Nombres",
         value: profile?.name,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El nombre es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El nombre es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -61,7 +64,10 @@ const profileInputs = [
         label: "Apellidos",
         value: profile?.lastname,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El apellido es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El apellido es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -71,9 +77,14 @@ const profileInputs = [
         type: "date",
         autocomplete: "birthday",
         label: "Fecha de nacimiento",
-        value: profile?.birthday ? (new Date(profile.birthday)).toISOString().split('T')[0] : "",
+        value: profile?.birthday
+            ? new Date(profile.birthday).toISOString().split("T")[0]
+            : "",
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La fecha de nacimiento es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La fecha de nacimiento es obligatoria",
+            },
         ],
         showMandatory: true,
     },
@@ -85,8 +96,14 @@ const profileInputs = [
         label: "Correo electrónico",
         value: profile?.email,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El correo electrónico es obligatorio' },
-            { validate: ((value: any) => value.includes('@')).toString(), message: 'El correo electrónico debe contener un @' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El correo electrónico es obligatorio",
+            },
+            {
+                validate: ((value: any) => value.includes("@")).toString(),
+                message: "El correo electrónico debe contener un @",
+            },
         ],
         showMandatory: true,
     },
@@ -98,7 +115,10 @@ const profileInputs = [
         label: "Teléfono",
         value: profile?.phone,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El teléfono es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El teléfono es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -111,7 +131,7 @@ const profileInputs = [
         value: role.name,
         readonly: true,
     },
-]
+];
 ---
 
 <ContentContainer>
@@ -119,11 +139,13 @@ const profileInputs = [
     ------ Top bar ------
     ----------------- -->
     <ContentTop backHref="/app/owners">
-        { profile ? "Datos del dueño" : "Nuevo dueño" }
-        { profile && 
-            <p slot="subtitle" class="mt-1 text-md text-gray-600">
-                Revisa y actualiza la información de {profile.name}.
-            </p> 
+        {profile ? "Datos del dueño" : "Nuevo dueño"}
+        {
+            profile && (
+                <p slot="subtitle" class="mt-1 text-md text-gray-600">
+                    Revisa y actualiza la información de {profile.name}.
+                </p>
+            )
         }
     </ContentTop>
 
@@ -131,32 +153,44 @@ const profileInputs = [
     ------ Main form ------
     ------------------- -->
     <!-- (Important to set editMode) -->
-    <SimpleForm id="profile-form" editMode={!!profile} dataset={{ ownerId: profile?.id, roleId: profile ? profile.roleId : role.id }}>
-        <div class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
-            {
-                profileInputs.map(input => 
-                    <DynamicInput {...input} />
-                )
-            }
+    <SimpleForm
+        id="profile-form"
+        editMode={!!profile}
+        dataset={{
+            ownerId: profile?.id,
+            roleId: profile ? profile.roleId : role.id,
+        }}
+    >
+        <div
+            class="flex flex-col items-end bg-white rounded-xl shadow-lg p-8 w-full max-w-lg"
+        >
+            {profileInputs.map((input) => <DynamicInput {...input} />)}
 
             <!-- -----------------------
             ------ Action buttons ------
             ------------------------ -->
-            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4 w-full">
+            <div
+                class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4 w-full"
+            >
                 <ActionButton id="submit-button" type="submit">
-                    { profile ? "Guardar cambios" : "Crear dueño" }
+                    {profile ? "Guardar cambios" : "Crear dueño"}
                 </ActionButton>
-                { profile &&
-                    <>
-                        <ActionButton id="open-delete-dialog-button" type="danger">
-                            Eliminar
-                        </ActionButton>
-                        <DeleteProfileDialog petName={profile?.name} />
-                    </>
+                {
+                    profile && (
+                        <>
+                            <ActionButton
+                                id="open-delete-dialog-button"
+                                type="danger"
+                            >
+                                Eliminar
+                            </ActionButton>
+                            <DeleteProfileDialog petName={profile?.name} />
+                        </>
+                    )
                 }
             </div>
         </div>
-        
+
         <div class="form-error text-red-500"></div>
     </SimpleForm>
 </ContentContainer>
@@ -168,36 +202,52 @@ const profileInputs = [
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
-        const form = document.getElementById('profile-form') as HTMLFormElement;
+        const form = document.getElementById("profile-form") as HTMLFormElement;
         if (!form) return;
 
         /************************
          ***** Submit event *****
-        *************************/
+         *************************/
 
-        // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        // Before this event, in base-form.component.astro validations were executed
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
 
             /*************************************
              ***** Register/update pet owner *****
-            *************************************/
-            const registerOrUpdatePetOwner = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
-                const resource = new SaveProfileResource(data.name, data.lastname, data.email, data.phone, new Date(data.birthday), formDataObj.roleId!);
+             *************************************/
+            const registerOrUpdatePetOwner = async ({
+                forceUpdate,
+                cancelRedirect,
+            }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveProfileResource(
+                    data.name,
+                    data.lastname,
+                    data.email,
+                    data.phone,
+                    new Date(data.birthday),
+                    formDataObj.roleId!,
+                );
                 const editMode = !!forceUpdate || isEditMode;
 
                 await tryCreateEditRequestOrThrowError({
                     isEditMode,
                     formError,
-                    entityDisplayName: 'dueño',
+                    entityDisplayName: "dueño",
                     submitButton,
-                    makeRequestFunc: async () => !editMode ? await createProfile(resource) 
-                                                     : await updateProfile(resource, formDataObj.ownerId!),
+                    makeRequestFunc: async () =>
+                        !editMode
+                            ? await createProfile(resource)
+                            : await updateProfile(
+                                  resource,
+                                  formDataObj.ownerId!,
+                              ),
                     onSuccessFunc: (response: any) => {
                         formDataObj.ownerId = response.data.id;
 
-                        if (!cancelRedirect) 
-                            window.location.href = '/app/owners';
+                        if (!cancelRedirect)
+                            window.location.href = "/app/owners";
                     },
                 });
             };
@@ -209,20 +259,22 @@ const profileInputs = [
     function initializeDeleteDialog() {
         /*******************************
          ***** Delete dialog logic *****
-        ********************************/
-        const openDialogButton = document.getElementById('open-delete-dialog-button');
-        const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
+         ********************************/
+        const openDialogButton = document.getElementById(
+            "open-delete-dialog-button",
+        );
+        const dialog = document.getElementById("delete-dialog");
+        const toggleDialog = (show: boolean) =>
+            dialog?.classList.toggle("hidden", !show);
 
-        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+        openDialogButton?.addEventListener("click", () => toggleDialog(true));
     }
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
-    document.addEventListener('astro:page-load', () => {
+     *************************************/
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
         initializeDeleteDialog();
     });
-
 </script>

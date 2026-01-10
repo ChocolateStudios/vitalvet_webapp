@@ -57,11 +57,7 @@ const speciesInputs = [
     ------ Inputs ------
     ---------------- -->
     <div slot="body" class="flex flex-col">
-        {
-            speciesInputs.map(input => 
-                <DynamicInput {...input} />
-            )
-        }
+        {speciesInputs.map((input) => <DynamicInput {...input} />)}
     </div>
 
     <!-- -----------------------
@@ -81,40 +77,54 @@ const speciesInputs = [
     import { createSubspecies } from "@/contexts/pets/client/services/create-species-subspecies.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
-    const { pets: petsTexts, } = getTexts();
+    const { pets: petsTexts } = getTexts();
 
     function initializePageScripts() {
-        const form = document.getElementById('subspecies-modal-form') as HTMLFormElement | null;
+        const form = document.getElementById(
+            "subspecies-modal-form",
+        ) as HTMLFormElement | null;
         if (!form) return;
 
         /************************
          ***** Submit event *****
          *************************/
-        // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        // Before this event, in base-form.component.astro validations were executed
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
 
             /***********************************
              ***** Register/update Subspecies *****
              ***********************************/
-            const resource = new SaveSubspeciesResource(data['subspecies-name']);
+            const resource = new SaveSubspeciesResource(
+                data["subspecies-name"],
+            );
             await tryCreateEditRequestOrThrowError({
                 isEditMode,
                 formError,
                 entityDisplayName: petsTexts.auxiliary.subspecies.term,
                 submitButton,
-                makeRequestFunc: async () => !isEditMode ? await createSubspecies(resource, data.species)
-                                                    : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
+                makeRequestFunc: async () =>
+                    !isEditMode
+                        ? await createSubspecies(resource, data.species)
+                        : {
+                              success: false,
+                              errorMessage: "something was wrong",
+                          }, //await updatePet(formDataObj.petId!, ownerResource);
                 onSuccessFunc: (response: any) => {
                     // 1. Dispara un evento con los datos de la nueva raza para que la página principal lo escuche
-                    document.dispatchEvent(new CustomEvent('subspecies-created', {
-                        detail: { newSubspecies: response.data }
-                    }));
+                    document.dispatchEvent(
+                        new CustomEvent("subspecies-created", {
+                            detail: { newSubspecies: response.data },
+                        }),
+                    );
 
                     // 2. Dispara un evento para cerrar este modal específico
-                    document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                        detail: { id: 'subspecies-modal' }
-                    }));
+                    document.dispatchEvent(
+                        new CustomEvent("close-modal-by-id", {
+                            detail: { id: "subspecies-modal" },
+                        }),
+                    );
 
                     // 3. Limpia el formulario para la próxima vez
                     form.reset();
@@ -126,7 +136,7 @@ const speciesInputs = [
     /************************************
      ***** Run scripts on page load *****
      *************************************/
-    document.addEventListener('astro:page-load', () => {
+    document.addEventListener("astro:page-load", () => {
         initializePageScripts();
     });
 </script>

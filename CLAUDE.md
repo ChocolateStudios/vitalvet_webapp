@@ -1,4 +1,4 @@
- # Guía para Agentes de IA y Desarrolladores - Proyecto VitalVet
+ # Guía para CLAUDE AI - Proyecto VitalVet
  
  ## 1. Resumen del Proyecto
  

@@ -35,11 +35,7 @@ const profileInputs = [
     ------ Inputs ------
     ---------------- -->
     <div slot="body" class="flex flex-col">
-        {
-            profileInputs.map(input => 
-                <DynamicInput {...input} />
-            )
-        }
+        {profileInputs.map((input) => <DynamicInput {...input} />)}
     </div>
 
     <!-- -----------------------
@@ -58,41 +54,53 @@ const profileInputs = [
     import { createSpecies } from "@/contexts/pets/client/services/create-species-subspecies.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
-    const { pets: petsTexts, } = getTexts();
+    const { pets: petsTexts } = getTexts();
 
     function initializeForm() {
-        const form = document.getElementById('species-modal-form') as HTMLFormElement | null;
+        const form = document.getElementById(
+            "species-modal-form",
+        ) as HTMLFormElement | null;
         if (!form) return;
 
         /************************
          ***** Submit event *****
          *************************/
-        // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+        // Before this event, in base-form.component.astro validations were executed
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
 
             /***********************************
              ***** Register/update Species *****
              ***********************************/
-            const resource = new SaveSpeciesResource(data['species-name']);
+            const resource = new SaveSpeciesResource(data["species-name"]);
             await tryCreateEditRequestOrThrowError({
                 isEditMode,
                 formError,
                 entityDisplayName: petsTexts.auxiliary.species.term,
                 submitButton,
-                makeRequestFunc: async () => !isEditMode ? await createSpecies(resource)
-                                                    : { success: false, errorMessage: 'something was wrong' },  //await updatePet(formDataObj.petId!, ownerResource);
+                makeRequestFunc: async () =>
+                    !isEditMode
+                        ? await createSpecies(resource)
+                        : {
+                              success: false,
+                              errorMessage: "something was wrong",
+                          }, //await updatePet(formDataObj.petId!, ownerResource);
                 onSuccessFunc: (response: any) => {
                     formDataObj.profileId = response.data.id;
                     // 1. Dispara un evento con los datos de la nueva especie para que la página principal lo escuche
-                    document.dispatchEvent(new CustomEvent('species-created', {
-                        detail: { newSpecies: response.data }
-                    }));
+                    document.dispatchEvent(
+                        new CustomEvent("species-created", {
+                            detail: { newSpecies: response.data },
+                        }),
+                    );
 
                     // 2. Dispara un evento para cerrar este modal específico
-                    document.dispatchEvent(new CustomEvent('close-modal-by-id', {
-                        detail: { id: 'species-modal' }
-                    }));
+                    document.dispatchEvent(
+                        new CustomEvent("close-modal-by-id", {
+                            detail: { id: "species-modal" },
+                        }),
+                    );
 
                     // 3. Limpia el formulario para la próxima vez
                     form.reset();
@@ -104,7 +112,7 @@ const profileInputs = [
     /************************************
      ***** Run scripts on page load *****
      *************************************/
-    document.addEventListener('astro:page-load', () => {
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
     });
 </script>

@@ -391,7 +391,7 @@ const profileImgInput = {
     import { uploadPetProfileImage } from "@/contexts/pets/client/services/upload-pet-profile-image.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
-    const { petsTexts } = getTexts();
+    const { pets: petsTexts } = getTexts();
 
     declare global {
         interface Window {
@@ -448,7 +448,7 @@ const profileImgInput = {
         /************************
          ***** Submit event *****
          *************************/
-        // Before this event, in base-form.astro validations were executed
+        // Before this event, in base-form.component.astro validations were executed
         form.addEventListener("form:submit", async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } =
                 event.detail;

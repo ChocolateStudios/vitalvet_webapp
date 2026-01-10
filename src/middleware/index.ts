@@ -22,7 +22,7 @@ const excludedRoutes = baseExcludedRoutes.flatMap(path => path === '/' ? [path] 
 // Cualquier ruta excluida que empiece por '/app' (ej. /app, /app/login) redirigirá a home si ya estás logueado.
 const redirectRoutes = excludedRoutes.filter(path => path.startsWith('/app'));
 
-export const onRequest = defineMiddleware((context, next) => {
+export const onRequest = defineMiddleware(async (context, next) => {
     const { pathname } = context.url;
     // console.log('pathname: ' + pathname)
     // console.log('excludedRoutes: ' + excludedRoutes)
@@ -45,7 +45,7 @@ export const onRequest = defineMiddleware((context, next) => {
     const token = context.cookies.get('__session')?.value;
     // console.log('token ', token)
 
-    const authenticatedUserId = getAuthenticatedUserId(token);
+    const authenticatedUserId = await getAuthenticatedUserId(token);
 
     // if authenticatedUserId is Response, return Response
     if (authenticatedUserId instanceof Response) {

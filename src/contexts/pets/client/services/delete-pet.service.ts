@@ -1,8 +1,8 @@
-import type { UsecaseResult } from "@/contexts/_shared/client/usecases/usecase-result";
+import type { ServiceResult } from "@/contexts/_shared/client/services/service-result";
 import { getTexts } from "@/i18n";
 const { pets: petsTexts, } = getTexts();
 
-export async function deletePet(petId: string): Promise<UsecaseResult<any>> {
+export async function deletePet(petId: string): Promise<ServiceResult> {
     try {
         const response = await fetch(`/api/pets/${petId}`, {
             method: 'DELETE',

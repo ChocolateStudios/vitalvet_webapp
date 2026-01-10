@@ -1,11 +1,14 @@
 ---
 import ContentContainer from "@/contexts/_shared/client/presentation/components/content/content-container.component.astro";
 import DynamicInput from "@/contexts/_shared/client/presentation/components/inputs/dynamic-input.component.astro";
-import { getEvent, type EventInfo } from "@/contexts/calendar/server/application/usecases/get-event.usecase";
+import {
+    getEvent,
+    type EventInfo,
+} from "@/contexts/calendar/server/application/usecases/get-event.usecase";
 import { getAllPets } from "@/contexts/pets/server/application/usecases/getall-pets.usecase";
 import { getAllProfilesByRoleId } from "@/contexts/profiles/server/application/usecases/get-all-profiles-by-role-id.usecase";
 import { getAuthenticatedUserIdOrRedirect } from "@/contexts/_shared/server/application/usecases/get-authenticated-user-or-redirect";
-import DeleteEventDialog from '@/contexts/calendar/client/presentation/components/delete-event-dialog.component.astro';
+import DeleteEventDialog from "@/contexts/calendar/client/presentation/components/delete-event-dialog.component.astro";
 import ActionButton from "@/contexts/_shared/client/presentation/components/actions/action-button.component.astro";
 import ContentTop from "@/contexts/_shared/client/presentation/components/content/content-top.component.astro";
 import GridForm from "@/contexts/_shared/client/presentation/components/forms/grid-form.component.astro";
@@ -13,18 +16,18 @@ import SimpleCard from "@/contexts/_shared/client/presentation/components/cards/
 
 /*******************************
  ***** User authentication *****
-********************************/
+ ********************************/
 // Probably never redirect from here because it would do so from the middleware
 const authenticatedUserId = await getAuthenticatedUserIdOrRedirect(Astro);
 
 /****************************
  ***** Page paramenters *****
-*****************************/
+ *****************************/
 const { eventId } = Astro.props;
 
 /************************************
  ***** Get info to show on page *****
-*************************************/
+ *************************************/
 let event: EventInfo | null = null;
 let pets: any[] = [];
 let doctors: any[] = [];
@@ -38,26 +41,37 @@ if (eventId) {
 
 const getPetsResult = await getAllPets();
 if (getPetsResult.success) {
-    pets = getPetsResult.data?.map((p: any) => ({ id: p.id, name: p.name })) ?? [];
+    pets =
+        getPetsResult.data?.map((p: any) => ({ id: p.id, name: p.name })) ?? [];
 }
 
-const getDoctorsResult = await getAllProfilesByRoleId(import.meta.env.VETERINARIAN_ROLE_ID, authenticatedUserId);
+const getDoctorsResult = await getAllProfilesByRoleId(
+    import.meta.env.VETERINARIAN_ROLE_ID,
+    authenticatedUserId,
+);
 if (getDoctorsResult.success) {
-    doctors = getDoctorsResult.data?.map((d: any) => ({ id: d.id, name: `${d.name} ${d.lastname}` })) ?? [];
+    doctors =
+        getDoctorsResult.data?.map((d: any) => ({
+            id: d.id,
+            name: `${d.name} ${d.lastname}`,
+        })) ?? [];
 }
 
 /***********************
  ***** Form inputs *****
-************************/
+ ************************/
 const eventInputs = [
     {
         id: "title",
         name: "title",
         type: "text",
         label: "Título",
-        value: event?.title ?? '',
+        value: event?.title ?? "",
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El título es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El título es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -69,7 +83,10 @@ const eventInputs = [
         value: event?.petId?.toString(),
         options: pets,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El paciente es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El paciente es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -81,7 +98,10 @@ const eventInputs = [
         value: event?.doctorProfileId?.toString(),
         options: doctors,
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'El veterinario es obligatorio' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "El veterinario es obligatorio",
+            },
         ],
         showMandatory: true,
     },
@@ -90,9 +110,14 @@ const eventInputs = [
         name: "startDateTime",
         type: "datetime-local",
         label: "Inicio",
-        value: event?.startDateTime ? new Date(event.startDateTime).toISOString().substring(0, 16) : '',
+        value: event?.startDateTime
+            ? new Date(event.startDateTime).toISOString().substring(0, 16)
+            : "",
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La fecha de inicio es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La fecha de inicio es obligatoria",
+            },
         ],
         showMandatory: true,
     },
@@ -101,9 +126,14 @@ const eventInputs = [
         name: "endDateTime",
         type: "datetime-local",
         label: "Fin",
-        value: event?.endDateTime ? new Date(event.endDateTime).toISOString().substring(0, 16) : '',
+        value: event?.endDateTime
+            ? new Date(event.endDateTime).toISOString().substring(0, 16)
+            : "",
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La fecha de fin es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La fecha de fin es obligatoria",
+            },
         ],
         showMandatory: true,
     },
@@ -112,9 +142,12 @@ const eventInputs = [
         name: "description",
         type: "textarea",
         label: "Descripción",
-        value: event?.description ?? '',
+        value: event?.description ?? "",
         validations: [
-            { validate: ((value: any) => !!value).toString(), message: 'La descripción es obligatoria' }
+            {
+                validate: ((value: any) => !!value).toString(),
+                message: "La descripción es obligatoria",
+            },
         ],
         showMandatory: true,
     },
@@ -126,11 +159,13 @@ const eventInputs = [
     ------ Top bar ------
     ----------------- -->
     <ContentTop backHref="/app/calendar">
-        { event ? "Detalles del evento" : "Nuevo evento" }
-        { event && 
-            <p slot="subtitle" class="mt-1 text-md text-gray-600">
-                Revisa y actualiza los detalles del evento.
-            </p> 
+        {event ? "Detalles del evento" : "Nuevo evento"}
+        {
+            event && (
+                <p slot="subtitle" class="mt-1 text-md text-gray-600">
+                    Revisa y actualiza los detalles del evento.
+                </p>
+            )
         }
     </ContentTop>
 
@@ -138,10 +173,14 @@ const eventInputs = [
     ------ Main form ------
     ------------------- -->
     <!-- (Important to set editMode) -->
-    <GridForm id="event-form" editMode={!!event} dataset={{ eventId: event?.id }}>
+    <GridForm
+        id="event-form"
+        editMode={!!event}
+        dataset={{ eventId: event?.id }}
+    >
         <SimpleCard>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                {eventInputs.map(input => <DynamicInput {...input} />)}
+                {eventInputs.map((input) => <DynamicInput {...input} />)}
             </div>
 
             <div id="form-error" class="mt-4 text-red-600"></div>
@@ -149,17 +188,24 @@ const eventInputs = [
             <!-- -----------------------
             ------ Action buttons ------
             ------------------------ -->
-            <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4">
+            <div
+                class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-wrap sm:flex-row sm:justify-end gap-4"
+            >
                 <ActionButton id="submit-button" type="submit">
-                    { event ? "Guardar cambios" : "Crear evento" }
+                    {event ? "Guardar cambios" : "Crear evento"}
                 </ActionButton>
-                { event &&
-                    <>
-                        <ActionButton id="open-delete-dialog-button" type="danger">
-                            Eliminar
-                        </ActionButton>
-                        <DeleteEventDialog eventTitle={event?.title} />
-                    </>
+                {
+                    event && (
+                        <>
+                            <ActionButton
+                                id="open-delete-dialog-button"
+                                type="danger"
+                            >
+                                Eliminar
+                            </ActionButton>
+                            <DeleteEventDialog eventTitle={event?.title} />
+                        </>
+                    )
                 }
             </div>
         </SimpleCard>
@@ -173,58 +219,75 @@ const eventInputs = [
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
 
     function initializeForm() {
-        const form = document.getElementById('event-form') as HTMLFormElement;
+        const form = document.getElementById("event-form") as HTMLFormElement;
         if (!form) return;
 
         /************************
          ***** Submit event *****
-        *************************/
-        // Before this event, in base-form.astro validations were executed
-        form.addEventListener('form:submit', async (event: any) => {
-            const { data, submitButton, isEditMode, formDataObj, formError } = event.detail;
+         *************************/
+        // Before this event, in base-form.component.astro validations were executed
+        form.addEventListener("form:submit", async (event: any) => {
+            const { data, submitButton, isEditMode, formDataObj, formError } =
+                event.detail;
 
             /*******************************
              ***** Register/update event *****
-            *******************************/
-            const registerOrUpdateEvent = async ({ forceUpdate, cancelRedirect }: { forceUpdate?: boolean, cancelRedirect?: boolean } = {}) => {
-                const resource = new SaveEventResource(data.title, new Date(data.startDateTime), new Date(data.endDateTime), data.description, data.doctorProfileId, data.petId, 'default-event-type');
+             *******************************/
+            const registerOrUpdateEvent = async ({
+                forceUpdate,
+                cancelRedirect,
+            }: { forceUpdate?: boolean; cancelRedirect?: boolean } = {}) => {
+                const resource = new SaveEventResource(
+                    data.title,
+                    new Date(data.startDateTime),
+                    new Date(data.endDateTime),
+                    data.description,
+                    data.doctorProfileId,
+                    data.petId,
+                    "default-event-type",
+                );
                 const editMode = !!forceUpdate || isEditMode;
 
                 await tryCreateEditRequestOrThrowError({
                     isEditMode,
                     formError,
-                    entityDisplayName: 'evento',
+                    entityDisplayName: "evento",
                     submitButton,
-                    makeRequestFunc: async () => !editMode ? await createEvent(resource)
-                                                     : await updateEvent(formDataObj.eventId!, resource),
+                    makeRequestFunc: async () =>
+                        !editMode
+                            ? await createEvent(resource)
+                            : await updateEvent(formDataObj.eventId!, resource),
                     onSuccessFunc: (response: any) => {
                         formDataObj.eventId = response.data.id;
 
-                        if (!cancelRedirect) 
-                            window.location.href = '/app/calendar';
+                        if (!cancelRedirect)
+                            window.location.href = "/app/calendar";
                     },
                 });
             };
 
             await registerOrUpdateEvent();
-        });;
+        });
     }
 
     function initializeDeleteDialog() {
         /*******************************
          ***** Delete dialog logic *****
-        ********************************/
-        const openDialogButton = document.getElementById('open-delete-dialog-button');
-        const dialog = document.getElementById('delete-dialog');
-        const toggleDialog = (show: boolean) => dialog?.classList.toggle('hidden', !show);
+         ********************************/
+        const openDialogButton = document.getElementById(
+            "open-delete-dialog-button",
+        );
+        const dialog = document.getElementById("delete-dialog");
+        const toggleDialog = (show: boolean) =>
+            dialog?.classList.toggle("hidden", !show);
 
-        openDialogButton?.addEventListener('click', () => toggleDialog(true));
+        openDialogButton?.addEventListener("click", () => toggleDialog(true));
     }
 
     /************************************
      ***** Run scripts on page load *****
-    *************************************/
-    document.addEventListener('astro:page-load', () => {
+     *************************************/
+    document.addEventListener("astro:page-load", () => {
         initializeForm();
         initializeDeleteDialog();
     });

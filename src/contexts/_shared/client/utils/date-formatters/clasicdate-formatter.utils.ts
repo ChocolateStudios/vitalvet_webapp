@@ -15,24 +15,25 @@ export function formatDateToDdMmYyyyHhMm(dateOrString: Date | string, includeTim
         return '';
     }
 
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses son 0-indexados
-    const year = date.getFullYear();
-    
+    // Usar métodos UTC para evitar conversión a zona horaria local
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Los meses son 0-indexados
+    const year = date.getUTCFullYear();
+
     const formattedDate = `${day}/${month}/${year}`;
 
     if (!includeTime) {
         return formattedDate;
     }
-    
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    let hours = date.getUTCHours();
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
     const ampm = hours >= 12 ? 'pm' : 'am';
-    
+
     hours = hours % 12;
     hours = hours ? hours : 12; // La hora '0' debe ser '12'
     const formattedHours = String(hours).padStart(2, '0');
-    
+
     return `${formattedDate} ${formattedHours}:${minutes} ${ampm}`;
 }
 

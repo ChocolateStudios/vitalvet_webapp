@@ -44,7 +44,7 @@ const { id = "upload-document-modal" } = Astro.props;
         <ActionButton id="cancel-upload-btn">
             Cancelar
         </ActionButton>
-        <ActionButton id="confirm-upload-btn" type="submit" disabled>
+        <ActionButton id="confirm-upload-btn" style="submit" disabled>
             Adjuntar
         </ActionButton>
     </div>
@@ -53,16 +53,12 @@ const { id = "upload-document-modal" } = Astro.props;
 <script>
     document.addEventListener("astro:page-load", () => {
         const modal = document.getElementById("upload-document-modal");
-        const fileInput = document.getElementById(
-            "document-file-input",
-        ) as HTMLInputElement;
+        const fileInput = document.getElementById("document-file-input") as HTMLInputElement;
         const filePreview = document.getElementById("file-preview");
         const fileName = document.getElementById("file-name");
         const fileSize = document.getElementById("file-size");
         const fileError = document.getElementById("file-error");
-        const confirmBtn = document.getElementById(
-            "confirm-upload-btn",
-        ) as HTMLButtonElement;
+        const confirmBtn = document.getElementById("confirm-upload-btn") as HTMLButtonElement;
         const cancelBtn = document.getElementById("cancel-upload-btn");
 
         let selectedFile: File | null = null;

@@ -400,9 +400,7 @@ const tableConfig = {
             return row;
         }
 
-        private createActionsCell(
-            item: ReactiveTableItem,
-        ): HTMLTableCellElement {
+        private createActionsCell(item: ReactiveTableItem): HTMLTableCellElement {
             const cell = document.createElement("td");
             cell.className = "px-4 py-2";
 
@@ -485,15 +483,10 @@ const tableConfig = {
             return cell;
         }
 
-        private createActionButton(
-            action: ReactiveTableAction,
-            item: ReactiveTableItem,
-            onClick?: () => void,
-        ): HTMLButtonElement {
+        private createActionButton(action: ReactiveTableAction, item: ReactiveTableItem, onClick?: () => void): HTMLButtonElement {
             const button = document.createElement("button");
             button.type = "button";
-            button.className =
-                action.className || "text-gray-600 hover:text-gray-800";
+            button.className = action.className || "text-gray-600 hover:text-gray-800";
             button.innerHTML = action.icon;
             button.title = action.label;
 

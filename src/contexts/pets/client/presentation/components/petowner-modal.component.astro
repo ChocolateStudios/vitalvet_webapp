@@ -134,7 +134,7 @@ const profileInputs = [
     import { createProfile } from "@/contexts/profiles/client/services/create-profile.service";
     import { tryCreateEditRequestOrThrowError } from "@/contexts/_shared/client/presentation/components/forms/form-utils";
     import { getTexts } from "@/i18n";
-    const { profiles: profilesTexts, } = getTexts();
+    const { profiles: profilesTexts } = getTexts();
 
     function initializeForm() {
         const form = document.getElementById(
@@ -145,7 +145,7 @@ const profileInputs = [
         /************************
          ***** Submit event *****
          *************************/
-        // Before this event, in base-form.astro validations were executed
+        // Before this event, in base-form.component.astro validations were executed
         form.addEventListener("form:submit", async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } =
                 event.detail;

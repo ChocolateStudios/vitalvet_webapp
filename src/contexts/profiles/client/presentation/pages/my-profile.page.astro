@@ -170,7 +170,7 @@ const profileInputs = [
         /************************
          ***** Submit event *****
          *************************/
-        // Before this event, in base-form.astro validations were executed
+        // Before this event, in base-form.component.astro validations were executed
         form.addEventListener("form:submit", async (event: any) => {
             const { data, submitButton, isEditMode, formDataObj, formError } =
                 event.detail;

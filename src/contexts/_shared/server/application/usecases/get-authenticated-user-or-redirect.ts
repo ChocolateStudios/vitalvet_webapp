@@ -8,27 +8,15 @@ export async function getAuthenticatedUserIdOrRedirect(Astro: any): Promise<stri
     if (!token) {
         // Si no hay token, redirigir al login.
         console.log("No hay token, redirigiendo a login");
-        return Astro.redirect('/auth/login');
+        return -1;
     }
 
-    const authenticatedUserId = getAuthenticatedUserId(token);
+    const authenticatedUserId = await getAuthenticatedUserId(token);
 
     if (authenticatedUserId instanceof Response) {
         // Si la autenticación falla, redirigir al login.
         console.log("Autenticación fallida, redirigiendo a login");
-        return Astro.redirect('/auth/login');
-    }
-
-    try {
-        const user = await UsersRepository.getUser(authenticatedUserId);
-        if (!user) {
-            console.log('No se encontró el usuario.');
-            return Astro.redirect('/auth/login');
-        }
-    }
-    catch (error) {
-        console.log("Error al obtener el usuario autenticado, redirigiendo a login");
-        return Astro.redirect('/auth/login');
+        return -1;
     }
 
     return authenticatedUserId;
